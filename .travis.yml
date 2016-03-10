@@ -1,2 +1,6 @@
 language: csharp
 solution: src/DeepStreamNet.sln
+install:
+  - nuget restore src/DeepStreamNet.sln
+  script:
+  - xbuild /p:Configuration=Release /p:TargetFrameworkVersion="v4.5" src/DeepStreamNet.sln
