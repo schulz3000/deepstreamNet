@@ -1,0 +1,9 @@
+version: 1.0.{build}
+pull_requests:
+  do_not_increment_build_number: true
+skip_tags: true
+os: Visual Studio 2015
+build:
+  project: src/DeepStreamNet.sln
+  parallel: true
+  verbosity: minimal
