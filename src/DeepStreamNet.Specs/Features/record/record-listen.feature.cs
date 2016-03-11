@@ -1,0 +1,1 @@
+﻿#error (40:1): Feature file already contains a scenario with name 'The server responds with an ACK'

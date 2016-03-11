@@ -1,0 +1,307 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{9D1D843D-4ED5-409B-BF8F-C11FD00D9264}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>DeepStreamNet.Specs</RootNamespace>
+    <AssemblyName>DeepStreamNet.Specs</AssemblyName>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+    <ReferencePath>$(ProgramFiles)\Common Files\microsoft shared\VSTT\$(VisualStudioVersion)\UITestExtensionPackages</ReferencePath>
+    <IsCodedUITest>False</IsCodedUITest>
+    <TestProjectType>UnitTest</TestProjectType>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="TechTalk.SpecFlow, Version=2.0.0.0, Culture=neutral, PublicKeyToken=0778194805d6db41, processorArchitecture=MSIL">
+      <HintPath>..\packages\SpecFlow.2.0.0\lib\net45\TechTalk.SpecFlow.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+  </ItemGroup>
+  <Choose>
+    <When Condition="('$(VisualStudioVersion)' == '10.0' or '$(VisualStudioVersion)' == '') and '$(TargetFrameworkVersion)' == 'v3.5'">
+      <ItemGroup>
+        <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework, Version=10.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
+      </ItemGroup>
+    </When>
+    <Otherwise>
+      <ItemGroup>
+        <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework" />
+      </ItemGroup>
+    </Otherwise>
+  </Choose>
+  <ItemGroup>
+    <Compile Include="Impl\Events\EventListenSteps.cs" />
+    <Compile Include="Impl\Events\EventListenTimeoutsSteps.cs" />
+    <Compile Include="Impl\Events\EventsConnectivitySteps.cs" />
+    <Compile Include="Impl\Events\EventsSteps.cs" />
+    <Compile Include="Impl\ConnectingAClientSteps.cs" />
+    <Compile Include="Features\connecting.feature.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>connecting.feature</DependentUpon>
+    </Compile>
+    <Compile Include="Features\events\event-misc.feature.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>event-misc.feature</DependentUpon>
+    </Compile>
+    <Compile Include="Features\events\events-connection.feature.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>events-connection.feature</DependentUpon>
+    </Compile>
+    <Compile Include="Features\events\events-listen-timeouts.feature.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>events-listen-timeouts.feature</DependentUpon>
+    </Compile>
+    <Compile Include="Features\events\events-listen.feature.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>events-listen.feature</DependentUpon>
+    </Compile>
+    <Compile Include="Features\events\events-timeouts.feature.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>events-timeouts.feature</DependentUpon>
+    </Compile>
+    <Compile Include="Features\events\events.feature.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>events.feature</DependentUpon>
+    </Compile>
+    <Compile Include="Features\logging-in.feature.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>logging-in.feature</DependentUpon>
+    </Compile>
+    <Compile Include="Features\record\record-conflicts.feature.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>record-conflicts.feature</DependentUpon>
+    </Compile>
+    <Compile Include="Features\record\record-connection.feature.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>record-connection.feature</DependentUpon>
+    </Compile>
+    <Compile Include="Features\record\record-listen-timeouts.feature.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>record-listen-timeouts.feature</DependentUpon>
+    </Compile>
+    <Compile Include="Features\record\record-listen.feature.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>record-listen.feature</DependentUpon>
+    </Compile>
+    <Compile Include="Features\record\record-misc.feature.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>record-misc.feature</DependentUpon>
+    </Compile>
+    <Compile Include="Features\record\record-subscription.feature.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>record-subscription.feature</DependentUpon>
+    </Compile>
+    <Compile Include="Features\record\record-timeouts.feature.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>record-timeouts.feature</DependentUpon>
+    </Compile>
+    <Compile Include="Features\record\record.feature.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>record.feature</DependentUpon>
+    </Compile>
+    <Compile Include="Features\rpc\rpc-connection.feature.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>rpc-connection.feature</DependentUpon>
+    </Compile>
+    <Compile Include="Features\rpc\rpc-provider.feature.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>rpc-provider.feature</DependentUpon>
+    </Compile>
+    <Compile Include="Features\rpc\rpc-requestor.feature.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>rpc-requestor.feature</DependentUpon>
+    </Compile>
+    <Compile Include="Features\rpc\rpc-timeouts.feature.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>rpc-timeouts.feature</DependentUpon>
+    </Compile>
+    <Compile Include="Impl\Events\EventsMiscSteps.cs" />
+    <Compile Include="Impl\Events\EventsTimeoutsSteps.cs" />
+    <Compile Include="Impl\LoggingInSteps.cs" />
+    <Compile Include="Features\message-parsing.feature.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>message-parsing.feature</DependentUpon>
+    </Compile>
+    <Compile Include="Impl\ParsingMessagesSteps.cs" />
+    <Compile Include="Impl\Record\RecordConflictsSteps.cs" />
+    <Compile Include="Impl\Record\RecordConnectivitySteps.cs" />
+    <Compile Include="Impl\Record\RecordListenSteps.cs" />
+    <Compile Include="Impl\Record\RecordListenTimeoutsSteps.cs" />
+    <Compile Include="Impl\Record\RecordStepMiscs.cs" />
+    <Compile Include="Impl\Record\RecordSteps.cs" />
+    <Compile Include="Impl\Record\RecordSubscriptionSteps.cs" />
+    <Compile Include="Impl\Record\RecordTimeoutsSteps.cs" />
+    <Compile Include="Impl\RPC\ProvidingRPCSteps.cs" />
+    <Compile Include="Impl\RPC\RequestingAnRPCSteps.cs" />
+    <Compile Include="Impl\RPC\RPCConnectivitySteps.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+    <None Include="Features\connecting.feature">
+      <Generator>SpecFlowSingleFileGenerator</Generator>
+      <LastGenOutput>connecting.feature.cs</LastGenOutput>
+    </None>
+    <None Include="Features\events\event-misc.feature">
+      <Generator>SpecFlowSingleFileGenerator</Generator>
+      <LastGenOutput>event-misc.feature.cs</LastGenOutput>
+    </None>
+    <None Include="Features\events\events-connection.feature">
+      <Generator>SpecFlowSingleFileGenerator</Generator>
+      <LastGenOutput>events-connection.feature.cs</LastGenOutput>
+    </None>
+    <None Include="Features\events\events-listen-timeouts.feature">
+      <Generator>SpecFlowSingleFileGenerator</Generator>
+      <LastGenOutput>events-listen-timeouts.feature.cs</LastGenOutput>
+    </None>
+    <None Include="Features\events\events-listen.feature">
+      <Generator>SpecFlowSingleFileGenerator</Generator>
+      <LastGenOutput>events-listen.feature.cs</LastGenOutput>
+    </None>
+    <None Include="Features\events\events-timeouts.feature">
+      <Generator>SpecFlowSingleFileGenerator</Generator>
+      <LastGenOutput>events-timeouts.feature.cs</LastGenOutput>
+    </None>
+    <None Include="Features\events\events.feature">
+      <Generator>SpecFlowSingleFileGenerator</Generator>
+      <LastGenOutput>events.feature.cs</LastGenOutput>
+    </None>
+    <None Include="Features\logging-in.feature">
+      <Generator>SpecFlowSingleFileGenerator</Generator>
+      <LastGenOutput>logging-in.feature.cs</LastGenOutput>
+    </None>
+    <None Include="Features\message-parsing.feature">
+      <Generator>SpecFlowSingleFileGenerator</Generator>
+      <LastGenOutput>message-parsing.feature.cs</LastGenOutput>
+    </None>
+    <None Include="Features\record\record-conflicts.feature">
+      <Generator>SpecFlowSingleFileGenerator</Generator>
+      <LastGenOutput>record-conflicts.feature.cs</LastGenOutput>
+    </None>
+    <None Include="Features\record\record-connection.feature">
+      <Generator>SpecFlowSingleFileGenerator</Generator>
+      <LastGenOutput>record-connection.feature.cs</LastGenOutput>
+    </None>
+    <None Include="Features\record\record-listen-timeouts.feature">
+      <Generator>SpecFlowSingleFileGenerator</Generator>
+      <LastGenOutput>record-listen-timeouts.feature.cs</LastGenOutput>
+    </None>
+    <None Include="Features\record\record-listen.feature">
+      <Generator>SpecFlowSingleFileGenerator</Generator>
+      <LastGenOutput>record-listen.feature.cs</LastGenOutput>
+    </None>
+    <None Include="Features\record\record-misc.feature">
+      <Generator>SpecFlowSingleFileGenerator</Generator>
+      <LastGenOutput>record-misc.feature.cs</LastGenOutput>
+    </None>
+    <None Include="Features\record\record-subscription.feature">
+      <Generator>SpecFlowSingleFileGenerator</Generator>
+      <LastGenOutput>record-subscription.feature.cs</LastGenOutput>
+    </None>
+    <None Include="Features\record\record-timeouts.feature">
+      <Generator>SpecFlowSingleFileGenerator</Generator>
+      <LastGenOutput>record-timeouts.feature.cs</LastGenOutput>
+    </None>
+    <None Include="Features\record\record.feature">
+      <Generator>SpecFlowSingleFileGenerator</Generator>
+      <LastGenOutput>record.feature.cs</LastGenOutput>
+    </None>
+    <None Include="Features\rpc\rpc-connection.feature">
+      <Generator>SpecFlowSingleFileGenerator</Generator>
+      <LastGenOutput>rpc-connection.feature.cs</LastGenOutput>
+    </None>
+    <None Include="Features\rpc\rpc-provider.feature">
+      <Generator>SpecFlowSingleFileGenerator</Generator>
+      <LastGenOutput>rpc-provider.feature.cs</LastGenOutput>
+    </None>
+    <None Include="Features\rpc\rpc-requestor.feature">
+      <Generator>SpecFlowSingleFileGenerator</Generator>
+      <LastGenOutput>rpc-requestor.feature.cs</LastGenOutput>
+    </None>
+    <None Include="Features\rpc\rpc-timeouts.feature">
+      <Generator>SpecFlowSingleFileGenerator</Generator>
+      <LastGenOutput>rpc-timeouts.feature.cs</LastGenOutput>
+    </None>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\DeepStreamClient\DeepStreamNet.csproj">
+      <Project>{5e497f4f-72f1-451e-8a7e-304d60356e9a}</Project>
+      <Name>DeepStreamNet</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup />
+  <Choose>
+    <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">
+      <ItemGroup>
+        <Reference Include="Microsoft.VisualStudio.QualityTools.CodedUITestFramework, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+          <Private>False</Private>
+        </Reference>
+        <Reference Include="Microsoft.VisualStudio.TestTools.UITest.Common, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+          <Private>False</Private>
+        </Reference>
+        <Reference Include="Microsoft.VisualStudio.TestTools.UITest.Extension, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+          <Private>False</Private>
+        </Reference>
+        <Reference Include="Microsoft.VisualStudio.TestTools.UITesting, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+          <Private>False</Private>
+        </Reference>
+      </ItemGroup>
+    </When>
+  </Choose>
+  <Import Project="$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets" Condition="Exists('$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets')" />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

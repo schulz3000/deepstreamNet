@@ -1,0 +1,1 @@
+﻿#error (42:1): Feature file already contains a scenario with name 'The client receives a full update'

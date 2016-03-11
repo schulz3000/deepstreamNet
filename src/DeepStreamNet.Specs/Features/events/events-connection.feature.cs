@@ -1,0 +1,2 @@
+﻿#error (42:1): Feature file already contains a scenario with name 'The client is connected'
+#error (25:1): Feature file already contains a scenario with name 'The server sends an ACK message for test1'

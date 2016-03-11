@@ -1,0 +1,1 @@
+﻿#error (29:1): Feature file already contains a scenario with name 'The client is connected'

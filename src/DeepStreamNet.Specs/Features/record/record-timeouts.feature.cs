@@ -1,0 +1,1 @@
+﻿#error (68:1): Feature file already contains a scenario with name 'The server does not respond in time with an ACK'
