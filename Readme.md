@@ -3,6 +3,9 @@ DeepStreamNet
 
 dotnet Client for [deepstream.io](https://deepstream.io)
 
+##Builds
+[![Build status](https://ci.appveyor.com/api/projects/status/aj8op4emvlivn7jx/branch/develop?svg=true)](https://ci.appveyor.com/project/schulz3000/deepstreamnet/branch/develop) [![Build Status](https://travis-ci.org/schulz3000/deepstreamNet.svg?branch=develop)](https://travis-ci.org/schulz3000/deepstreamNet)
+
 ##Usage
 
 ```csharp
@@ -12,6 +15,9 @@ if(await client.LoginAsync())
 {
  //Login was successful   
 }
+
+//Alternative with credentials
+await client.LoginAsync("Username", "Password");
 
 // Close Connection to deepstream.io endpoint
 client.Dispose();
