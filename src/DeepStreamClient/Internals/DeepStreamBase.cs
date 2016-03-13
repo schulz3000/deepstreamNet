@@ -9,9 +9,9 @@
             Connection = con;
         }
 
-        protected void ThrowIfNotLoggedIn()
+        protected void ThrowIfConnectionNotOpened()
         {
-            if (!Connection.IsLoggedIn)
+            if (Connection.State != ConnectionState.OPEN)
                 throw new DeepStreamException("Login required first");
         }
     }

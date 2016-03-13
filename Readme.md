@@ -71,3 +71,30 @@ record.Age = 21;
 // Save all changes
 await client.Records.SaveAsync(record);
 ```
+
+###RPC Request
+
+```csharp
+//Request RemoteProcedure 'toLowerCase' with argument 'abc'
+var result = await client.Rpcs.Request<string,string>("toLowerCase", "abc");
+//result == "ABC"
+```
+
+###RPC Provider
+
+```csharp
+//Define Method for RemoteProcedure
+string ToUpperCase(string input)
+{
+    return input.ToUpper();
+}
+
+//Register RemoteProcedure 'toUpperCase' with InputArgs as string and Result as string
+var proc = await client.Rpcs.Register<string, string>("toUpperCase", ToUpperCase);
+
+//alternative with anonymous Method as RemoteProcedure
+var proc = await client.Rpcs.Register<string, string>("toUpperCase", (input)=>input.ToUpper());
+
+//Unregister RemoteProcedure
+proc.Dispose(); 
+```

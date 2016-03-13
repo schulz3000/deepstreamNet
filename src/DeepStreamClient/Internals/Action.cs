@@ -28,6 +28,7 @@ namespace DeepStreamNet
         public static Action REJECTION { get { return new Action("REJ"); } }
 
         readonly string Identifier;
+
         public Action(string identifier)
         {
             Identifier = identifier;

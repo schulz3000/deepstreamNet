@@ -14,6 +14,6 @@
             public const char TRUE = 'T';
             public const char FALSE = 'F';
             public const char UNDEFINED = 'U';
-        }        
+        }
     }
 }

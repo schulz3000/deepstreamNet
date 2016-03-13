@@ -9,7 +9,7 @@ namespace DeepStreamNet
             get;
             private set;
         }
-       
+
         public DeepStreamRecord(string name, int version, IDictionary<string, object> obj)
             : base(name, obj)
         {
@@ -26,8 +26,8 @@ namespace DeepStreamNet
         public void Merge(int newVersion, IDictionary<string, object> obj)
         {
             RecordVersion = newVersion;
-            
+
             Merge(obj);
-        }        
+        }
     }
 }

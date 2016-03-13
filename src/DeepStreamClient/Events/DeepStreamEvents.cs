@@ -2,11 +2,10 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using DeepStreamNet.Contracts;
-using Jil;
 
 namespace DeepStreamNet
 {
-    class DeepStreamEvents : DeepStreamBase,IDeepStreamEvents
+    class DeepStreamEvents : DeepStreamBase, IDeepStreamEvents
     {
         readonly Dictionary<string, int> eventsDict = new Dictionary<string, int>();
         readonly Dictionary<string, int> listenerDict = new Dictionary<string, int>();
@@ -18,51 +17,20 @@ namespace DeepStreamNet
 
         public Task PublishAsync<T>(string eventName, T data)
         {
-            ThrowIfNotLoggedIn();
+            ThrowIfConnectionNotOpened();
 
             if (string.IsNullOrWhiteSpace(eventName))
                 throw new ArgumentNullException(nameof(eventName));
 
-            var sendData = string.Empty;
+            var sendData = Utils.ConvertAndPrefixData(data);
 
-            if (data is string)
-            {
-                sendData = Constants.Types.STRING + data.ToString();
-            }
-            else if (data is bool)
-            {
-                if (bool.Parse(data.ToString()))
-                    sendData = Constants.Types.TRUE.ToString();
-                else
-                    sendData = Constants.Types.FALSE.ToString();
-            }
-            else if (data is int || data is double || data is float || data is decimal)
-            {
-                sendData = Constants.Types.NUMBER + data.ToString().Replace(',', '.');
-            }
-            else if ((data as object) == null)
-            {
-                sendData = Constants.Types.NULL.ToString();
-            }
-            else
-            {
-                try
-                {
-                    sendData = Constants.Types.OBJECT + JSON.Serialize(data, Options.ISO8601);
-                }
-                catch
-                {
-                    sendData = Constants.Types.UNDEFINED.ToString();
-                }
-            }
-
-            var command = Utils.BuildCommand(Topic.EVENT,Action.EVENT, eventName, sendData);
+            var command = Utils.BuildCommand(Topic.EVENT, Action.EVENT, eventName, sendData);
             return Connection.SendAsync(command);
         }
 
         public async Task<IDisposable> Subscribe(string eventName, Action<object> data)
         {
-            ThrowIfNotLoggedIn();
+            ThrowIfConnectionNotOpened();
 
             EventHandler<EventReceivedArgs> handler = (s, e) =>
             {
@@ -98,7 +66,10 @@ namespace DeepStreamNet
             if (string.IsNullOrWhiteSpace(pattern))
                 throw new ArgumentNullException(nameof(pattern));
 
-            ThrowIfNotLoggedIn();
+            ThrowIfConnectionNotOpened();
+
+            if (listenerDict.ContainsKey(pattern))
+                throw new DeepStreamException("we still listen for " + pattern);
 
             EventHandler<EventListenerChangedArgs> handler = (s, e) =>
             {
@@ -116,18 +87,17 @@ namespace DeepStreamNet
 
             Connection.EventListenerChanged += handler;
 
-            return new DisposableAction(async()=> {
-                
-                if (await  Connection.SendWithAckAsync(Topic.EVENT,Action.UNLISTEN,Action.UNLISTEN,pattern))
+            return new DisposableAction(async () =>
+            {
+                if (await Connection.SendWithAckAsync(Topic.EVENT, Action.UNLISTEN, Action.UNLISTEN, pattern))
                 {
                     Connection.EventListenerChanged -= handler;
                     listenerDict.Remove(pattern);
-                }                
+                }
             });
-
         }
-                
-        async Task Subscribe(string eventName)
+
+        private async Task Subscribe(string eventName)
         {
             if (string.IsNullOrWhiteSpace(eventName))
                 throw new ArgumentNullException(nameof(eventName));

@@ -11,6 +11,7 @@ namespace DeepStreamNet
                 return new Topic(null);
             }
         }
+
         public static Topic AUTH
         {
             get
@@ -18,6 +19,7 @@ namespace DeepStreamNet
                 return new Topic("A");
             }
         }
+
         public static Topic ERROR
         {
             get
@@ -25,6 +27,7 @@ namespace DeepStreamNet
                 return new Topic("X");
             }
         }
+
         public static Topic EVENT
         {
             get
@@ -32,6 +35,7 @@ namespace DeepStreamNet
                 return new Topic("E");
             }
         }
+
         public static Topic RECORD
         {
             get
@@ -39,6 +43,7 @@ namespace DeepStreamNet
                 return new Topic("R");
             }
         }
+
         public static Topic RPC
         {
             get
@@ -46,6 +51,7 @@ namespace DeepStreamNet
                 return new Topic("P");
             }
         }
+
         public static Topic WEBRTC
         {
             get
@@ -53,6 +59,7 @@ namespace DeepStreamNet
                 return new Topic("W");
             }
         }
+
         public static Topic PRIVATE
         {
             get

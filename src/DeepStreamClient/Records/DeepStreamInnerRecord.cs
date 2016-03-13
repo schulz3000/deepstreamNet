@@ -10,8 +10,9 @@ namespace DeepStreamNet
         readonly HashSet<IRecordPropertyWrapper> properties = new HashSet<IRecordPropertyWrapper>();
 
         public event PropertyChangingEventHandler PropertyChanging;
+
         public event PropertyChangedEventHandler PropertyChanged;
-                
+
         public string RecordName
         {
             get;
@@ -60,7 +61,6 @@ namespace DeepStreamNet
             }
         }
 
-
         protected object GetPropertyValue(string name)
         {
             return properties.Where(w => w.Name == name).Select(s => s.Value).FirstOrDefault();
@@ -80,8 +80,8 @@ namespace DeepStreamNet
                     property.Value = value;
                     PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
                 }
-            }              
-            
+            }
+
             return true;
         }
 

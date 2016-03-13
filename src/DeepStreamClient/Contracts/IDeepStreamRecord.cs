@@ -10,9 +10,5 @@ namespace DeepStreamNet.Contracts
             get;
             set;
         }
-        
-        //Task SaveAsync();
-        //Task DiscardAsync();
-        //Task DeleteAsync();
     }
 }

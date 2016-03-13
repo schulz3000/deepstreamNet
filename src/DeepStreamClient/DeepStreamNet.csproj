@@ -47,11 +47,13 @@
     <Reference Include="System.Runtime.Serialization" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Internals\AcknoledgedWithUidArgs.cs" />
     <Compile Include="Internals\AcknoledgedArgs.cs" />
     <Compile Include="Internals\Action.cs" />
     <Compile Include="Contracts\IDeepStreamEvents.cs" />
     <Compile Include="Contracts\IDeepStreamRecords.cs" />
     <Compile Include="Contracts\IDeepStreamRemoteProcedureCalls.cs" />
+    <Compile Include="Internals\ConnectionState.cs" />
     <Compile Include="Internals\DeepStreamBase.cs" />
     <Compile Include="Internals\DeepStreamBaseEventArgs.cs" />
     <Compile Include="DeepStreamClient.cs" />
@@ -60,6 +62,8 @@
     <Compile Include="Events\DeepStreamEvents.cs" />
     <Compile Include="DeepStreamException.cs" />
     <Compile Include="Events\EventListenerChangedArgs.cs" />
+    <Compile Include="Internals\ErrorArgs.cs" />
+    <Compile Include="RemoteProcedureCalls\RemoteProcedureMessageArgs.cs" />
     <Compile Include="Records\RecordBaseEventArgs.cs" />
     <Compile Include="Records\RecordPatchedArgs.cs" />
     <Compile Include="Records\DeepStreamInnerRecord.cs" />

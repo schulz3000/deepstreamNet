@@ -17,17 +17,26 @@ namespace DeepStreamNet
         readonly string Host;
         readonly int Port;
 
+        public ConnectionState State { get; internal set; }
+
         internal event EventHandler<AcknoledgedArgs> Acknoledged;
 
+        internal event EventHandler<ErrorArgs> Error;
+
         internal event EventHandler<EventReceivedArgs> EventReceived;
+
         internal event EventHandler<EventListenerChangedArgs> EventListenerChanged;
 
         internal event EventHandler<RecordReceivedArgs> RecordReceived;
+
         internal event EventHandler<RecordUpdatedArgs> RecordUpdated;
+
         internal event EventHandler<RecordPatchedArgs> RecordPatched;
 
-        public bool IsLoggedIn { get; set; }
-        
+        internal event EventHandler<RemoteProcedureMessageArgs> PerformRemoteProcedureRequested;
+
+        internal event EventHandler<RemoteProcedureMessageArgs> RemoteProcedureResultReceived;
+
         public Connection(string host, int port, CancellationToken token)
         {
             if (string.IsNullOrWhiteSpace(host))
@@ -36,7 +45,9 @@ namespace DeepStreamNet
             Host = host;
             Port = port;
             cts = token;
-            
+
+            State = ConnectionState.NONE;
+
             client = new TcpClient();
             client.NoDelay = true;
         }
@@ -49,10 +60,10 @@ namespace DeepStreamNet
         public async Task SendAsync(string command)
         {
             var stream = client.GetStream();
-            
+
             var bytes = Encoding.ASCII.GetBytes(command);
             await stream.WriteAsync(bytes, 0, bytes.Length, cts);
-            await stream.FlushAsync();            
+            await stream.FlushAsync();
         }
 
         public async Task<bool> SendWithAckAsync(Topic topic, Action action, Action expectedReceivedAction, string identifier)
@@ -60,6 +71,7 @@ namespace DeepStreamNet
             var tcs = new TaskCompletionSource<bool>();
 
             EventHandler<AcknoledgedArgs> ackHandler = null;
+            EventHandler<ErrorArgs> errorHandler = null;
             var timer = new System.Timers.Timer(1000);
 
             ackHandler = (s, e) =>
@@ -73,12 +85,19 @@ namespace DeepStreamNet
                 {
                     timer.Dispose();
                     Acknoledged -= ackHandler;
+                    Error -= errorHandler;
                 }
+            };
+
+            errorHandler = (s, e) => {
+                if (e.Topic == topic && e.Action == Action.ERROR)
+                    tcs.TrySetException(new DeepStreamException(e.Message));
             };
 
             timer.Elapsed += (s, e) =>
             {
                 Acknoledged -= ackHandler;
+                Error -= errorHandler;
                 timer.Dispose();
                 tcs.TrySetException(new DeepStreamException("ACK Timeout"));
             };
@@ -86,13 +105,14 @@ namespace DeepStreamNet
             string command = Utils.BuildCommand(topic, action, identifier);
 
             Acknoledged += ackHandler;
+            Error += errorHandler;
 
             timer.Start();
 
-            await SendAsync(command); 
-            
+            await SendAsync(command);
+
             return await tcs.Task;
-        }        
+        }
 
         public void StartMessageLoop()
         {
@@ -109,10 +129,10 @@ namespace DeepStreamNet
             var sb = string.Empty;
 
             while (!cts.IsCancellationRequested && client.Connected)
-            {                
+            {
                 while ((result = await stream.ReadAsync(buffer, 0, buffer.Length, cts)) != 0)
                 {
-                    var enc = sb + Encoding.UTF8.GetString(buffer,0,result);
+                    var enc = sb + Encoding.UTF8.GetString(buffer, 0, result);
 
                     var groups = enc.Split(Constants.GroupSeperator);
 
@@ -121,43 +141,75 @@ namespace DeepStreamNet
                         Notify(groups[i]);
                     }
 
-                    sb = groups[groups.Length - 1]; 
+                    sb = groups[groups.Length - 1];
                 }
             }
         }
 
         void Notify(string value)
-        {   
+        {
             var split = value.Split(Constants.RecordSeperator);
 
             if (split.Length < 2)
+            {
+                OnError(Topic.Empty, Action.Empty, "MESSAGE_PARSE_ERROR", "Insufficiant message parts");
                 return;
+            }
 
             var responseAction = new Action(split[1]);
             var action = new Action(split.Length == 2 ? null : split[2]);
             var topic = new Topic(split[0]);
-            
-            if (responseAction == Action.ACK)
+
+            //if (responseAction == Action.ACK)
+            //{
+            //    Acknoledged?.Invoke(this, new AcknoledgedArgs(topic, action, split.Length > 2 ? split[3] : null));
+            //}
+            if (topic == Topic.AUTH)
             {
-                Acknoledged?.Invoke(this, new AcknoledgedArgs(topic, action, split.Length > 2 ? split[3] : null));
+                if (responseAction == Action.ACK)
+                {
+                    OnAcknoledged(topic, action, null);
+                }
+                else if (responseAction == Action.ERROR)
+                {
+                    OnError(topic, action, split[2], split[3].Substring(1));
+                }
+                else
+                {
+                    OnError(topic, action, "MESSAGE_PARSE_ERROR", "Unknown action " + action);
+                }
             }
             else if (topic == Topic.EVENT)
             {
-                if (responseAction == Action.EVENT)
+                if (responseAction == Action.ACK)
                 {
-                    var convertedDataWithType = ConvertPrefixedData(split[3]);
+                    OnAcknoledged(topic, action, split[3]);
+                }
+                else if (responseAction == Action.EVENT)
+                {
+                    var convertedDataWithType = Utils.ConvertPrefixedData(split[3]);
                     EventReceived?.Invoke(this, new EventReceivedArgs(split[2], convertedDataWithType.Key, convertedDataWithType.Value));
-                }else if(responseAction == Action.SUBSCRIPTION_FOR_PATTERN_FOUND)
+                }
+                else if (responseAction == Action.SUBSCRIPTION_FOR_PATTERN_FOUND)
                 {
-                    EventListenerChanged?.Invoke(this, new EventListenerChangedArgs(split[2],EventListenerState.Add));
-                }else if(responseAction == Action.SUBSCRIPTION_FOR_PATTERN_REMOVED)                
+                    EventListenerChanged?.Invoke(this, new EventListenerChangedArgs(split[2], EventListenerState.Add));
+                }
+                else if (responseAction == Action.SUBSCRIPTION_FOR_PATTERN_REMOVED)
                 {
                     EventListenerChanged?.Invoke(this, new EventListenerChangedArgs(split[2], EventListenerState.Remove));
+                }
+                else
+                {
+                    OnError(topic, action, "MESSAGE_PARSE_ERROR", "Unknown action " + action);
                 }
             }
             else if (topic == Topic.RECORD)
             {
-                if (responseAction == Action.READ)
+                if (responseAction == Action.ACK)
+                {
+                    OnAcknoledged(topic, action, split[3]);
+                }
+                else if (responseAction == Action.READ)
                 {
                     RecordReceived?.Invoke(this, new RecordReceivedArgs(topic, responseAction, split[2], int.Parse(split[3], CultureInfo.InvariantCulture), JSON.Deserialize<Dictionary<string, object>>(split[4])));
                 }
@@ -167,34 +219,52 @@ namespace DeepStreamNet
                 }
                 else if (responseAction == Action.PATCH)
                 {
-                    RecordPatched?.Invoke(this, new RecordPatchedArgs(topic, responseAction, split[2], int.Parse(split[3], CultureInfo.InvariantCulture), split[4], ConvertPrefixedData(split[5])));
+                    RecordPatched?.Invoke(this, new RecordPatchedArgs(topic, responseAction, split[2], int.Parse(split[3], CultureInfo.InvariantCulture), split[4], Utils.ConvertPrefixedData(split[5])));
+                }
+                else
+                {
+                    OnError(topic, action, "MESSAGE_PARSE_ERROR", "Unknown action " + action);
                 }
             }
+            else if (topic == Topic.RPC)
+            {
+                if (responseAction == Action.ACK)
+                {
+                    Acknoledged?.Invoke(this, new AcknoledgedWithUidArgs(topic, responseAction, split[2], split[3]));
+                }
+                //subscriber
+                else if (responseAction == Action.RESPONSE)
+                {
+                    var dataWithType = Utils.ConvertPrefixedData(split[4]);
+                    RemoteProcedureResultReceived?.Invoke(this, new RemoteProcedureMessageArgs(topic, responseAction, split[2], split[3], dataWithType.Key, dataWithType.Value));
+                }
 
+                //provider
+                else if (responseAction == Action.REQUEST)
+                {
+                    var dataWithType = Utils.ConvertPrefixedData(split[4]);
+                    PerformRemoteProcedureRequested?.Invoke(this, new RemoteProcedureMessageArgs(topic, responseAction, split[2], split[3], dataWithType.Key, dataWithType.Value));
+                }
+                else if (responseAction == Action.ERROR)
+                {
+                    OnError(topic, responseAction, split[2], split[3]);
+                }
+            }
+            else
+            {
+                OnError(topic, action, "MESSAGE_PARSE_ERROR", "Received message for unknown topic " + topic);
+            }
         }
 
-        static KeyValuePair<Type, object> ConvertPrefixedData(string dataWithTypePrefix)
+        void OnAcknoledged(Topic topic, Action action, string identifier)
         {
-            var evtData = dataWithTypePrefix.Substring(1);
+            Acknoledged?.Invoke(this, new AcknoledgedArgs(topic, action, identifier));
+        }
 
-            switch (dataWithTypePrefix[0])
-            {
-                case Constants.Types.STRING:
-                    return new KeyValuePair<Type, object>(typeof(string), evtData);
-                case Constants.Types.NUMBER:
-                    return new KeyValuePair<Type, object>(typeof(double), double.Parse(evtData, CultureInfo.InvariantCulture));
-                case Constants.Types.TRUE:
-                    return new KeyValuePair<Type, object>(typeof(bool), true);
-                case Constants.Types.FALSE:
-                    return new KeyValuePair<Type, object>(typeof(bool), false);
-                case Constants.Types.NULL:
-                    return new KeyValuePair<Type, object>(typeof(object), null);
-                case Constants.Types.OBJECT:
-                    return new KeyValuePair<Type, object>(typeof(object), JSON.DeserializeDynamic(evtData, Options.RFC1123));
-                default:
-                    return new KeyValuePair<Type, object>(typeof(string), evtData);
-            }
-        }   
+        void OnError(Topic topic, Action action, string error, string message)
+        {
+            Error?.Invoke(this, new ErrorArgs(topic, action, error, message));
+        }
 
         public void Dispose()
         {

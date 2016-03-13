@@ -11,11 +11,10 @@ namespace DeepStreamNet
         readonly Connection connection;
 
         readonly CancellationTokenSource cts = new CancellationTokenSource();
-        
+
         public IDeepStreamEvents Events { get; }
         public IDeepStreamRecords Records { get; }
-        public IDeepStreamRemoteProcedureCalls Rpcs  {  get; }
-
+        public IDeepStreamRemoteProcedureCalls Rpcs { get; }
 
         /// <summary>
         /// DeepStreamClient for connecting to deepstream.io server
@@ -47,19 +46,41 @@ namespace DeepStreamNet
         /// <returns>true if login was successful otherwise false</returns>
         public async Task<bool> LoginAsync(string userName, string password)
         {
+            var tcs = new TaskCompletionSource<bool>();
+
             string credentials = "{}";
             if (!string.IsNullOrWhiteSpace(userName) && !string.IsNullOrWhiteSpace(password))
                 credentials = JSON.SerializeDynamic(new { username = userName, password });
 
             await connection.Open();
+            connection.State = ConnectionState.AWAITING_AUTHENTICATION;
 
             connection.StartMessageLoop();
 
-            var result = await connection.SendWithAckAsync(Topic.AUTH, Action.REQUEST, Action.Empty,  credentials);
+            EventHandler<ErrorArgs> errorHandler = null;
 
-            connection.IsLoggedIn = result;
+            errorHandler = (s, e) =>
+            {
+                if (e.Topic != Topic.AUTH && e.Action != Action.ERROR)
+                    return;
 
-            return result;
+                connection.Error -= errorHandler;
+                connection.State = ConnectionState.AWAITING_AUTHENTICATION;
+
+                tcs.TrySetException(new DeepStreamException(e.Message));
+            };
+
+            connection.Error += errorHandler;
+
+            connection.State = ConnectionState.AUTHENTICATING;
+            var result = await connection.SendWithAckAsync(Topic.AUTH, Action.REQUEST, Action.Empty, credentials);
+
+            if (result)
+            {
+                connection.State = ConnectionState.OPEN;
+            }
+
+            return result;//|| await tcs.Task;
         }
 
         /// <summary>

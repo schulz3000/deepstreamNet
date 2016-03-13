@@ -2,7 +2,6 @@
 {
     class RecordPropertyWrapper : IRecordPropertyWrapper
     {
-
         readonly object initialValue;
 
         public RecordPropertyWrapper(string name, object value)
@@ -18,6 +17,7 @@
         }
 
         object currentValue;
+
         public object Value
         {
             get { return currentValue; }
