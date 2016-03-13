@@ -2,9 +2,9 @@ version: 1.0.{build}
 pull_requests:
   do_not_increment_build_number: true
 skip_tags: true
-os: Visual Studio 2015
+image: Visual Studio 2015
 before_build:
-  - cmd: nuget restore src/DeepStreamNet.sln
+- cmd: restore nuget src/DeepStreamNet.sln
 build:
   project: src/DeepStreamNet.sln
   parallel: true
