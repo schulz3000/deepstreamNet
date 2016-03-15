@@ -72,7 +72,7 @@ namespace DeepStreamNet
 
             EventHandler<AcknoledgedArgs> ackHandler = null;
             EventHandler<ErrorArgs> errorHandler = null;
-            var timer = new System.Timers.Timer(1000);
+            var timer = new AckTimer(1000);
 
             ackHandler = (s, e) =>
             {

@@ -49,6 +49,7 @@
   <ItemGroup>
     <Compile Include="Internals\AcknoledgedWithUidArgs.cs" />
     <Compile Include="Internals\AcknoledgedArgs.cs" />
+    <Compile Include="Internals\AckTimer.cs" />
     <Compile Include="Internals\Action.cs" />
     <Compile Include="Contracts\IDeepStreamEvents.cs" />
     <Compile Include="Contracts\IDeepStreamRecords.cs" />
