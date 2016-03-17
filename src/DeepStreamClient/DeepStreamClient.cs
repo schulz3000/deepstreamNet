@@ -21,12 +21,25 @@ namespace DeepStreamNet
         /// </summary>
         /// <param name="host">deepstream.io endpoint address or ip</param>
         /// <param name="port">deeptstream.io endpoint port</param>
-        public DeepStreamClient(string host, int port)
+        /// <param name="options" cref="DeepStreamOptions">set options other then default</param>
+        public DeepStreamClient(string host, int port, DeepStreamOptions options)
         {
             connection = new Connection(host, port, cts.Token);
-            Events = new DeepStreamEvents(connection);
-            Records = new DeepStreamRecords(connection);
-            Rpcs = new DeepStreamRemoteProcedureCalls(connection);
+            Events = new DeepStreamEvents(connection, options);
+            Records = new DeepStreamRecords(connection, options);
+            Rpcs = new DeepStreamRemoteProcedureCalls(connection, options);
+        }
+
+
+        /// <summary>
+        /// DeepStreamClient for connecting to deepstream.io server
+        /// </summary>
+        /// <param name="host">deepstream.io endpoint address or ip</param>
+        /// <param name="port">deeptstream.io endpoint port</param>
+        public DeepStreamClient(string host, int port)
+            : this(host, port, new DeepStreamOptions())
+        {
+
         }
 
         /// <summary>
@@ -73,7 +86,7 @@ namespace DeepStreamNet
             connection.Error += errorHandler;
 
             connection.State = ConnectionState.AUTHENTICATING;
-            var result = await connection.SendWithAckAsync(Topic.AUTH, Action.REQUEST, Action.Empty, credentials);
+            var result = await connection.SendWithAckAsync(Topic.AUTH, Action.REQUEST, Action.Empty, credentials, 1000);
 
             if (result)
             {

@@ -11,11 +11,11 @@ namespace DeepStreamNet
     {
         readonly HashSet<IDeepStreamRecordWrapper> records = new HashSet<IDeepStreamRecordWrapper>(new DeepStreamRecordComparer());
 
-        public DeepStreamRecords(Connection con)
-            : base(con)
+        public DeepStreamRecords(Connection connection, DeepStreamOptions options)
+            : base(connection, options)
         {
-            con.RecordUpdated += Con_RecordUpdated;
-            con.RecordPatched += Con_RecordPatched;
+            connection.RecordUpdated += Con_RecordUpdated;
+            connection.RecordPatched += Con_RecordPatched;
         }
 
         void Con_RecordPatched(object sender, RecordPatchedArgs e)
@@ -69,7 +69,7 @@ namespace DeepStreamNet
 
             var wrapper = record as IDeepStreamRecordWrapper;
 
-            if (await Connection.SendWithAckAsync(Topic.RECORD, Action.UNSUBSCRIBE, Action.UNSUBSCRIBE, wrapper.RecordName))
+            if (await Connection.SendWithAckAsync(Topic.RECORD, Action.UNSUBSCRIBE, Action.UNSUBSCRIBE, wrapper.RecordName, Options.SubscriptionTimeout))
             {
                 records.Remove(wrapper);
             }
@@ -91,7 +91,7 @@ namespace DeepStreamNet
 
             var wrapper = record as IDeepStreamRecordWrapper;
 
-            if (await Connection.SendWithAckAsync(Topic.RECORD, Action.DELETE, Action.DELETE, wrapper.RecordName))
+            if (await Connection.SendWithAckAsync(Topic.RECORD, Action.DELETE, Action.DELETE, wrapper.RecordName, Options.RecordDeleteTimeout))
             {
                 records.Remove(wrapper);
             }
@@ -117,7 +117,7 @@ namespace DeepStreamNet
 
             Connection.RecordReceived += recHandler;
 
-            isAck = await Connection.SendWithAckAsync(topic, Action.CREATEORREAD, Action.SUBSCRIBE, identifier);
+            isAck = await Connection.SendWithAckAsync(topic, Action.CREATEORREAD, Action.SUBSCRIBE, identifier, Options.RecordReadAckTimeout);
 
             return await tcs.Task;
         }

@@ -10,8 +10,8 @@ namespace DeepStreamNet
     {
         readonly Dictionary<string, Delegate> remoteProcedures = new Dictionary<string, Delegate>();
 
-        public DeepStreamRemoteProcedureCalls(Connection con)
-            : base(con)
+        public DeepStreamRemoteProcedureCalls(Connection connection, DeepStreamOptions options)
+            : base(connection, options)
         {
             Connection.PerformRemoteProcedureRequested += Connection_PerformRemoteProcedureRequested;
         }
@@ -61,13 +61,13 @@ namespace DeepStreamNet
             if (remoteProcedures.ContainsKey(procedureName))
                 throw new DeepStreamException("Procedure with this name still registered");
 
-            await Connection.SendWithAckAsync(Topic.RPC, Action.SUBSCRIBE, Action.SUBSCRIBE, procedureName);
+            await Connection.SendWithAckAsync(Topic.RPC, Action.SUBSCRIBE, Action.SUBSCRIBE, procedureName, Options.RpcAckTimeout);
             remoteProcedures.Add(procedureName, procedure);
 
             return new DisposableAction(async () =>
             {
                 remoteProcedures.Remove(procedureName);
-                await Connection.SendWithAckAsync(Topic.RPC, Action.UNSUBSCRIBE, Action.UNSUBSCRIBE, procedureName);
+                await Connection.SendWithAckAsync(Topic.RPC, Action.UNSUBSCRIBE, Action.UNSUBSCRIBE, procedureName, Options.RpcAckTimeout);
             });
         }
 
@@ -94,18 +94,18 @@ namespace DeepStreamNet
 
             Connection.RemoteProcedureResultReceived += ackHandler;
 
-            await SendWithAckAsync(Topic.RPC, Action.REQUEST, Action.ACK, procedureName, uid, parameter);
+            await SendWithAckAsync(Topic.RPC, Action.REQUEST, Action.ACK, procedureName, uid, parameter, Options.RpcAckTimeout);
 
             return await tcs.Task;
         }
 
-        async Task<bool> SendWithAckAsync<T>(Topic topic, Action action, Action expectedReceivedAction, string identifier, string uid, T parameter)
+        async Task<bool> SendWithAckAsync<T>(Topic topic, Action action, Action expectedReceivedAction, string identifier, string uid, T parameter, int ackTimeout)
         {
             var tcs = new TaskCompletionSource<bool>();
 
             EventHandler<AcknoledgedArgs> ackHandler = null;
             EventHandler<ErrorArgs> errorHandler = null;
-            var timer = new System.Timers.Timer(1000);
+            var timer = new AckTimer(ackTimeout);
 
             ackHandler = (s, e) =>
             {

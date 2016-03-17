@@ -10,8 +10,8 @@ namespace DeepStreamNet
         readonly Dictionary<string, int> eventsDict = new Dictionary<string, int>();
         readonly Dictionary<string, int> listenerDict = new Dictionary<string, int>();
 
-        public DeepStreamEvents(Connection con)
-            : base(con)
+        public DeepStreamEvents(Connection connection, DeepStreamOptions options)
+            : base(connection, options)
         {
         }
 
@@ -79,7 +79,7 @@ namespace DeepStreamNet
 
             if (!listenerDict.ContainsKey(pattern))
             {
-                if (await Connection.SendWithAckAsync(Topic.EVENT, Action.LISTEN, Action.LISTEN, pattern))
+                if (await Connection.SendWithAckAsync(Topic.EVENT, Action.LISTEN, Action.LISTEN, pattern, Options.SubscriptionTimeout))
                 {
                     listenerDict.Add(pattern, 0);
                 }
@@ -89,7 +89,7 @@ namespace DeepStreamNet
 
             return new DisposableAction(async () =>
             {
-                if (await Connection.SendWithAckAsync(Topic.EVENT, Action.UNLISTEN, Action.UNLISTEN, pattern))
+                if (await Connection.SendWithAckAsync(Topic.EVENT, Action.UNLISTEN, Action.UNLISTEN, pattern, Options.SubscriptionTimeout))
                 {
                     Connection.EventListenerChanged -= handler;
                     listenerDict.Remove(pattern);
@@ -102,7 +102,7 @@ namespace DeepStreamNet
             if (string.IsNullOrWhiteSpace(eventName))
                 throw new ArgumentNullException(nameof(eventName));
 
-            var result = await Connection.SendWithAckAsync(Topic.EVENT, Action.SUBSCRIBE, Action.SUBSCRIBE, eventName).ConfigureAwait(false);
+            var result = await Connection.SendWithAckAsync(Topic.EVENT, Action.SUBSCRIBE, Action.SUBSCRIBE, eventName, Options.SubscriptionTimeout).ConfigureAwait(false);
 
             if (!result)
                 throw new InvalidOperationException("ACK_TIMEOUT");
@@ -113,7 +113,7 @@ namespace DeepStreamNet
             if (string.IsNullOrWhiteSpace(eventName))
                 throw new ArgumentNullException(nameof(eventName));
 
-            var result = await Connection.SendWithAckAsync(Topic.EVENT, Action.UNSUBSCRIBE, Action.UNSUBSCRIBE, eventName);
+            var result = await Connection.SendWithAckAsync(Topic.EVENT, Action.UNSUBSCRIBE, Action.UNSUBSCRIBE, eventName, Options.SubscriptionTimeout);
 
             if (!result)
                 throw new InvalidOperationException("ACK_TIMEOUT");

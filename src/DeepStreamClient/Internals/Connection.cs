@@ -66,13 +66,13 @@ namespace DeepStreamNet
             await stream.FlushAsync();
         }
 
-        public async Task<bool> SendWithAckAsync(Topic topic, Action action, Action expectedReceivedAction, string identifier)
+        public async Task<bool> SendWithAckAsync(Topic topic, Action action, Action expectedReceivedAction, string identifier, int ackTimeout)
         {
             var tcs = new TaskCompletionSource<bool>();
 
             EventHandler<AcknoledgedArgs> ackHandler = null;
             EventHandler<ErrorArgs> errorHandler = null;
-            var timer = new AckTimer(1000);
+            var timer = new AckTimer(ackTimeout);
 
             ackHandler = (s, e) =>
             {
@@ -89,7 +89,8 @@ namespace DeepStreamNet
                 }
             };
 
-            errorHandler = (s, e) => {
+            errorHandler = (s, e) =>
+            {
                 if (e.Topic == topic && e.Action == Action.ERROR)
                     tcs.TrySetException(new DeepStreamException(e.Message));
             };

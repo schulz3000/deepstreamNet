@@ -47,6 +47,7 @@
     <Reference Include="System.Runtime.Serialization" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DeepStreamOptions.cs" />
     <Compile Include="Internals\AcknoledgedWithUidArgs.cs" />
     <Compile Include="Internals\AcknoledgedArgs.cs" />
     <Compile Include="Internals\AckTimer.cs" />

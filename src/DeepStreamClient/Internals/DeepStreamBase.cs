@@ -4,9 +4,12 @@
     {
         protected Connection Connection { get; }
 
-        protected DeepStreamBase(Connection con)
+        protected DeepStreamOptions Options { get; }
+
+        protected DeepStreamBase(Connection connection, DeepStreamOptions options)
         {
-            Connection = con;
+            Connection = connection;
+            Options = options;
         }
 
         protected void ThrowIfConnectionNotOpened()
