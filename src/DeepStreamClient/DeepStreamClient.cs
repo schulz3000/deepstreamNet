@@ -6,14 +6,26 @@ using Jil;
 
 namespace DeepStreamNet
 {
+    /// <summary>
+    /// DeepStreamClient
+    /// </summary>
     public class DeepStreamClient : IDisposable
     {
         readonly Connection connection;
 
         readonly CancellationTokenSource cts = new CancellationTokenSource();
 
+        /// <summary>
+        /// DeepStreamEvents
+        /// </summary>
         public IDeepStreamEvents Events { get; }
+        /// <summary>
+        /// DeepStreamRecords
+        /// </summary>
         public IDeepStreamRecords Records { get; }
+        /// <summary>
+        /// DeepStreamRemoteProcedures
+        /// </summary>
         public IDeepStreamRemoteProcedureCalls Rpcs { get; }
 
         /// <summary>
