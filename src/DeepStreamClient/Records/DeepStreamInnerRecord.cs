@@ -1,11 +1,15 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Dynamic;
 using System.Linq;
+using DeepStreamNet.Contracts;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace DeepStreamNet
 {
-    class DeepStreamInnerRecord : DynamicObject, INotifyPropertyChanging, INotifyPropertyChanged
+    class DeepStreamInnerRecord : DynamicObject, IDeepStreamRecord, INotifyPropertyChanging, INotifyPropertyChanged
     {
         readonly HashSet<IRecordPropertyWrapper> properties = new HashSet<IRecordPropertyWrapper>();
 
@@ -18,15 +22,23 @@ namespace DeepStreamNet
             get;
         }
 
+        public string Path
+        {
+            get;
+        }
+
         public object this[string name]
         {
             get { return GetPropertyValue(name); }
             set { SetPropertyValue(name, value); }
         }
 
-        public DeepStreamInnerRecord(string name, IDictionary<string, object> obj)
+        public DeepStreamInnerRecord(string name, string path, IDictionary<string, object> obj)
         {
             RecordName = name;
+
+            Path = string.IsNullOrWhiteSpace(path) ? name : path + "." + name;
+
             FillProperties(obj);
         }
 
@@ -34,9 +46,38 @@ namespace DeepStreamNet
         {
             foreach (var item in obj)
             {
-                var insert = item.Value is IDictionary<string, object> ? new DeepStreamInnerRecord(item.Key, item.Value as IDictionary<string, object>) : item.Value;
+                if (item.Value is JArray)
+                {
+                    var arr = item.Value as JArray;
+                    var list = new DeepStreamRecordCollection<object>();
 
-                properties.Add(new RecordPropertyWrapper(item.Key, insert));
+                    for (int i = 0; i < arr.Count; i++)
+                    {
+                        if (arr[i] is JObject)
+                        {
+                            var innerItems = arr[i].ToObject<Dictionary<string, object>>();
+
+                            list.Add(new DeepStreamInnerRecord(item.Key + "." + i, Path, innerItems));
+                        }
+                        else
+                        {
+                            list.Add(arr[i]);
+                        }
+                    }
+
+                    properties.Add(new RecordPropertyWrapper(item.Key, list));
+
+                }
+                else {
+                    object insert = item.Value;
+
+                    if (item.Value is IDictionary<string, object>)
+                        insert = new DeepStreamInnerRecord(item.Key, Path, item.Value as IDictionary<string, object>);
+                    else if (item.Value is JObject)
+                        insert = new DeepStreamInnerRecord(item.Key, Path, (item.Value as JObject).ToObject<Dictionary<string, object>>());
+
+                    properties.Add(new RecordPropertyWrapper(item.Key, insert));
+                }
             }
         }
 
@@ -44,20 +85,48 @@ namespace DeepStreamNet
         {
             foreach (var item in obj)
             {
-                if (!SetPropertyValue(item.Key, item.Value))
-                    properties.Add(new RecordPropertyWrapper(item.Key, item.Value));
-            }
-        }
+                if (this[item.Key] != null)
+                {
+                    if (this[item.Key] is DeepStreamInnerRecord)
+                        (this[item.Key] as DeepStreamInnerRecord).Merge(item.Value as Dictionary<string, object>);
+                    else
+                        this[item.Key] = item.Value;
+                }
+                else {
 
-        protected void UpdatePartial(string updatePath, object value)
-        {
-            var split = updatePath.Split('.');
-            if (split.Length == 1)
-                SetPropertyValue(split[0], value);
-            else if (split.Length > 1)
-            {
-                var property = GetPropertyValue(split[0]) as DeepStreamInnerRecord;
-                property.UpdatePartial(string.Join(".", split, 1, split.Length - 2), value);
+                    if (item.Value is JArray)
+                    {
+                        var arr = item.Value as JArray;
+                        var list = new DeepStreamRecordCollection<object>();
+
+                        for (int i = 0; i < arr.Count; i++)
+                        {
+                            if (arr[i] is JObject)
+                            {
+                                var innerItems = arr[i].ToObject<Dictionary<string, object>>();
+
+                                list.Add(new DeepStreamInnerRecord(item.Key + "." + i, Path, innerItems));
+                            }
+                            else
+                            {
+                                list.Add(arr[i]);
+                            }
+                        }
+
+                        properties.Add(new RecordPropertyWrapper(item.Key, list));
+
+                    }
+                    else {
+                        object insert = item.Value;
+
+                        if (item.Value is IDictionary<string, object>)
+                            insert = new DeepStreamInnerRecord(item.Key, Path, item.Value as IDictionary<string, object>);
+                        else if (item.Value is JObject)
+                            insert = new DeepStreamInnerRecord(item.Key, Path, (item.Value as JObject).ToObject<Dictionary<string, object>>());
+
+                        properties.Add(new RecordPropertyWrapper(item.Key, insert));
+                    }
+                }
             }
         }
 
@@ -102,6 +171,11 @@ namespace DeepStreamNet
         public override IEnumerable<string> GetDynamicMemberNames()
         {
             return properties.Select(s => s.Name);
+        }
+
+        public override string ToString()
+        {
+            return JsonConvert.SerializeObject(this);
         }
     }
 }

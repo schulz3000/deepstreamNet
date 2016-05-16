@@ -16,7 +16,7 @@ namespace DeepStreamNet.Contracts
         /// <param name="procedureName"></param>
         /// <param name="procedure"></param>
         /// <returns></returns>
-        Task<IDisposable> RegisterProvider<TInput, TResult>(string procedureName, Func<TInput, TResult> procedure);
+        Task<IAsyncDisposable> RegisterProvider<TInput, TResult>(string procedureName, Func<TInput, TResult> procedure);
 
         /// <summary>
         /// 

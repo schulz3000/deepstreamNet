@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/10/nuspec.xsd">
+    <metadata>
+        <id>DeepStreamNet</id>
+        <version>0.0.0.1-alpha</version>
+        <title>dotnet Client for deepstream.io</title>
+        <authors>Xaver Schulz</authors>
+        <owners>Xaver Schulz</owners>
+        <licenseUrl>https://github.com/schulz3000/deepstreamNet/blob/develop/LICENSE</licenseUrl>
+        <projectUrl>https://github.com/schulz3000/deepstreamNet</projectUrl>
+        <requireLicenseAcceptance>false</requireLicenseAcceptance>
+        <description>dotnet Client for deepstream.io</description>
+        <copyright>Xaver Schulz</copyright>
+        <language>en-US</language>
+        <tags>deepstream.io client</tags>
+    </metadata>
+    <files />
+</package>

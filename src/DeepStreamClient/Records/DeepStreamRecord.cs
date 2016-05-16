@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using DeepStreamNet.Records;
 
 namespace DeepStreamNet
 {
@@ -10,24 +11,19 @@ namespace DeepStreamNet
             private set;
         }
 
+        public ChangeListener Listener { get; private set; }
+
         public DeepStreamRecord(string name, int version, IDictionary<string, object> obj)
-            : base(name, obj)
+            : base(name,null, obj)
         {
             RecordVersion = version;
+
+            Listener = ChangeListener.Create(this);            
         }
 
-        public void UpdatePartial(int newVersion, string updatePath, object value)
+        public void IncrementVersion()
         {
-            RecordVersion = newVersion;
-
-            UpdatePartial(updatePath, value);
-        }
-
-        public void Merge(int newVersion, IDictionary<string, object> obj)
-        {
-            RecordVersion = newVersion;
-
-            Merge(obj);
-        }
+            RecordVersion++;
+        }            
     }
 }

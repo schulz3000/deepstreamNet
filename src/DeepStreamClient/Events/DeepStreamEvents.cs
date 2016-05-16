@@ -28,7 +28,7 @@ namespace DeepStreamNet
             return Connection.SendAsync(command);
         }
 
-        public async Task<IDisposable> Subscribe(string eventName, Action<object> data)
+        public async Task<IAsyncDisposable> Subscribe(string eventName, Action<object> data)
         {
             ThrowIfConnectionNotOpened();
 
@@ -50,7 +50,7 @@ namespace DeepStreamNet
                 eventsDict[eventName]++;
             }
 
-            return new DisposableAction(async () =>
+            return new AsyncDisposableAction(async () =>
             {
                 eventsDict[eventName]--;
                 Connection.EventReceived -= handler;
@@ -61,7 +61,7 @@ namespace DeepStreamNet
             });
         }
 
-        public async Task<IDisposable> Listen(string pattern)
+        public async Task<IAsyncDisposable> Listen(string pattern)
         {
             if (string.IsNullOrWhiteSpace(pattern))
                 throw new ArgumentNullException(nameof(pattern));
@@ -87,7 +87,7 @@ namespace DeepStreamNet
 
             Connection.EventListenerChanged += handler;
 
-            return new DisposableAction(async () =>
+            return new AsyncDisposableAction(async () =>
             {
                 if (await Connection.SendWithAckAsync(Topic.EVENT, Action.UNLISTEN, Action.UNLISTEN, pattern, Options.SubscriptionTimeout))
                 {
@@ -105,7 +105,7 @@ namespace DeepStreamNet
             var result = await Connection.SendWithAckAsync(Topic.EVENT, Action.SUBSCRIBE, Action.SUBSCRIBE, eventName, Options.SubscriptionTimeout).ConfigureAwait(false);
 
             if (!result)
-                throw new InvalidOperationException("ACK_TIMEOUT");
+                throw new DeepStreamException(Constants.Errors.ACK_TIMEOUT);
         }
 
         async Task UnSubscribe(string eventName)
@@ -116,7 +116,7 @@ namespace DeepStreamNet
             var result = await Connection.SendWithAckAsync(Topic.EVENT, Action.UNSUBSCRIBE, Action.UNSUBSCRIBE, eventName, Options.SubscriptionTimeout);
 
             if (!result)
-                throw new InvalidOperationException("ACK_TIMEOUT");
+                throw new DeepStreamException(Constants.Errors.ACK_TIMEOUT);
         }
     }
 }

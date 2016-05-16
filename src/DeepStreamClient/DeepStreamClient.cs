@@ -2,7 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using DeepStreamNet.Contracts;
-using Jil;
+using Newtonsoft.Json;
 
 namespace DeepStreamNet
 {
@@ -75,7 +75,7 @@ namespace DeepStreamNet
 
             string credentials = "{}";
             if (!string.IsNullOrWhiteSpace(userName) && !string.IsNullOrWhiteSpace(password))
-                credentials = JSON.SerializeDynamic(new { username = userName, password });
+                credentials = JsonConvert.SerializeObject(new { username = userName, password });
 
             await connection.Open();
             connection.State = ConnectionState.AWAITING_AUTHENTICATION;
@@ -92,7 +92,7 @@ namespace DeepStreamNet
                 connection.Error -= errorHandler;
                 connection.State = ConnectionState.AWAITING_AUTHENTICATION;
 
-                tcs.TrySetException(new DeepStreamException(e.Message));
+                tcs.TrySetException(new DeepStreamException(e.Error,e.Message));
             };
 
             connection.Error += errorHandler;
@@ -105,7 +105,7 @@ namespace DeepStreamNet
                 connection.State = ConnectionState.OPEN;
             }
 
-            return result;//|| await tcs.Task;
+            return result;
         }
 
         /// <summary>

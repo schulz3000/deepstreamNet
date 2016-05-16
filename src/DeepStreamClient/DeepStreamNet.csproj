@@ -33,12 +33,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Jil, Version=2.13.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Jil.2.13.0\lib\net45\Jil.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Sigil, Version=4.5.1.0, Culture=neutral, PublicKeyToken=2d06c3494341c8ab, processorArchitecture=MSIL">
-      <HintPath>..\packages\Sigil.4.5.1\lib\net45\Sigil.dll</HintPath>
+    <Reference Include="Newtonsoft.Json, Version=8.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.8.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
@@ -47,6 +43,7 @@
     <Reference Include="System.Runtime.Serialization" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Contracts\IAsyncDisposable.cs" />
     <Compile Include="DeepStreamOptions.cs" />
     <Compile Include="Internals\AcknoledgedWithUidArgs.cs" />
     <Compile Include="Internals\AcknoledgedArgs.cs" />
@@ -55,6 +52,7 @@
     <Compile Include="Contracts\IDeepStreamEvents.cs" />
     <Compile Include="Contracts\IDeepStreamRecords.cs" />
     <Compile Include="Contracts\IDeepStreamRemoteProcedureCalls.cs" />
+    <Compile Include="Internals\AsyncDisposableAction.cs" />
     <Compile Include="Internals\ConnectionState.cs" />
     <Compile Include="Internals\DeepStreamBase.cs" />
     <Compile Include="Internals\DeepStreamBaseEventArgs.cs" />
@@ -65,6 +63,11 @@
     <Compile Include="DeepStreamException.cs" />
     <Compile Include="Events\EventListenerChangedArgs.cs" />
     <Compile Include="Internals\ErrorArgs.cs" />
+    <Compile Include="Records\ChangeListener.cs" />
+    <Compile Include="Records\ChildChangeListener.cs" />
+    <Compile Include="Records\CollectionChangeListener.cs" />
+    <Compile Include="Records\DeepStreamList.cs" />
+    <Compile Include="Records\DeepStreamRecordCollection.cs" />
     <Compile Include="RemoteProcedureCalls\RemoteProcedureMessageArgs.cs" />
     <Compile Include="Records\RecordBaseEventArgs.cs" />
     <Compile Include="Records\RecordPatchedArgs.cs" />

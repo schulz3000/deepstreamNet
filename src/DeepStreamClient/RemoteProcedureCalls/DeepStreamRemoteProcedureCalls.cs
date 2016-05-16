@@ -50,7 +50,7 @@ namespace DeepStreamNet
             }
         }
 
-        public async Task<IDisposable> RegisterProvider<TInput, TResult>(string procedureName, Func<TInput, TResult> procedure)
+        public async Task<IAsyncDisposable> RegisterProvider<TInput, TResult>(string procedureName, Func<TInput, TResult> procedure)
         {
             if (string.IsNullOrWhiteSpace(procedureName))
                 throw new ArgumentNullException(nameof(procedureName));
@@ -64,7 +64,7 @@ namespace DeepStreamNet
             await Connection.SendWithAckAsync(Topic.RPC, Action.SUBSCRIBE, Action.SUBSCRIBE, procedureName, Options.RpcAckTimeout);
             remoteProcedures.Add(procedureName, procedure);
 
-            return new DisposableAction(async () =>
+            return new AsyncDisposableAction(async () =>
             {
                 remoteProcedures.Remove(procedureName);
                 await Connection.SendWithAckAsync(Topic.RPC, Action.UNSUBSCRIBE, Action.UNSUBSCRIBE, procedureName, Options.RpcAckTimeout);
@@ -139,7 +139,7 @@ namespace DeepStreamNet
                 timer.Dispose();
                 Connection.Acknoledged -= ackHandler;
                 Connection.Error -= errorHandler;
-                tcs.TrySetException(new DeepStreamException("ACK Timeout"));
+                tcs.TrySetException(new DeepStreamException(Constants.Errors.ACK_TIMEOUT));
             };
 
             string command = Utils.BuildCommand(topic, action, identifier, uid, Utils.ConvertAndPrefixData(parameter));

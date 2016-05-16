@@ -5,7 +5,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Jil;
+using Newtonsoft.Json;
 
 namespace DeepStreamNet
 {
@@ -41,6 +41,9 @@ namespace DeepStreamNet
         {
             if (string.IsNullOrWhiteSpace(host))
                 throw new ArgumentNullException(nameof(port));
+
+            if (string.IsNullOrWhiteSpace(host))
+                throw new ArgumentNullException(nameof(host));
 
             Host = host;
             Port = port;
@@ -92,7 +95,7 @@ namespace DeepStreamNet
             errorHandler = (s, e) =>
             {
                 if (e.Topic == topic && e.Action == Action.ERROR)
-                    tcs.TrySetException(new DeepStreamException(e.Message));
+                    tcs.TrySetException(new DeepStreamException(e.Error, e.Message));
             };
 
             timer.Elapsed += (s, e) =>
@@ -160,11 +163,7 @@ namespace DeepStreamNet
             var responseAction = new Action(split[1]);
             var action = new Action(split.Length == 2 ? null : split[2]);
             var topic = new Topic(split[0]);
-
-            //if (responseAction == Action.ACK)
-            //{
-            //    Acknoledged?.Invoke(this, new AcknoledgedArgs(topic, action, split.Length > 2 ? split[3] : null));
-            //}
+                        
             if (topic == Topic.AUTH)
             {
                 if (responseAction == Action.ACK)
@@ -212,11 +211,12 @@ namespace DeepStreamNet
                 }
                 else if (responseAction == Action.READ)
                 {
-                    RecordReceived?.Invoke(this, new RecordReceivedArgs(topic, responseAction, split[2], int.Parse(split[3], CultureInfo.InvariantCulture), JSON.Deserialize<Dictionary<string, object>>(split[4])));
+                    //RecordReceived?.Invoke(this, new RecordReceivedArgs(topic, responseAction, split[2], int.Parse(split[3], CultureInfo.InvariantCulture), JSON.Deserialize<Dictionary<string, object>>(split[4])));
+                    RecordReceived?.Invoke(this, new RecordReceivedArgs(topic, responseAction, split[2], int.Parse(split[3], CultureInfo.InvariantCulture), JsonConvert.DeserializeObject<Dictionary<string, object>>(split[4])));
                 }
                 else if (responseAction == Action.UPDATE)
                 {
-                    RecordUpdated?.Invoke(this, new RecordUpdatedArgs(topic, responseAction, split[2], int.Parse(split[3], CultureInfo.InvariantCulture), JSON.Deserialize<Dictionary<string, object>>(split[4])));
+                    RecordUpdated?.Invoke(this, new RecordUpdatedArgs(topic, responseAction, split[2], int.Parse(split[3], CultureInfo.InvariantCulture), JsonConvert.DeserializeObject<Dictionary<string, object>>(split[4])));
                 }
                 else if (responseAction == Action.PATCH)
                 {

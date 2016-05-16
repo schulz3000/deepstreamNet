@@ -11,6 +11,8 @@ namespace DeepStreamNet
         public static Action UPDATE { get { return new Action("U"); } }
         public static Action PATCH { get { return new Action("P"); } }
         public static Action DELETE { get { return new Action("D"); } }
+        public static Action HAS { get { return new Action("H"); } }
+        public static Action SNAPSHOT { get { return new Action("SN"); } }
         public static Action SUBSCRIBE { get { return new Action("S"); } }
         public static Action UNSUBSCRIBE { get { return new Action("US"); } }
         public static Action INVOKE { get { return new Action("I"); } }

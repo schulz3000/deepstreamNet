@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
-using Jil;
+using Newtonsoft.Json;
 
 namespace DeepStreamNet
 {
@@ -53,7 +53,7 @@ namespace DeepStreamNet
             {
                 try
                 {
-                    return Constants.Types.OBJECT + JSON.Serialize(data, Options.ISO8601);
+                    return Constants.Types.OBJECT + JsonConvert.SerializeObject(data);
                 }
                 catch
                 {
@@ -84,11 +84,57 @@ namespace DeepStreamNet
                     return new KeyValuePair<Type, object>(typeof(object), null);
 
                 case Constants.Types.OBJECT:
-                    return new KeyValuePair<Type, object>(typeof(object), JSON.DeserializeDynamic(evtData, Options.RFC1123));
+                     return new KeyValuePair<Type, object>(typeof(object), JsonConvert.DeserializeObject(evtData));
+                    //return new KeyValuePair<Type, object>(typeof(object),Newtonsoft.Json.JsonConvert.DeserializeObject(evtData));
 
                 default:
                     return new KeyValuePair<Type, object>(typeof(string), evtData);
             }
+        }
+
+        public static object GetValueByPath(string path, DeepStreamInnerRecord record)
+        {
+            if (string.IsNullOrWhiteSpace(path))
+                throw new ArgumentNullException(nameof(path));
+
+            if (record == null)
+                throw new ArgumentNullException(nameof(record));
+
+
+            var spath = path.Split(Constants.PathSplitter, StringSplitOptions.RemoveEmptyEntries);
+
+            if (spath.Length == 1)
+                return record[path];
+            else
+            {
+                
+                var max = spath.Length - 1;
+                var index = -1;
+                for (int i = 0; i <= max; i++)
+                {
+                    if (i == max)
+                    {
+                       return record[spath[i]];
+                    }
+                    else if (int.TryParse(spath[i + 1], out index))
+                    {
+                        var item = (record[spath[i]] as DeepStreamRecordCollection<object>)[index];                                                
+                        i++;
+
+                        if (i == max)
+                            return item;
+                        else 
+                            record = item as DeepStreamInnerRecord;
+
+                    }
+                    else
+                    {
+                        record = record[spath[i]] as DeepStreamInnerRecord;
+                    }
+                }
+            }
+
+            return null;
         }
 
         public static string CreateUid()

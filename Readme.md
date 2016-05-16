@@ -39,7 +39,7 @@ await client.PublishAsync("test", 42);
 await client.PublishAsync("test", new {Property1="Hello", Property2=42});
 
 // Unsubscribe from Event 'test'
-eventSubscription.Dispose();
+await eventSubscription.DisposeAsync();
 ```
 
 ###Records
@@ -96,5 +96,5 @@ var proc = await client.Rpcs.Register<string, string>("toUpperCase", ToUpperCase
 var proc = await client.Rpcs.Register<string, string>("toUpperCase", (input)=>input.ToUpper());
 
 //Unregister RemoteProcedure
-proc.Dispose(); 
+await proc.DisposeAsync(); 
 ```

@@ -1,15 +1,19 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using DeepStreamNet.Contracts;
-using Jil;
+using DeepStreamNet.Records;
+using Newtonsoft.Json;
 
 namespace DeepStreamNet
 {
     class DeepStreamRecords : DeepStreamBase, IDeepStreamRecords
     {
         readonly HashSet<IDeepStreamRecordWrapper> records = new HashSet<IDeepStreamRecordWrapper>(new DeepStreamRecordComparer());
+        readonly HashSet<DeepStreamList> lists = new HashSet<DeepStreamList>();
 
         public DeepStreamRecords(Connection connection, DeepStreamOptions options)
             : base(connection, options)
@@ -17,17 +21,46 @@ namespace DeepStreamNet
             connection.RecordUpdated += Con_RecordUpdated;
             connection.RecordPatched += Con_RecordPatched;
         }
-
+        
         void Con_RecordPatched(object sender, RecordPatchedArgs e)
         {
             var record = records.FirstOrDefault(f => f.RecordName == e.Identifier);
             if (record == null)
                 return;
 
-            foreach (var item in e.Data as Dictionary<string, object>)
+            var listener = (record as DeepStreamRecord).Listener;
+            listener.PropertyChanged -= Listener_PropertyChanged;
+
+            var data = (KeyValuePair<Type, object>)e.Data;
+
+          var path = e.Property.Split(Constants.PathSplitter, StringSplitOptions.RemoveEmptyEntries);
+
+            if(path.Length==1)
+            record[e.Property] = data.Value;
+            else
             {
-                record[item.Key] = item.Value;
+                var item = record as IDeepStreamRecord;
+                var max = path.Length - 1;
+                var index = -1;
+                for(int i=0;i<= max;i++)
+                {
+                    if (i == max)
+                    {
+                        item[path[i]] = data.Value;
+                    }
+                    else if(int.TryParse(path[i+1],out index))
+                    {
+                        item = (item[path[i]] as object[])[index] as IDeepStreamRecord;
+                        i++;
+                    }                    
+                    else
+                    {
+                        item = item[path[i]] as IDeepStreamRecord;                       
+                    }                   
+                }
             }
+
+            listener.PropertyChanged += Listener_PropertyChanged;
         }
 
         void Con_RecordUpdated(object sender, RecordUpdatedArgs e)
@@ -36,7 +69,12 @@ namespace DeepStreamNet
             if (record == null)
                 return;
 
-            //TODO implement patch
+            var listener = (record as DeepStreamRecord).Listener;
+            listener.PropertyChanged -= Listener_PropertyChanged;
+
+            //TODO implement full update
+
+            listener.PropertyChanged += Listener_PropertyChanged;
         }
 
         public async Task<IDeepStreamRecord> GetRecordAsync(string name)
@@ -48,7 +86,40 @@ namespace DeepStreamNet
             var result = await InnerGetRecord(name);
 
             records.Add(result);
+
+            result.Listener.PropertyChanged += Listener_PropertyChanged;
+
             return result;
+        }
+
+        public Task<DeepStreamList> GetListAsync(string name)
+        {
+            var list = lists.FirstOrDefault(f=>f.ListName == name);
+            if (list != null)
+                return Task.FromResult(list);
+
+            list = new DeepStreamList(name);
+
+            lists.Add(list);
+
+            return Task.FromResult(list);
+
+        }
+
+        async void Listener_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            var record = (sender as ChildChangeListener)?.Value as DeepStreamRecord;
+
+            if (record == null)
+                return;
+            
+            var changedData = Utils.GetValueByPath(e.PropertyName, record);
+
+            record.IncrementVersion();
+
+            var command = Utils.BuildCommand(Topic.RECORD, Action.PATCH, record.RecordName, record.RecordVersion, e.PropertyName, Utils.ConvertAndPrefixData(changedData));
+
+            await Connection.SendAsync(command);
         }
 
         public Task SaveAsync(IDeepStreamRecord record)
@@ -56,9 +127,11 @@ namespace DeepStreamNet
             if (!IsRecordTracked(record))
                 throw new DeepStreamException("Record not tracked");
 
-            var wrapper = record as IDeepStreamRecordWrapper;
+            var wrapper = record as DeepStreamRecord;
 
-            var command = Utils.BuildCommand(Topic.RECORD, Action.UPDATE, wrapper.RecordName, (wrapper.RecordVersion + 1), JSON.SerializeDynamic(record));
+            wrapper.IncrementVersion();
+
+            var command = Utils.BuildCommand(Topic.RECORD, Action.UPDATE, wrapper.RecordName, wrapper.RecordVersion, JsonConvert.SerializeObject(record));
             return Connection.SendAsync(command);
         }
 
@@ -73,16 +146,7 @@ namespace DeepStreamNet
             {
                 records.Remove(wrapper);
             }
-        }
-
-        public Task Patch(IDeepStreamRecord record)
-        {
-            throw new NotImplementedException();
-            //var wrapper = record as IDeepStreamRecordWrapper;
-
-            //var command = Utils.BuildCommand(Topic.RECORD,Action.PATCH, wrapper.RecordName, (wrapper.RecordVersion + 1), "firstname", "SMax");
-            //return Connection.SendAsync(command);
-        }
+        }              
 
         public async Task DeleteAsync(IDeepStreamRecord record)
         {
