@@ -1,11 +1,11 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 
 namespace DeepStreamNet
 {
@@ -55,7 +55,7 @@ namespace DeepStreamNet
             client.NoDelay = true;
         }
 
-        public Task Open()
+        public Task OpenAsync()
         {
             return client.ConnectAsync(Host, Port);
         }
@@ -65,8 +65,8 @@ namespace DeepStreamNet
             var stream = client.GetStream();
 
             var bytes = Encoding.ASCII.GetBytes(command);
-            await stream.WriteAsync(bytes, 0, bytes.Length, cts);
-            await stream.FlushAsync();
+            await stream.WriteAsync(bytes, 0, bytes.Length, cts).ConfigureAwait(false);
+            await stream.FlushAsync().ConfigureAwait(false);
         }
 
         public async Task<bool> SendWithAckAsync(Topic topic, Action action, Action expectedReceivedAction, string identifier, int ackTimeout)
@@ -103,7 +103,7 @@ namespace DeepStreamNet
                 Acknoledged -= ackHandler;
                 Error -= errorHandler;
                 timer.Dispose();
-                tcs.TrySetException(new DeepStreamException("ACK Timeout"));
+                tcs.TrySetException(new DeepStreamException(Constants.Errors.ACK_TIMEOUT));
             };
 
             string command = Utils.BuildCommand(topic, action, identifier);
@@ -113,9 +113,9 @@ namespace DeepStreamNet
 
             timer.Start();
 
-            await SendAsync(command);
+            await SendAsync(command).ConfigureAwait(false);
 
-            return await tcs.Task;
+            return await tcs.Task.ConfigureAwait(false);
         }
 
         public void StartMessageLoop()
@@ -134,7 +134,7 @@ namespace DeepStreamNet
 
             while (!cts.IsCancellationRequested && client.Connected)
             {
-                while ((result = await stream.ReadAsync(buffer, 0, buffer.Length, cts)) != 0)
+                while ((result = await stream.ReadAsync(buffer, 0, buffer.Length, cts).ConfigureAwait(false)) != 0)
                 {
                     var enc = sb + Encoding.UTF8.GetString(buffer, 0, result);
 
@@ -144,7 +144,6 @@ namespace DeepStreamNet
                     {
                         Notify(groups[i]);
                     }
-
                     sb = groups[groups.Length - 1];
                 }
             }
@@ -156,14 +155,14 @@ namespace DeepStreamNet
 
             if (split.Length < 2)
             {
-                OnError(Topic.Empty, Action.Empty, "MESSAGE_PARSE_ERROR", "Insufficiant message parts");
+                OnError(Topic.Empty, Action.Empty, Constants.Errors.MESSAGE_PARSE_ERROR, "Insufficiant message parts");
                 return;
             }
 
             var responseAction = new Action(split[1]);
             var action = new Action(split.Length == 2 ? null : split[2]);
             var topic = new Topic(split[0]);
-                        
+
             if (topic == Topic.AUTH)
             {
                 if (responseAction == Action.ACK)
@@ -176,7 +175,7 @@ namespace DeepStreamNet
                 }
                 else
                 {
-                    OnError(topic, action, "MESSAGE_PARSE_ERROR", "Unknown action " + action);
+                    OnError(topic, action, Constants.Errors.MESSAGE_PARSE_ERROR, "Unknown action " + action);
                 }
             }
             else if (topic == Topic.EVENT)
@@ -200,7 +199,7 @@ namespace DeepStreamNet
                 }
                 else
                 {
-                    OnError(topic, action, "MESSAGE_PARSE_ERROR", "Unknown action " + action);
+                    OnError(topic, action, Constants.Errors.MESSAGE_PARSE_ERROR, "Unknown action " + action);
                 }
             }
             else if (topic == Topic.RECORD)
@@ -211,7 +210,6 @@ namespace DeepStreamNet
                 }
                 else if (responseAction == Action.READ)
                 {
-                    //RecordReceived?.Invoke(this, new RecordReceivedArgs(topic, responseAction, split[2], int.Parse(split[3], CultureInfo.InvariantCulture), JSON.Deserialize<Dictionary<string, object>>(split[4])));
                     RecordReceived?.Invoke(this, new RecordReceivedArgs(topic, responseAction, split[2], int.Parse(split[3], CultureInfo.InvariantCulture), JsonConvert.DeserializeObject<Dictionary<string, object>>(split[4])));
                 }
                 else if (responseAction == Action.UPDATE)
@@ -224,7 +222,7 @@ namespace DeepStreamNet
                 }
                 else
                 {
-                    OnError(topic, action, "MESSAGE_PARSE_ERROR", "Unknown action " + action);
+                    OnError(topic, action, Constants.Errors.MESSAGE_PARSE_ERROR, "Unknown action " + action);
                 }
             }
             else if (topic == Topic.RPC)
@@ -253,7 +251,7 @@ namespace DeepStreamNet
             }
             else
             {
-                OnError(topic, action, "MESSAGE_PARSE_ERROR", "Received message for unknown topic " + topic);
+                OnError(topic, action, Constants.Errors.MESSAGE_PARSE_ERROR, "Received message for unknown topic " + topic);
             }
         }
 

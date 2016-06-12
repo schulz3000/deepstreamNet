@@ -1,12 +1,11 @@
-﻿using System;
-using System.Collections;
+﻿using DeepStreamNet.Contracts;
+using DeepStreamNet.Records;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
-using DeepStreamNet.Contracts;
-using DeepStreamNet.Records;
-using Newtonsoft.Json;
 
 namespace DeepStreamNet
 {
@@ -21,7 +20,7 @@ namespace DeepStreamNet
             connection.RecordUpdated += Con_RecordUpdated;
             connection.RecordPatched += Con_RecordPatched;
         }
-        
+
         void Con_RecordPatched(object sender, RecordPatchedArgs e)
         {
             var record = records.FirstOrDefault(f => f.RecordName == e.Identifier);
@@ -33,30 +32,30 @@ namespace DeepStreamNet
 
             var data = (KeyValuePair<Type, object>)e.Data;
 
-          var path = e.Property.Split(Constants.PathSplitter, StringSplitOptions.RemoveEmptyEntries);
+            var path = e.Property.Split(Constants.PathSplitter, StringSplitOptions.RemoveEmptyEntries);
 
-            if(path.Length==1)
-            record[e.Property] = data.Value;
+            if (path.Length == 1)
+                record[e.Property] = data.Value;
             else
             {
                 var item = record as IDeepStreamRecord;
                 var max = path.Length - 1;
                 var index = -1;
-                for(int i=0;i<= max;i++)
+                for (int i = 0; i <= max; i++)
                 {
                     if (i == max)
                     {
                         item[path[i]] = data.Value;
                     }
-                    else if(int.TryParse(path[i+1],out index))
+                    else if (int.TryParse(path[i + 1], out index))
                     {
                         item = (item[path[i]] as object[])[index] as IDeepStreamRecord;
                         i++;
-                    }                    
+                    }
                     else
                     {
-                        item = item[path[i]] as IDeepStreamRecord;                       
-                    }                   
+                        item = item[path[i]] as IDeepStreamRecord;
+                    }
                 }
             }
 
@@ -83,7 +82,7 @@ namespace DeepStreamNet
             if (record != null)
                 return record;
 
-            var result = await InnerGetRecord(name);
+            var result = await InnerGetRecord(name).ConfigureAwait(false);
 
             records.Add(result);
 
@@ -94,7 +93,7 @@ namespace DeepStreamNet
 
         public Task<DeepStreamList> GetListAsync(string name)
         {
-            var list = lists.FirstOrDefault(f=>f.ListName == name);
+            var list = lists.FirstOrDefault(f => f.ListName == name);
             if (list != null)
                 return Task.FromResult(list);
 
@@ -112,14 +111,14 @@ namespace DeepStreamNet
 
             if (record == null)
                 return;
-            
+
             var changedData = Utils.GetValueByPath(e.PropertyName, record);
 
             record.IncrementVersion();
 
             var command = Utils.BuildCommand(Topic.RECORD, Action.PATCH, record.RecordName, record.RecordVersion, e.PropertyName, Utils.ConvertAndPrefixData(changedData));
 
-            await Connection.SendAsync(command);
+            await Connection.SendAsync(command).ConfigureAwait(false);
         }
 
         public Task SaveAsync(IDeepStreamRecord record)
@@ -142,11 +141,11 @@ namespace DeepStreamNet
 
             var wrapper = record as IDeepStreamRecordWrapper;
 
-            if (await Connection.SendWithAckAsync(Topic.RECORD, Action.UNSUBSCRIBE, Action.UNSUBSCRIBE, wrapper.RecordName, Options.SubscriptionTimeout))
+            if (await Connection.SendWithAckAsync(Topic.RECORD, Action.UNSUBSCRIBE, Action.UNSUBSCRIBE, wrapper.RecordName, Options.SubscriptionTimeout).ConfigureAwait(false))
             {
                 records.Remove(wrapper);
             }
-        }              
+        }
 
         public async Task DeleteAsync(IDeepStreamRecord record)
         {
@@ -155,7 +154,7 @@ namespace DeepStreamNet
 
             var wrapper = record as IDeepStreamRecordWrapper;
 
-            if (await Connection.SendWithAckAsync(Topic.RECORD, Action.DELETE, Action.DELETE, wrapper.RecordName, Options.RecordDeleteTimeout))
+            if (await Connection.SendWithAckAsync(Topic.RECORD, Action.DELETE, Action.DELETE, wrapper.RecordName, Options.RecordDeleteTimeout).ConfigureAwait(false))
             {
                 records.Remove(wrapper);
             }
@@ -181,9 +180,9 @@ namespace DeepStreamNet
 
             Connection.RecordReceived += recHandler;
 
-            isAck = await Connection.SendWithAckAsync(topic, Action.CREATEORREAD, Action.SUBSCRIBE, identifier, Options.RecordReadAckTimeout);
+            isAck = await Connection.SendWithAckAsync(topic, Action.CREATEORREAD, Action.SUBSCRIBE, identifier, Options.RecordReadAckTimeout).ConfigureAwait(false);
 
-            return await tcs.Task;
+            return await tcs.Task.ConfigureAwait(false);
         }
 
         bool IsRecordTracked(IDeepStreamRecord record)

@@ -1,8 +1,8 @@
-﻿using System;
+﻿using DeepStreamNet.Contracts;
+using Newtonsoft.Json;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
-using DeepStreamNet.Contracts;
-using Newtonsoft.Json;
 
 namespace DeepStreamNet
 {
@@ -77,7 +77,7 @@ namespace DeepStreamNet
             if (!string.IsNullOrWhiteSpace(userName) && !string.IsNullOrWhiteSpace(password))
                 credentials = JsonConvert.SerializeObject(new { username = userName, password });
 
-            await connection.Open();
+            await connection.OpenAsync().ConfigureAwait(false);
             connection.State = ConnectionState.AWAITING_AUTHENTICATION;
 
             connection.StartMessageLoop();
@@ -92,13 +92,13 @@ namespace DeepStreamNet
                 connection.Error -= errorHandler;
                 connection.State = ConnectionState.AWAITING_AUTHENTICATION;
 
-                tcs.TrySetException(new DeepStreamException(e.Error,e.Message));
+                tcs.TrySetException(new DeepStreamException(e.Error, e.Message));
             };
 
             connection.Error += errorHandler;
 
             connection.State = ConnectionState.AUTHENTICATING;
-            var result = await connection.SendWithAckAsync(Topic.AUTH, Action.REQUEST, Action.Empty, credentials, 1000);
+            var result = await connection.SendWithAckAsync(Topic.AUTH, Action.REQUEST, Action.Empty, credentials, 1000).ConfigureAwait(false);
 
             if (result)
             {
