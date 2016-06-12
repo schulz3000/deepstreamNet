@@ -1,7 +1,7 @@
-﻿using System;
+﻿using DeepStreamNet.Contracts;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using DeepStreamNet.Contracts;
 
 namespace DeepStreamNet
 {
@@ -42,7 +42,7 @@ namespace DeepStreamNet
 
             if (!eventsDict.ContainsKey(eventName))
             {
-                await Subscribe(eventName);
+                await Subscribe(eventName).ConfigureAwait(false);
                 eventsDict.Add(eventName, 0);
             }
             else
@@ -56,7 +56,7 @@ namespace DeepStreamNet
                 Connection.EventReceived -= handler;
                 if (eventsDict[eventName] == 0)
                 {
-                    await UnSubscribe(eventName);
+                    await UnSubscribe(eventName).ConfigureAwait(false);
                 }
             });
         }
@@ -89,7 +89,7 @@ namespace DeepStreamNet
 
             return new AsyncDisposableAction(async () =>
             {
-                if (await Connection.SendWithAckAsync(Topic.EVENT, Action.UNLISTEN, Action.UNLISTEN, pattern, Options.SubscriptionTimeout))
+                if (await Connection.SendWithAckAsync(Topic.EVENT, Action.UNLISTEN, Action.UNLISTEN, pattern, Options.SubscriptionTimeout).ConfigureAwait(false))
                 {
                     Connection.EventListenerChanged -= handler;
                     listenerDict.Remove(pattern);
@@ -113,7 +113,7 @@ namespace DeepStreamNet
             if (string.IsNullOrWhiteSpace(eventName))
                 throw new ArgumentNullException(nameof(eventName));
 
-            var result = await Connection.SendWithAckAsync(Topic.EVENT, Action.UNSUBSCRIBE, Action.UNSUBSCRIBE, eventName, Options.SubscriptionTimeout);
+            var result = await Connection.SendWithAckAsync(Topic.EVENT, Action.UNSUBSCRIBE, Action.UNSUBSCRIBE, eventName, Options.SubscriptionTimeout).ConfigureAwait(false);
 
             if (!result)
                 throw new DeepStreamException(Constants.Errors.ACK_TIMEOUT);

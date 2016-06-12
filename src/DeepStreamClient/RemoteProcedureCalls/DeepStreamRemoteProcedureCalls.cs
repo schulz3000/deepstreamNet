@@ -1,12 +1,12 @@
-﻿using System;
+﻿using DeepStreamNet.Contracts;
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Threading.Tasks;
-using DeepStreamNet.Contracts;
 
 namespace DeepStreamNet
 {
-    class DeepStreamRemoteProcedureCalls : DeepStreamBase, IDeepStreamRemoteProcedureCalls
+    class DeepStreamRemoteProcedureCalls : DeepStreamBase, IDeepStreamRemoteProcedureCalls, IDisposable
     {
         readonly Dictionary<string, Delegate> remoteProcedures = new Dictionary<string, Delegate>();
 
@@ -19,12 +19,12 @@ namespace DeepStreamNet
         async void Connection_PerformRemoteProcedureRequested(object sender, RemoteProcedureMessageArgs e)
         {
             var ackCommand = Utils.BuildCommand(Topic.RPC, Action.ACK, e.Identifier, e.Uid);
-            await Connection.SendAsync(ackCommand);
+            await Connection.SendAsync(ackCommand).ConfigureAwait(false);
 
             if (!remoteProcedures.ContainsKey(e.Identifier))
             {
                 var unsupportedCommand = Utils.BuildCommand(Topic.RPC, Action.REJECTION, e.Identifier, e.Uid);
-                await Connection.SendAsync(unsupportedCommand);
+                await Connection.SendAsync(unsupportedCommand).ConfigureAwait(false);
                 return;
             }
 
@@ -33,19 +33,20 @@ namespace DeepStreamNet
             if (e.DataType != procedure.GetMethodInfo().GetParameters()[0].ParameterType)
             {
                 var errorCommand = Utils.BuildCommand(Topic.RPC, Action.ERROR, "Input datatype don't match", e.Identifier, e.Uid);
-                await Connection.SendAsync(errorCommand);
+                await Connection.SendAsync(errorCommand).ConfigureAwait(false);
             }
-            else {
+            else
+            {
                 try
                 {
                     var result = procedure.DynamicInvoke(e.Data);
                     var resultCommand = Utils.BuildCommand(Topic.RPC, Action.RESPONSE, e.Identifier, e.Uid, Utils.ConvertAndPrefixData(result));
-                    await Connection.SendAsync(resultCommand);
+                    await Connection.SendAsync(resultCommand).ConfigureAwait(false);
                 }
                 catch
                 {
                     var exceptionCommand = Utils.BuildCommand(Topic.RPC, Action.ERROR, "Procedure failed at execution", e.Identifier, e.Uid);
-                    await Connection.SendAsync(exceptionCommand);
+                    await Connection.SendAsync(exceptionCommand).ConfigureAwait(false);
                 }
             }
         }
@@ -61,13 +62,13 @@ namespace DeepStreamNet
             if (remoteProcedures.ContainsKey(procedureName))
                 throw new DeepStreamException("Procedure with this name still registered");
 
-            await Connection.SendWithAckAsync(Topic.RPC, Action.SUBSCRIBE, Action.SUBSCRIBE, procedureName, Options.RpcAckTimeout);
+            await Connection.SendWithAckAsync(Topic.RPC, Action.SUBSCRIBE, Action.SUBSCRIBE, procedureName, Options.RpcAckTimeout).ConfigureAwait(false);
             remoteProcedures.Add(procedureName, procedure);
 
             return new AsyncDisposableAction(async () =>
             {
                 remoteProcedures.Remove(procedureName);
-                await Connection.SendWithAckAsync(Topic.RPC, Action.UNSUBSCRIBE, Action.UNSUBSCRIBE, procedureName, Options.RpcAckTimeout);
+                await Connection.SendWithAckAsync(Topic.RPC, Action.UNSUBSCRIBE, Action.UNSUBSCRIBE, procedureName, Options.RpcAckTimeout).ConfigureAwait(false);
             });
         }
 
@@ -94,9 +95,9 @@ namespace DeepStreamNet
 
             Connection.RemoteProcedureResultReceived += ackHandler;
 
-            await SendWithAckAsync(Topic.RPC, Action.REQUEST, Action.ACK, procedureName, uid, parameter, Options.RpcAckTimeout);
+            await SendWithAckAsync(Topic.RPC, Action.REQUEST, Action.ACK, procedureName, uid, parameter, Options.RpcAckTimeout).ConfigureAwait(false);
 
-            return await tcs.Task;
+            return await tcs.Task.ConfigureAwait(false);
         }
 
         async Task<bool> SendWithAckAsync<T>(Topic topic, Action action, Action expectedReceivedAction, string identifier, string uid, T parameter, int ackTimeout)
@@ -149,9 +150,24 @@ namespace DeepStreamNet
 
             timer.Start();
 
-            await Connection.SendAsync(command);
+            await Connection.SendAsync(command).ConfigureAwait(false);
 
-            return await tcs.Task;
+            return await tcs.Task.ConfigureAwait(false);
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                if (Connection != null)
+                    Connection.PerformRemoteProcedureRequested -= Connection_PerformRemoteProcedureRequested;
+            }
         }
     }
 }
