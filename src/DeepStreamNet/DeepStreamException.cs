@@ -47,6 +47,8 @@ namespace DeepStreamNet
         {
         }
 
+
+#if Net452
         /// <summary>
         /// 
         /// </summary>
@@ -57,5 +59,6 @@ namespace DeepStreamNet
         {
 
         }
+#endif
     }
 }

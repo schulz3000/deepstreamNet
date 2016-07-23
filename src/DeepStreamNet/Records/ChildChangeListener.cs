@@ -128,7 +128,7 @@ namespace DeepStreamNet.Records
                 if (property == null)
                     throw new InvalidOperationException(string.Format("Was unable to get '{0}' property information from Type '{1}'", propertyName, _type.Name));
 
-                object newValue = property.GetValue(Value, null);
+                var newValue = property.GetValue(Value, null);
 
                 // Only recreate if there is a new value
                 if (newValue != null)

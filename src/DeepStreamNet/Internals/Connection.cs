@@ -106,7 +106,7 @@ namespace DeepStreamNet
                 tcs.TrySetException(new DeepStreamException(Constants.Errors.ACK_TIMEOUT));
             };
 
-            string command = Utils.BuildCommand(topic, action, identifier);
+            var command = Utils.BuildCommand(topic, action, identifier);
 
             Acknoledged += ackHandler;
             Error += errorHandler;
@@ -275,8 +275,12 @@ namespace DeepStreamNet
         {
             if (disposing)
             {
+#if NET45 || NET451 || NET452
                 client.Close();
                 (client as IDisposable).Dispose();
+#else
+                client.Dispose();
+#endif
             }
         }
     }

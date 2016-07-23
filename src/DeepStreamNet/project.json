@@ -1,0 +1,50 @@
+﻿{
+  "title": "DeepStreamNet",
+  "copyright": "schulz3000",
+  "packOptions": {
+    "summary": "dotnet client for deepstream.io",
+    "owners": [ "schulz3000" ],
+    "tags": [ "deepstream.io", "client", ".net" ],
+    "projectUrl": "https://github.com/schulz3000/deepstreamNet",
+    "licenseUrl": "https://raw.githubusercontent.com/schulz3000/deepstreamNet/develop/LICENSE",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/schulz3000/deepstreamNet"
+    }
+  },
+
+  "version": "0.0.0.2-alpha",
+  "description": "dotnet client for deepstream.io",
+  "authors": [ "schulz3000" ],
+
+  "dependencies": {
+    "Newtonsoft.Json": "9.0.1"
+  },
+  "buildOptions": {
+    "xmlDoc": true,
+    "warningsAsErrors": true
+  },
+  "frameworks": {
+    "net45": {},
+    "net451": {},
+    "net452": {},
+    "netstandard1.3": {
+      "buildOptions": {
+        "define": [ "COREFX" ]
+      },
+      "dependencies": {
+        "NETStandard.Library": "1.6.0",
+        "System.Reflection.TypeExtensions": "4.1.0"
+      }
+    },
+    "netstandard1.5": {
+      "buildOptions": {
+        "define": [ "COREFX" ]
+      },
+      "dependencies": {
+        "NETStandard.Library": "1.6.0",
+        "System.Reflection.TypeExtensions": "4.1.0"
+      }
+    }
+  }
+}

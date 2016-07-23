@@ -1,22 +1,21 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-namespace DeepStreamNet.ConsoleClient
+namespace DeepStreamNet.Core.ConsoleSample
 {
-    class Program
+    public class Program
     {
-        static void Main(string[] args)
+        public static void Main(string[] args)
         {
+            MainAsync(args).GetAwaiter().GetResult();
 
-           MainAsync(args).GetAwaiter().GetResult();
-           
             Console.Read();
         }
 
-        static  Task MainAsync(string[] args)
+        static Task MainAsync(string[] args)
         {
             return Exec();
-        }        
+        }
 
         async static Task Exec()
         {
@@ -40,5 +39,4 @@ namespace DeepStreamNet.ConsoleClient
             client.Dispose();
         }
     }
-
 }
