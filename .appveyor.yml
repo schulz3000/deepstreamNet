@@ -1,11 +1,10 @@
 version: 1.0.{build}
 pull_requests:
   do_not_increment_build_number: true
+environment:
+  # Don't report back to the mothership
+  DOTNET_CLI_TELEMETRY_OPTOUT: 1
+build_script:  
+- ps: .\appveyor-build.ps1
 skip_tags: true
 image: Visual Studio 2015
-before_build:
-- cmd: nuget restore src/DeepStreamNet.sln
-build:
-  project: src/DeepStreamNet.sln
-  parallel: true
-  verbosity: minimal
