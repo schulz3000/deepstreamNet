@@ -1,5 +1,9 @@
 ﻿{
-  "version": "1.0.0-*",
+  "title": "DeepStreamNet Console",
+  "version": "0.0.0.2-alpha",
+  "copyright": "schulz3000",
+  "description": "Console Sampleclient for DeepStreamNet",
+  "authors": ["schulz3000"],
   "buildOptions": {
     "emitEntryPoint": true
   },
