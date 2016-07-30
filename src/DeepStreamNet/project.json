@@ -25,9 +25,13 @@
     "warningsAsErrors": true
   },
   "frameworks": {
+    "net40": {
+      "dependencies": {
+        "Microsoft.Bcl.Async": "1.0.168"
+      }
+    },
     "net45": {},
     "net451": {},
-    "net452": {},
     "netstandard1.3": {
       "buildOptions": {
         "define": [ "COREFX" ]

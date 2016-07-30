@@ -95,13 +95,21 @@ namespace DeepStreamNet
         {
             var list = lists.FirstOrDefault(f => f.ListName == name);
             if (list != null)
+#if NET40
+                return TaskEx.FromResult(list);
+#else
                 return Task.FromResult(list);
+#endif
 
             list = new DeepStreamList(name);
 
             lists.Add(list);
 
+#if NET40
+            return TaskEx.FromResult(list);
+#else
             return Task.FromResult(list);
+#endif
 
         }
 

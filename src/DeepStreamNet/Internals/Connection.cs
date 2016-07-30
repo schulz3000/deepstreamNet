@@ -120,7 +120,11 @@ namespace DeepStreamNet
 
         public void StartMessageLoop()
         {
+#if NET40
+            TaskEx.Run(MessageLoopAsync, cts);
+#else
             Task.Run(MessageLoopAsync, cts);
+#endif
         }
 
         public async Task MessageLoopAsync()
@@ -275,7 +279,7 @@ namespace DeepStreamNet
         {
             if (disposing)
             {
-#if NET45 || NET451 || NET452
+#if NET40 || NET45 || NET451 
                 client.Close();
                 (client as IDisposable).Dispose();
 #else
