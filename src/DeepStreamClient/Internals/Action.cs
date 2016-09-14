@@ -7,15 +7,18 @@ namespace DeepStreamNet
         public static Action Empty { get { return new Action(null); } }
         public static Action ACK { get { return new Action("A"); } }
         public static Action READ { get { return new Action("R"); } }
+        public static Action REDIRECT { get { return new Action("RED"); } }
+        public static Action CHALLENGE { get { return new Action("CH"); } }
+        public static Action CHALLENGE_RESPONSE { get { return new Action("CHR"); } }
         public static Action CREATE { get { return new Action("C"); } }
         public static Action UPDATE { get { return new Action("U"); } }
         public static Action PATCH { get { return new Action("P"); } }
         public static Action DELETE { get { return new Action("D"); } }
         public static Action HAS { get { return new Action("H"); } }
         public static Action SNAPSHOT { get { return new Action("SN"); } }
+        public static Action LISTEN_SNAPSHOT { get { return new Action("LSN"); } }
         public static Action SUBSCRIBE { get { return new Action("S"); } }
         public static Action UNSUBSCRIBE { get { return new Action("US"); } }
-        public static Action INVOKE { get { return new Action("I"); } }
         public static Action SUBSCRIPTION_FOR_PATTERN_FOUND { get { return new Action("SP"); } }
         public static Action SUBSCRIPTION_FOR_PATTERN_REMOVED { get { return new Action("SR"); } }
         public static Action LISTEN { get { return new Action("L"); } }

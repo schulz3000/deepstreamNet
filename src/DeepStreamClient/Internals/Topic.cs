@@ -12,6 +12,14 @@ namespace DeepStreamNet
             }
         }
 
+        public static Topic CONNECTION
+        {
+            get
+            {
+                return new Topic("C");
+            }
+        }
+
         public static Topic AUTH
         {
             get
@@ -49,14 +57,6 @@ namespace DeepStreamNet
             get
             {
                 return new Topic("P");
-            }
-        }
-
-        public static Topic WEBRTC
-        {
-            get
-            {
-                return new Topic("W");
             }
         }
 

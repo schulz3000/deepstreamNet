@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
@@ -63,10 +64,8 @@ namespace DeepStreamNet
         public async Task SendAsync(string command)
         {
             var stream = client.GetStream();
-
             var bytes = Encoding.ASCII.GetBytes(command);
             await stream.WriteAsync(bytes, 0, bytes.Length, cts).ConfigureAwait(false);
-            await stream.FlushAsync().ConfigureAwait(false);
         }
 
         public async Task<bool> SendWithAckAsync(Topic topic, Action action, Action expectedReceivedAction, string identifier, int ackTimeout)
@@ -75,6 +74,7 @@ namespace DeepStreamNet
 
             EventHandler<AcknoledgedArgs> ackHandler = null;
             EventHandler<ErrorArgs> errorHandler = null;
+            EventHandler timerHandler = null;
             var timer = new AckTimer(ackTimeout);
 
             ackHandler = (s, e) =>
@@ -86,6 +86,7 @@ namespace DeepStreamNet
 
                 if (tcs.Task.IsCompleted)
                 {
+                    timer.Elapsed -= timerHandler;
                     timer.Dispose();
                     Acknoledged -= ackHandler;
                     Error -= errorHandler;
@@ -94,19 +95,27 @@ namespace DeepStreamNet
 
             errorHandler = (s, e) =>
             {
+                Acknoledged -= ackHandler;
+                Error -= errorHandler;
+                timer.Elapsed -= timerHandler;
+                timer.Dispose();
+
                 if (e.Topic == topic && e.Action == Action.ERROR)
                     tcs.TrySetException(new DeepStreamException(e.Error, e.Message));
             };
 
-            timer.Elapsed += (s, e) =>
-            {
-                Acknoledged -= ackHandler;
-                Error -= errorHandler;
-                timer.Dispose();
-                tcs.TrySetException(new DeepStreamException(Constants.Errors.ACK_TIMEOUT));
-            };
+            timerHandler = (s, e) =>
+             {
+                 Acknoledged -= ackHandler;
+                 Error -= errorHandler;
+                 timer.Elapsed -= timerHandler;
+                 timer.Dispose();
+                 tcs.TrySetException(new DeepStreamException(Constants.Errors.ACK_TIMEOUT));
+             };
 
-            string command = Utils.BuildCommand(topic, action, identifier);
+            timer.Elapsed += timerHandler;
+
+            var command = Utils.BuildCommand(topic, action, identifier);
 
             Acknoledged += ackHandler;
             Error += errorHandler;
@@ -125,7 +134,7 @@ namespace DeepStreamNet
 
         public async Task MessageLoopAsync()
         {
-            var stream = client.GetStream();
+            var stream = new BufferedStream(client.GetStream());
             int result;
 
             var buffer = new byte[client.ReceiveBufferSize];
@@ -163,7 +172,11 @@ namespace DeepStreamNet
             var action = new Action(split.Length == 2 ? null : split[2]);
             var topic = new Topic(split[0]);
 
-            if (topic == Topic.AUTH)
+            if (topic == Topic.CONNECTION)
+            {
+
+            }
+            else if (topic == Topic.AUTH)
             {
                 if (responseAction == Action.ACK)
                 {
@@ -229,7 +242,12 @@ namespace DeepStreamNet
             {
                 if (responseAction == Action.ACK)
                 {
-                    Acknoledged?.Invoke(this, new AcknoledgedWithUidArgs(topic, responseAction, split[2], split[3]));
+                    var subAction = new Action(split[2]);
+
+                    if (subAction == Action.SUBSCRIBE)
+                        Acknoledged?.Invoke(this, new RpcAcknoledgedArgs(topic, responseAction, subAction, split[3]));
+                    else
+                        Acknoledged?.Invoke(this, new AcknoledgedWithUidArgs(topic, responseAction, split[2], split[3]));
                 }
                 //subscriber
                 else if (responseAction == Action.RESPONSE)
@@ -242,7 +260,7 @@ namespace DeepStreamNet
                 else if (responseAction == Action.REQUEST)
                 {
                     var dataWithType = Utils.ConvertPrefixedData(split[4]);
-                    PerformRemoteProcedureRequested?.Invoke(this, new RemoteProcedureMessageArgs(topic, responseAction, split[2], split[3], dataWithType.Key, dataWithType.Value));
+                    Task.Factory.FromAsync((asyncCallback, @object) => this.PerformRemoteProcedureRequested.BeginInvoke(this, new RemoteProcedureMessageArgs(topic, responseAction, split[2], split[3], dataWithType.Key, dataWithType.Value), asyncCallback, @object), PerformRemoteProcedureRequested.EndInvoke, null);
                 }
                 else if (responseAction == Action.ERROR)
                 {

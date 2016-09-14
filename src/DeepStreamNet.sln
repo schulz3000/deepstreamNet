@@ -1,11 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.24720.0
+VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeepStreamNet", "DeepStreamClient\DeepStreamNet.csproj", "{5E497F4F-72F1-451E-8A7E-304D60356E9A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeepStreamNet.ConsoleSample", "DeepStreamTestClient\DeepStreamNet.ConsoleSample.csproj", "{467E9B15-C2C6-4B1E-B505-95E988909043}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{A9704EA2-0E82-4309-BE3D-6D91B735B1B1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

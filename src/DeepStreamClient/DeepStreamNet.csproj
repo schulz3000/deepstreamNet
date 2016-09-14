@@ -44,6 +44,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Contracts\IAsyncDisposable.cs" />
+    <Compile Include="Contracts\IRpcResponse.cs" />
     <Compile Include="DeepStreamOptions.cs" />
     <Compile Include="Internals\AcknoledgedWithUidArgs.cs" />
     <Compile Include="Internals\AcknoledgedArgs.cs" />
@@ -63,6 +64,9 @@
     <Compile Include="DeepStreamException.cs" />
     <Compile Include="Events\EventListenerChangedArgs.cs" />
     <Compile Include="Internals\ErrorArgs.cs" />
+    <Compile Include="Internals\RemoteProcedure.cs" />
+    <Compile Include="Internals\RemoteProcedureEqualityComparer.cs" />
+    <Compile Include="Internals\RpcAcknoledgedArgs.cs" />
     <Compile Include="Records\ChangeListener.cs" />
     <Compile Include="Records\ChildChangeListener.cs" />
     <Compile Include="Records\CollectionChangeListener.cs" />
@@ -87,6 +91,7 @@
     <Compile Include="RemoteProcedureCalls\DeepStreamRemoteProcedureCalls.cs" />
     <Compile Include="Internals\Topic.cs" />
     <Compile Include="Internals\Utils.cs" />
+    <Compile Include="RemoteProcedureCalls\RpcResponse.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
