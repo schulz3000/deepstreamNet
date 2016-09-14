@@ -98,6 +98,7 @@ namespace DeepStreamNet
             connection.Error += errorHandler;
 
             connection.State = ConnectionState.AUTHENTICATING;
+
             var result = await connection.SendWithAckAsync(Topic.AUTH, Action.REQUEST, Action.Empty, credentials, 1000).ConfigureAwait(false);
 
             if (result)
