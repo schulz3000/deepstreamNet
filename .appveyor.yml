@@ -1,6 +1,4 @@
 version: 1.0.{build}
-configuration:
-- Release
 platform: Any CPU
 pull_requests:
   do_not_increment_build_number: true
@@ -10,11 +8,11 @@ environment:
 init:
 - ps: $Env:LABEL = "CI" + $Env:APPVEYOR_BUILD_NUMBER.PadLeft(5, "0")
 before_build:
-- appveyor-retry dotnet restore -v Minimal
+- appveyor-retry dotnet restore
 build_script:
-- dotnet build "src\DeepStreamNet.sln" -c %CONFIGURATION% --no-dependencies --version-suffix %LABEL%
+- dotnet build ".\src\DeepStreamNet.sln" -c Release
 after_build:
-- dotnet pack "src\DeepStreamNet.sln" -c %CONFIGURATION% --no-build --version-suffix %LABEL% -o artifacts
+- dotnet pack ".\src\DeepStreamNet.sln" -c Release --version-suffix %LABEL% -o .\artifacts
 artifacts:
 - path: artifacts\**\*.*
 cache:
