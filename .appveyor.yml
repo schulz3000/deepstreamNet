@@ -1,21 +1,8 @@
 version: 1.0.{build}
-platform: Any CPU
 pull_requests:
   do_not_increment_build_number: true
 environment:
   # Don't report back to the mothership
   DOTNET_CLI_TELEMETRY_OPTOUT: 1
-init:
-- ps: $Env:LABEL = "CI" + $Env:APPVEYOR_BUILD_NUMBER.PadLeft(5, "0")
-before_build:
-- appveyor-retry dotnet restore
-build_script:
-- dotnet build ".\src\DeepStreamNet.sln" -c Release
-after_build:
-- dotnet pack ".\src\DeepStreamNet.sln" -c Release --version-suffix %LABEL% -o .\artifacts
-artifacts:
-- path: artifacts\**\*.*
-cache:
-- '%USERPROFILE%\.nuget\packages'
 skip_tags: true
 image: Visual Studio 2015

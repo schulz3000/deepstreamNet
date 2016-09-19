@@ -1,23 +1,7 @@
 language: csharp 
 solution: src/DeepStreamNet.sln
-matrix:
-  include:
-    - os: osx
-      osx_image: xcode7.3
-      dotnet: 1.0.0-preview2-003121
-      mono: none
-      env: 
-      - DOTNETCORE=1; 
-      - DOTNET_CLI_TELEMETRY_OPTOUT=1
-    - os: linux
-      dist: trusty
-      sudo: required
-      dotnet: 1.0.0-preview2-003121
-      mono: none
-      env: 
-      - DOTNETCORE=1; 
-      - DOTNET_CLI_TELEMETRY_OPTOUT=1
-
-script:
-  - if [ -n "${DOTNETCORE}" ]; then dotnet new && time dotnet restore && dotnet build src/DeepStreamNet.sln -c Release -f net451; fi
-  - if [ -z "${DOTNETCORE}" ]; then xbuild /p:Configuration=Release src/DeepStreamNet.sln; fi
+dotnet: 1.0.0-preview2-003121
+mono: none
+env: 
+- DOTNETCORE=1; 
+- DOTNET_CLI_TELEMETRY_OPTOUT=1
