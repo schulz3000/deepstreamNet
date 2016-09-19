@@ -31,16 +31,7 @@
       }
     },
     "net45": {},
-    "net451": {},
-    "netstandard1.3": {
-      "buildOptions": {
-        "define": [ "COREFX" ]
-      },
-      "dependencies": {
-        "NETStandard.Library": "1.6.0",
-        "System.Reflection.TypeExtensions": "4.1.0"
-      }
-    },
+    "net451": {},    
     "netstandard1.5": {
       "buildOptions": {
         "define": [ "COREFX" ]

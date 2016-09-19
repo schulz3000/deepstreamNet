@@ -84,9 +84,15 @@ var result = await client.Rpcs.Request<string,string>("toLowerCase", "abc");
 
 ```csharp
 //Define Method for RemoteProcedure
-string ToUpperCase(string input)
+async Task ToUpperCase(string input, IRpcResponse<string> response)
 {
-    return input.ToUpper();
+    if (string.IsNullOrEmpty(input))
+        await response.Error("input must not be empty");
+
+    if (input == "ABC")
+        await response.Reject();
+
+    await response.Send(input.ToUpper());
 }
 
 //Register RemoteProcedure 'toUpperCase' with InputArgs as string and Result as string

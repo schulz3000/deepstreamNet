@@ -7,7 +7,7 @@ namespace DeepStreamNet.Contracts
     /// 
     /// </summary>
     public interface IDeepStreamRemoteProcedureCalls
-    {
+    {        
         /// <summary>
         /// 
         /// </summary>
@@ -16,17 +16,7 @@ namespace DeepStreamNet.Contracts
         /// <param name="procedureName"></param>
         /// <param name="procedure"></param>
         /// <returns></returns>
-       // Task<IAsyncDisposable> RegisterProvider<TInput, TResult>(string procedureName, Func<TInput, TResult> procedure);
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <typeparam name="TInput"></typeparam>
-        /// <typeparam name="TResult"></typeparam>
-        /// <param name="procedureName"></param>
-        /// <param name="procedure"></param>
-        /// <returns></returns>
-        Task<IAsyncDisposable> RegisterProvider<TInput, TResult>(string procedureName, Action<TInput, IRpcResponse<TResult>> procedure);
+        Task<IAsyncDisposable> RegisterProvider<TInput, TResult>(string procedureName, Func<TInput, IRpcResponse<TResult>, Task> procedure);
 
         /// <summary>
         /// 

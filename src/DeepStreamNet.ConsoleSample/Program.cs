@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using DeepStreamNet.Contracts;
 
 namespace DeepStreamNet.Core.ConsoleSample
 {
@@ -27,7 +28,7 @@ namespace DeepStreamNet.Core.ConsoleSample
 
                 await Task.Delay(2000);
 
-                await client.Events.PublishAsync("test", "Hello World");
+                await client.Events.PublishAsync("test", "Hello World");                
 
                 await Task.Delay(30000);
 

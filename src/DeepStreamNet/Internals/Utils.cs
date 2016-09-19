@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 using Newtonsoft.Json;
+using System.Reflection;
 
 namespace DeepStreamNet
 {
@@ -96,7 +97,7 @@ namespace DeepStreamNet
         {
             if (type == null)
                 return false;
-
+           
             switch (Type.GetTypeCode(type))
             {
                 case TypeCode.Byte:
@@ -112,7 +113,7 @@ namespace DeepStreamNet
                 case TypeCode.UInt64:
                     return true;
                 case TypeCode.Object:
-                    if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>))
+                    if (IsGenericTypeEx(type) && type.GetGenericTypeDefinition() == typeof(Nullable<>))
                     {
                         return IsNumeric(Nullable.GetUnderlyingType(type));
                     }
@@ -120,6 +121,16 @@ namespace DeepStreamNet
             }
             return false;
         }
+
+        static bool IsGenericTypeEx(Type type)
+        {
+#if NET40
+            return type.IsGenericType;
+#else
+            return type.GetTypeInfo().IsGenericType;
+#endif
+        }
+        
 
         public static object GetValueByPath(string path, DeepStreamInnerRecord record)
         {

@@ -137,7 +137,7 @@ namespace DeepStreamNet
 
         public async Task MessageLoopAsync()
         {
-            var stream = new BufferedStream(client.GetStream());
+            var stream = client.GetStream();
             int result;
 
             var buffer = new byte[client.ReceiveBufferSize];
