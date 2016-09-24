@@ -1,18 +1,17 @@
 language: csharp
+solution: src/DeepStreamNet.sln
 
 matrix:
   include:
     - os: linux # Ubuntu 14.04
       dist: trusty
       sudo: required
-      dotnet: 1.0.0-preview2-003121
+      dotnet: 1.0.0-preview2-003131
       env: DOTNET_CLI_TELEMETRY_OPTOUT=1
     - os: osx # OSX 10.11
       osx_image: xcode7.2
-      dotnet: 1.0.0-preview2-003121
+      dotnet: 1.0.0-preview2-003131
       env: DOTNET_CLI_TELEMETRY_OPTOUT=1
-
 script:
-  - dotnet --info
   - dotnet restore
-  - dotnet --verbose build .\src\DeepStreamNet
+  - xbuild /p:Configuration=Release src/DeepStreamNet.sln

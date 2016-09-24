@@ -12,7 +12,7 @@
     "DeepStreamNet": "0.0.0.2-alpha",
     "Microsoft.NETCore.App": {
       "type": "platform",
-      "version": "1.0.0"
+      "version": "1.0.1"
     }
   },
 
