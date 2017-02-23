@@ -21,12 +21,12 @@ namespace DeepStreamNet
         {
             var ackCommand = Utils.BuildCommand(Topic.RPC, Action.ACK, e.Identifier, e.Uid);
 
-            await Connection.SendAsync(ackCommand).ConfigureAwait(false);
+            Connection.Send(ackCommand);
 
             if (!remoteProcedures.Any(a => a.Name == e.Identifier))
             {
                 var unsupportedCommand = Utils.BuildCommand(Topic.RPC, Action.REJECTION, e.Identifier, e.Uid);
-                await Connection.SendAsync(unsupportedCommand).ConfigureAwait(false);
+                Connection.Send(unsupportedCommand);
                 return;
             }
 
@@ -35,7 +35,7 @@ namespace DeepStreamNet
             if (e.DataType != procedure.ParameterType)
             {
                 var errorCommand = Utils.BuildCommand(Topic.RPC, Action.ERROR, "Input datatype don't match", e.Identifier, e.Uid);
-                await Connection.SendAsync(errorCommand).ConfigureAwait(false);
+                Connection.Send(errorCommand);
             }
             else
             {
@@ -51,7 +51,7 @@ namespace DeepStreamNet
                 catch
                 {
                     var exceptionCommand = Utils.BuildCommand(Topic.RPC, Action.ERROR, "Procedure failed at execution", e.Identifier, e.Uid);
-                    await Connection.SendAsync(exceptionCommand).ConfigureAwait(false);
+                    Connection.Send(exceptionCommand);
                 }
             }
         }
@@ -183,7 +183,7 @@ namespace DeepStreamNet
 
             timer.Start();
 
-            await Connection.SendAsync(command).ConfigureAwait(false);
+            Connection.Send(command);
 
             return await tcs.Task.ConfigureAwait(false);
         }

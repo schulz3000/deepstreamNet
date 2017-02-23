@@ -1,5 +1,5 @@
-﻿{
-  "title": "DeepStreamNet Console",
+{
+  "title": "DeepStreamNet Console Sample",
   "version": "0.0.0.2-alpha",
   "copyright": "schulz3000",
   "description": "Console Sampleclient for DeepStreamNet",
@@ -12,8 +12,9 @@
     "DeepStreamNet": "0.0.0.2-alpha",
     "Microsoft.NETCore.App": {
       "type": "platform",
-      "version": "1.0.1"
-    }
+      "version": "1.1.0"
+    },
+    "WebSocket4Net": "0.15.0-beta6"
   },
 
   "frameworks": {

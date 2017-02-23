@@ -42,7 +42,7 @@ namespace DeepStreamNet.Records
             var obj = Value as DeepStreamInnerRecord;
             if (obj != null)
             {
-                var list = obj.GetDynamicMemberNames();
+                var list = obj.GetDynamicMemberNames().ToArray();
                 foreach (var name in list)
                 {
                     _childListeners.Add(name, null);
@@ -56,7 +56,7 @@ namespace DeepStreamNet.Records
                 where _inotifyType.IsAssignableFrom(property.PropertyType)
                 select property;
 
-            foreach (var property in query)
+            foreach (var property in query.ToArray())
             {
                 // Declare property as known "Child", then register it
                 _childListeners.Add(property.Name, null);

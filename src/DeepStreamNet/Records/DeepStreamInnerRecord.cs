@@ -33,7 +33,7 @@ namespace DeepStreamNet
             set { SetPropertyValue(name, value); }
         }
 
-        public DeepStreamInnerRecord(string name, string path, IDictionary<string, object> obj)
+        public DeepStreamInnerRecord(string name, string path, Dictionary<string, object> obj)
         {
             RecordName = name;
 
@@ -42,7 +42,7 @@ namespace DeepStreamNet
             FillProperties(obj);
         }
 
-        void FillProperties(IDictionary<string, object> obj)
+        void FillProperties(Dictionary<string, object> obj)
         {
             foreach (var item in obj)
             {
@@ -71,8 +71,8 @@ namespace DeepStreamNet
                 else {
                     object insert = item.Value;
 
-                    if (item.Value is IDictionary<string, object>)
-                        insert = new DeepStreamInnerRecord(item.Key, Path, item.Value as IDictionary<string, object>);
+                    if (item.Value is Dictionary<string, object>)
+                        insert = new DeepStreamInnerRecord(item.Key, Path, item.Value as Dictionary<string, object>);
                     else if (item.Value is JObject)
                         insert = new DeepStreamInnerRecord(item.Key, Path, (item.Value as JObject).ToObject<Dictionary<string, object>>());
 
@@ -81,7 +81,7 @@ namespace DeepStreamNet
             }
         }
 
-        protected void Merge(IDictionary<string, object> obj)
+        protected void Merge(Dictionary<string, object> obj)
         {
             foreach (var item in obj)
             {
@@ -119,8 +119,8 @@ namespace DeepStreamNet
                     else {
                         object insert = item.Value;
 
-                        if (item.Value is IDictionary<string, object>)
-                            insert = new DeepStreamInnerRecord(item.Key, Path, item.Value as IDictionary<string, object>);
+                        if (item.Value is Dictionary<string, object>)
+                            insert = new DeepStreamInnerRecord(item.Key, Path, item.Value as Dictionary<string, object>);
                         else if (item.Value is JObject)
                             insert = new DeepStreamInnerRecord(item.Key, Path, (item.Value as JObject).ToObject<Dictionary<string, object>>());
 

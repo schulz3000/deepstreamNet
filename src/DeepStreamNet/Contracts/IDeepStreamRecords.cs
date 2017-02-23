@@ -19,7 +19,7 @@ namespace DeepStreamNet.Contracts
         /// </summary>
         /// <param name="record"></param>
         /// <returns></returns>
-        Task SaveAsync(IDeepStreamRecord record);
+        void Save(IDeepStreamRecord record);
 
         /// <summary>
         /// 
@@ -34,5 +34,12 @@ namespace DeepStreamNet.Contracts
         /// <param name="record"></param>
         /// <returns></returns>
         Task DeleteAsync(IDeepStreamRecord record);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        Task<IDeepStreamList> GetListAsync(string name);
     }
 }

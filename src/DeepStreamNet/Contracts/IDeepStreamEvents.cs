@@ -15,7 +15,7 @@ namespace DeepStreamNet.Contracts
         /// <param name="eventName"></param>
         /// <param name="data"></param>
         /// <returns></returns>
-        Task PublishAsync<T>(string eventName, T data);
+        void Publish<T>(string eventName, T data);
 
         /// <summary>
         /// 

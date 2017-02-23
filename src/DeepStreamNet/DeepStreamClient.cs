@@ -33,10 +33,11 @@ namespace DeepStreamNet
         /// </summary>
         /// <param name="host">deepstream.io endpoint address or ip</param>
         /// <param name="port">deeptstream.io endpoint port</param>
+        /// <param name="path">deeptstream.io endpoint path</param>
         /// <param name="options" cref="DeepStreamOptions">set options other then default</param>
-        public DeepStreamClient(string host, int port, DeepStreamOptions options)
+        public DeepStreamClient(string host, int port, string path, DeepStreamOptions options)
         {
-            connection = new Connection(host, port, cts.Token);
+            connection = new Connection(host, port, path, cts.Token);
             Events = new DeepStreamEvents(connection, options);
             Records = new DeepStreamRecords(connection, options);
             Rpcs = new DeepStreamRemoteProcedureCalls(connection, options);
@@ -48,8 +49,9 @@ namespace DeepStreamNet
         /// </summary>
         /// <param name="host">deepstream.io endpoint address or ip</param>
         /// <param name="port">deeptstream.io endpoint port</param>
-        public DeepStreamClient(string host, int port)
-            : this(host, port, new DeepStreamOptions())
+        /// <param name="path">deeptstream.io endpoint path</param>
+        public DeepStreamClient(string host, int port, string path = "deepstream")
+            : this(host, port, path, new DeepStreamOptions())
         {
 
         }
@@ -82,6 +84,8 @@ namespace DeepStreamNet
 
             connection.StartMessageLoop();
 
+            await RegisterAuthChallange();
+
             EventHandler<ErrorArgs> errorHandler = null;
 
             errorHandler = (s, e) =>
@@ -107,6 +111,25 @@ namespace DeepStreamNet
             }
 
             return result;
+        }
+
+        Task RegisterAuthChallange()
+        {
+            TaskCompletionSource<bool> tcs = new TaskCompletionSource<bool>();
+
+            EventHandler handler = null;
+
+            handler = (s, e) =>
+            {
+
+                connection.Send(Utils.BuildCommand(Topic.CONNECTION, Action.CHALLENGE_RESPONSE));
+                connection.ChallangeReceived -= handler;
+                tcs.SetResult(true);
+            };
+
+            connection.ChallangeReceived += handler;
+
+            return tcs.Task;
         }
 
         /// <summary>

@@ -12,18 +12,15 @@ namespace DeepStreamNet.Contracts
         /// 
         /// </summary>
         /// <param name="result"></param>
-        /// <returns></returns>
-        Task Send(TResult result);
+        void Send(TResult result);
         /// <summary>
         /// 
-        /// </summary>
-        /// <returns></returns>
-        Task Reject();
+        /// </summary>>
+        void Reject();
         /// <summary>
         /// 
         /// </summary>
         /// <param name="message"></param>
-        /// <returns></returns>
-        Task Error(string message);
+        void Error(string message);
     }
 }

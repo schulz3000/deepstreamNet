@@ -7,18 +7,18 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using WebSocket4Net;
 
 namespace DeepStreamNet
 {
     class Connection : IDisposable
     {
-        readonly TcpClient client;
+        readonly WebSocket client;
         readonly CancellationToken cts;
 
-        readonly string Host;
-        readonly int Port;
-
         public ConnectionState State { get; internal set; }
+
+        internal EventHandler ChallangeReceived;
 
         internal event EventHandler<AcknoledgedArgs> Acknoledged;
 
@@ -38,34 +38,43 @@ namespace DeepStreamNet
 
         internal event EventHandler<RemoteProcedureMessageArgs> RemoteProcedureResultReceived;
 
-        public Connection(string host, int port, CancellationToken token)
+        public Connection(string host, int port, string path, CancellationToken token)
         {
-            if (string.IsNullOrWhiteSpace(host))
-                throw new ArgumentNullException(nameof(port));
+            if (port < 1)
+                throw new ArgumentOutOfRangeException(nameof(port));
 
             if (string.IsNullOrWhiteSpace(host))
                 throw new ArgumentNullException(nameof(host));
 
-            Host = host;
-            Port = port;
+            if (string.IsNullOrWhiteSpace(path))
+                throw new ArgumentNullException(nameof(path));
+
             cts = token;
 
             State = ConnectionState.NONE;
 
-            client = new TcpClient();
+            client = new WebSocket("ws://"+host + ":" + port.ToString()+"/"+ path);
             client.NoDelay = true;
         }
 
         public Task OpenAsync()
         {
-            return client.ConnectAsync(Host, Port);
+            TaskCompletionSource<bool> tcs = new TaskCompletionSource<bool>();
+            client.Opened += (s, e) => {
+                tcs.SetResult(true);
+            };
+            client.Error += (s, e) => {
+                tcs.TrySetException(e.Exception);
+            };
+
+            client.Open();
+
+            return tcs.Task;
         }
 
-        public async Task SendAsync(string command)
-        {
-            var stream = client.GetStream();
-            var bytes = Encoding.ASCII.GetBytes(command);
-            await stream.WriteAsync(bytes, 0, bytes.Length, cts).ConfigureAwait(false);
+        public void Send(string command)
+        {            
+            client.Send(command);
         }
 
         public async Task<bool> SendWithAckAsync(Topic topic, Action action, Action expectedReceivedAction, string identifier, int ackTimeout)
@@ -115,53 +124,66 @@ namespace DeepStreamNet
 
             var command = Utils.BuildCommand(topic, action, identifier);
 
-			timer.Elapsed += timerHandler;
+            timer.Elapsed += timerHandler;
             Acknoledged += ackHandler;
             Error += errorHandler;
 
             timer.Start();
 
-            await SendAsync(command).ConfigureAwait(false);
+            Send(command);
 
             return await tcs.Task.ConfigureAwait(false);
         }
 
         public void StartMessageLoop()
         {
-#if NET40
-            TaskEx.Run(MessageLoopAsync, cts);
-#else
-            Task.Run(MessageLoopAsync, cts);
-#endif
-        }
+            //#if NET40
+            //            TaskEx.Run(MessageLoopAsync, cts);
+            //#else
+            //            Task.Run(MessageLoopAsync, cts);
+            //#endif
 
-        public async Task MessageLoopAsync()
+            client.MessageReceived += Client_MessageReceived;
+
+        }        
+
+        async void Client_MessageReceived(object sender, MessageReceivedEventArgs e)
         {
-            var stream = client.GetStream();
-            int result;
+            var groups = e.Message.Split(Constants.GroupSeperator);
 
-            var buffer = new byte[client.ReceiveBufferSize];
-
-            var sb = string.Empty;
-
-            while (!cts.IsCancellationRequested && client.Connected)
+            for (int i = 0; i < groups.Length - 1; i++)
             {
-                while ((result = await stream.ReadAsync(buffer, 0, buffer.Length, cts).ConfigureAwait(false)) != 0)
-                {
-                    var enc = sb + Encoding.UTF8.GetString(buffer, 0, result);
-
-                    var groups = enc.Split(Constants.GroupSeperator);
-
-                    for (int i = 0; i < groups.Length - 1; i++)
-                    {
-                        Notify(groups[i]);
-                    }
-                    sb = groups[groups.Length - 1];
-                }
-            }
+                await Notify(groups[i]);
+            }           
         }
 
-        void Notify(string value)
+        //public async Task MessageLoopAsync()
+        //{
+        //    var stream = client.GetStream();
+        //    int result;
+
+        //    var buffer = new byte[client.ReceiveBufferSize];
+
+        //    var sb = string.Empty;
+
+        //    while (!cts.IsCancellationRequested && client.Connected)
+        //    {
+        //        while ((result = await stream.ReadAsync(buffer, 0, buffer.Length, cts).ConfigureAwait(false)) != 0)
+        //        {
+        //            var enc = sb + Encoding.UTF8.GetString(buffer, 0, result);
+
+        //            var groups = enc.Split(Constants.GroupSeperator);
+
+        //            for (int i = 0; i < groups.Length - 1; i++)
+        //            {
+        //                await Notify(groups[i]);
+        //            }
+        //            sb = groups[groups.Length - 1];
+        //        }
+        //    }
+        //}
+
+        async Task Notify(string value)
         {
             var split = value.Split(Constants.RecordSeperator);
 
@@ -177,7 +199,8 @@ namespace DeepStreamNet
 
             if (topic == Topic.CONNECTION)
             {
-
+                if (responseAction == Action.CHALLENGE)
+                    ChallangeReceived?.Invoke(this, EventArgs.Empty);
             }
             else if (topic == Topic.AUTH)
             {
@@ -263,7 +286,7 @@ namespace DeepStreamNet
                 else if (responseAction == Action.REQUEST)
                 {
                     var dataWithType = Utils.ConvertPrefixedData(split[4]);
-                    Task.Factory.FromAsync((asyncCallback, @object) => this.PerformRemoteProcedureRequested.BeginInvoke(this, new RemoteProcedureMessageArgs(topic, responseAction, split[2], split[3], dataWithType.Key, dataWithType.Value), asyncCallback, @object), PerformRemoteProcedureRequested.EndInvoke, null);
+                    await Task.Factory.FromAsync((asyncCallback, @object) => this.PerformRemoteProcedureRequested.BeginInvoke(this, new RemoteProcedureMessageArgs(topic, responseAction, split[2], split[3], dataWithType.Key, dataWithType.Value), asyncCallback, @object), PerformRemoteProcedureRequested.EndInvoke, null);
                 }
                 else if (responseAction == Action.ERROR)
                 {
@@ -296,7 +319,7 @@ namespace DeepStreamNet
         {
             if (disposing)
             {
-#if NET40 || NET45 || NET451 
+#if NET40 || NET45 || NET451
                 client.Close();
                 (client as IDisposable).Dispose();
 #else

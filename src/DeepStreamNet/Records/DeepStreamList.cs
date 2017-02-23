@@ -1,98 +1,70 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using DeepStreamNet;
 using DeepStreamNet.Contracts;
+using System.Threading.Tasks;
+using System.Linq;
 
 namespace DeepStreamNet.Records
 {
-    class DeepStreamList : INotifyCollectionChanged
+    class DeepStreamList : IDeepStreamList, INotifyCollectionChanged
     {
-        readonly Dictionary<string, IDeepStreamRecord> dict = new Dictionary<string, IDeepStreamRecord>();
+        readonly HashSet<string> innerList = new HashSet<string>();
+        readonly DeepStreamRecords deepStreamRecordsHandler;
+        readonly dynamic innerRecord;
 
         public event NotifyCollectionChangedEventHandler CollectionChanged;
 
         public string ListName { get; }
 
-        public DeepStreamList(string name)
+        public DeepStreamList(string name, DeepStreamRecords deepStreamRecords , IDeepStreamRecord record)
         {
             ListName = name;
-        }
-
-        public IDeepStreamRecord this[string name]
-        {
-            get
-            {
-                return dict[name];
-            }
-
-            set
-            {
-                if (dict.ContainsKey(name))
-                {
-                    var oldItem = dict[name];
-                    dict[name] = value;
-                    CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Replace, oldItem, value));
-                }
-                else
-                {
-                    Add(value);
-                }
-            }
+            deepStreamRecordsHandler = deepStreamRecords;
+            innerRecord = record;
         }
 
         public int Count
         {
             get
             {
-                return dict.Count;
+                return innerList.Count;
             }
         }
 
-        public void Add(IDeepStreamRecord item)
+        public bool IsEmpty { get { return innerList.Count == 0; } }
+
+        public async Task Add(string item)
         {
-            dict.Add(item.RecordName, item);
+            innerList.Add(item);
+            innerRecord.Add(item);
+            ////(innerRecord as HashSet<string>).Add(item);
+            await deepStreamRecordsHandler.Save(innerRecord);
             CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, item));
         }
 
-        public void AddRange(IEnumerable<IDeepStreamRecord> items)
+        public void AddRange(IEnumerable<string> items)
         {
-            foreach (var item in items)
-                dict.Add(item.RecordName, item);
+            foreach (var item in items.ToArray())
+                innerList.Add(item);
 
             CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, items));
         }
 
         public void Clear()
         {
-            dict.Clear();
+            innerList.Clear();
             CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
-        }
-
-        public bool Contains(IDeepStreamRecord item)
-        {
-            return dict.ContainsKey(item.RecordName);
-        }
+        }       
 
         public bool Contains(string name)
         {
-            return dict.ContainsKey(name);
+            return innerList.Contains(name);
         }
 
-        public bool Remove(IDeepStreamRecord item)
+        public bool Remove(string item)
         {
-            return Remove(item.RecordName);
-        }
-
-        public bool Remove(string name)
-        {
-            CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, dict[name]));
-
-            return dict.Remove(name);
-        }
+            CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, item));
+            return innerList.Remove(item);
+        }        
     }
 }

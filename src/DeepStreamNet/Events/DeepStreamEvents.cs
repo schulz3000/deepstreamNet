@@ -15,7 +15,7 @@ namespace DeepStreamNet
         {
         }
 
-        public Task PublishAsync<T>(string eventName, T data)
+        public void Publish<T>(string eventName, T data)
         {
             ThrowIfConnectionNotOpened();
 
@@ -25,7 +25,7 @@ namespace DeepStreamNet
             var sendData = Utils.ConvertAndPrefixData(data);
 
             var command = Utils.BuildCommand(Topic.EVENT, Action.EVENT, eventName, sendData);
-            return Connection.SendAsync(command);
+            Connection.Send(command);
         }
 
         public async Task<IAsyncDisposable> Subscribe(string eventName, Action<object> data)
@@ -97,7 +97,7 @@ namespace DeepStreamNet
             });
         }
 
-        private async Task Subscribe(string eventName)
+        async Task Subscribe(string eventName)
         {
             if (string.IsNullOrWhiteSpace(eventName))
                 throw new ArgumentNullException(nameof(eventName));

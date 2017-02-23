@@ -12,7 +12,7 @@ namespace DeepStreamNet
     class DeepStreamRecords : DeepStreamBase, IDeepStreamRecords
     {
         readonly HashSet<IDeepStreamRecordWrapper> records = new HashSet<IDeepStreamRecordWrapper>(new DeepStreamRecordComparer());
-        readonly HashSet<DeepStreamList> lists = new HashSet<DeepStreamList>();
+        readonly HashSet<IDeepStreamList> lists = new HashSet<IDeepStreamList>();
 
         public DeepStreamRecords(Connection connection, DeepStreamOptions options)
             : base(connection, options)
@@ -91,29 +91,22 @@ namespace DeepStreamNet
             return result;
         }
 
-        public Task<DeepStreamList> GetListAsync(string name)
+        public async Task<IDeepStreamList> GetListAsync(string name)
         {
             var list = lists.FirstOrDefault(f => f.ListName == name);
             if (list != null)
-#if NET40
-                return TaskEx.FromResult(list);
-#else
-                return Task.FromResult(list);
-#endif
+                return list;
 
-            list = new DeepStreamList(name);
+            dynamic innerRecord = await GetRecordAsync(name).ConfigureAwait(false);
+            
+            list = new DeepStreamList(name,this,innerRecord);
 
             lists.Add(list);
-
-#if NET40
-            return TaskEx.FromResult(list);
-#else
-            return Task.FromResult(list);
-#endif
+            return list;
 
         }
 
-        async void Listener_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        void Listener_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             var record = (sender as ChildChangeListener)?.Value as DeepStreamRecord;
 
@@ -126,10 +119,10 @@ namespace DeepStreamNet
 
             var command = Utils.BuildCommand(Topic.RECORD, Action.PATCH, record.RecordName, record.RecordVersion, e.PropertyName, Utils.ConvertAndPrefixData(changedData));
 
-            await Connection.SendAsync(command).ConfigureAwait(false);
+            Connection.Send(command);
         }
 
-        public Task SaveAsync(IDeepStreamRecord record)
+        public void Save(IDeepStreamRecord record)
         {
             if (!IsRecordTracked(record))
                 throw new DeepStreamException("Record not tracked");
@@ -139,7 +132,7 @@ namespace DeepStreamNet
             wrapper.IncrementVersion();
 
             var command = Utils.BuildCommand(Topic.RECORD, Action.UPDATE, wrapper.RecordName, wrapper.RecordVersion, JsonConvert.SerializeObject(record));
-            return Connection.SendAsync(command);
+            Connection.Send(command);
         }
 
         public async Task DiscardAsync(IDeepStreamRecord record)

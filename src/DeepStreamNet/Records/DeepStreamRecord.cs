@@ -13,7 +13,7 @@ namespace DeepStreamNet
 
         public ChangeListener Listener { get; private set; }
 
-        public DeepStreamRecord(string name, int version, IDictionary<string, object> obj)
+        public DeepStreamRecord(string name, int version, Dictionary<string, object> obj)
             : base(name,null, obj)
         {
             RecordVersion = version;

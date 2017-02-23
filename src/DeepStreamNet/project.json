@@ -18,7 +18,8 @@
   "authors": [ "schulz3000" ],
 
   "dependencies": {
-    "Newtonsoft.Json": "9.0.1"
+    "Newtonsoft.Json": "9.0.1",
+    "WebSocket4Net": "0.15.0-beta6"
   },
   "buildOptions": {
     "xmlDoc": true,
@@ -37,8 +38,8 @@
         "define": [ "COREFX" ]
       },
       "dependencies": {
-        "NETStandard.Library": "1.6.0",
-        "System.Reflection.TypeExtensions": "4.1.0"
+        "NETStandard.Library": "1.6.1",
+        "System.Reflection.TypeExtensions": "4.3.0"
       }
     }
   }

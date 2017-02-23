@@ -85,17 +85,17 @@ namespace DeepStreamNet.Records
                 // Don't care about e.Action, if there are old items, Remove them...
                 if (e.OldItems != null)
                 {
-                    foreach (var item in e.OldItems.OfType<INotifyPropertyChanged>())
+                    foreach (var item in e.OldItems.OfType<INotifyPropertyChanged>().ToArray())
                         RemoveItem(item);
                 }
 
                 // ...add new items as well
                 if (e.NewItems != null)
                 {
-                    foreach (var item in e.NewItems.OfType<INotifyPropertyChanged>())
+                    foreach (var item in e.NewItems.OfType<INotifyPropertyChanged>().ToArray())
                         ResetChildListener(item);
 
-                    foreach (var item in e.NewItems.OfType<object>().Where(w => !(w is INotifyPropertyChanged)))
+                    foreach (var item in e.NewItems.OfType<object>().Where(w => !(w is INotifyPropertyChanged)).ToArray())
                         RaisePropertyChanged(_propertyName + "." + e.NewStartingIndex);
                 }
             }

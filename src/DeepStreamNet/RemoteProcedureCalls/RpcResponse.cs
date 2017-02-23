@@ -16,22 +16,22 @@ namespace DeepStreamNet
             Connection = connection;
         }
 
-        public async Task Error(string message)
+        public void Error(string message)
         {
             var exceptionCommand = Utils.BuildCommand(Topic.RPC, Action.ERROR, message, ProcedureName, Uid);
-            await Connection.SendAsync(exceptionCommand).ConfigureAwait(false);
+             Connection.Send(exceptionCommand);
         }
 
-        public async Task Reject()
+        public void Reject()
         {
             var rejectCommand = Utils.BuildCommand(Topic.RPC, Action.REJECTION, ProcedureName, Uid);
-            await Connection.SendAsync(rejectCommand).ConfigureAwait(false);
+            Connection.Send(rejectCommand);
         }
 
-        public async Task Send(TResult result)
+        public void Send(TResult result)
         {
             var resultCommand = Utils.BuildCommand(Topic.RPC, Action.RESPONSE, ProcedureName, Uid, Utils.ConvertAndPrefixData(result));
-            await Connection.SendAsync(resultCommand).ConfigureAwait(false);
+            Connection.Send(resultCommand);
         }
     }
 }
