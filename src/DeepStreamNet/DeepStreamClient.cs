@@ -13,8 +13,6 @@ namespace DeepStreamNet
     {
         readonly Connection connection;
 
-        readonly CancellationTokenSource cts = new CancellationTokenSource();
-
         /// <summary>
         /// DeepStreamEvents
         /// </summary>
@@ -37,7 +35,7 @@ namespace DeepStreamNet
         /// <param name="options" cref="DeepStreamOptions">set options other then default</param>
         public DeepStreamClient(string host, int port, string path, DeepStreamOptions options)
         {
-            connection = new Connection(host, port, path, cts.Token);
+            connection = new Connection(host, port, path);
             Events = new DeepStreamEvents(connection, options);
             Records = new DeepStreamRecords(connection, options);
             Rpcs = new DeepStreamRemoteProcedureCalls(connection, options);
@@ -50,7 +48,7 @@ namespace DeepStreamNet
         /// <param name="host">deepstream.io endpoint address or ip</param>
         /// <param name="port">deeptstream.io endpoint port</param>
         /// <param name="path">deeptstream.io endpoint path</param>
-        public DeepStreamClient(string host, int port, string path = "deepstream")
+        public DeepStreamClient(string host, int port = 6020, string path = "deepstream")
             : this(host, port, path, new DeepStreamOptions())
         {
 
@@ -145,8 +143,6 @@ namespace DeepStreamNet
         {
             if (disposing)
             {
-                cts.Dispose();
-
                 connection.Dispose();
             }
         }

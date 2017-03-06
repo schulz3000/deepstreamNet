@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Threading.Tasks;
-using DeepStreamNet.Contracts;
 
 namespace DeepStreamNet.Core.ConsoleSample
 {
@@ -20,7 +19,7 @@ namespace DeepStreamNet.Core.ConsoleSample
 
         async static Task Exec()
         {
-            var client = new DeepStreamClient("localhost", 6021);
+            var client = new DeepStreamClient("localhost", 6020);
 
             if (await client.LoginAsync())
             {
@@ -28,8 +27,8 @@ namespace DeepStreamNet.Core.ConsoleSample
 
                 await Task.Delay(2000);
 
-                await client.Events.PublishAsync("test", "Hello World");                
-
+                client.Events.Publish("test", "Hello World");
+                
                 await Task.Delay(30000);
 
                 Console.ReadKey();

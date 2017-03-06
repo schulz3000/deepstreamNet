@@ -1,10 +1,8 @@
 ﻿using Newtonsoft.Json;
+using SuperSocket.ClientEngine;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
-using System.Net.Sockets;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using WebSocket4Net;
@@ -14,11 +12,10 @@ namespace DeepStreamNet
     class Connection : IDisposable
     {
         readonly WebSocket client;
-        readonly CancellationToken cts;
 
         public ConnectionState State { get; internal set; }
 
-        internal EventHandler ChallangeReceived;
+        internal event EventHandler ChallangeReceived;
 
         internal event EventHandler<AcknoledgedArgs> Acknoledged;
 
@@ -38,7 +35,7 @@ namespace DeepStreamNet
 
         internal event EventHandler<RemoteProcedureMessageArgs> RemoteProcedureResultReceived;
 
-        public Connection(string host, int port, string path, CancellationToken token)
+        public Connection(string host, int port, string path)
         {
             if (port < 1)
                 throw new ArgumentOutOfRangeException(nameof(port));
@@ -48,24 +45,30 @@ namespace DeepStreamNet
 
             if (string.IsNullOrWhiteSpace(path))
                 throw new ArgumentNullException(nameof(path));
-
-            cts = token;
-
+                       
             State = ConnectionState.NONE;
 
-            client = new WebSocket("ws://"+host + ":" + port.ToString()+"/"+ path);
+            client = new WebSocket($"ws://{host}:{port}/{path}", userAgent:"deepstreamNet Client");
             client.NoDelay = true;
         }
 
         public Task OpenAsync()
         {
             TaskCompletionSource<bool> tcs = new TaskCompletionSource<bool>();
-            client.Opened += (s, e) => {
+
+            EventHandler openHandler = null;
+            openHandler = (s, e) => {
+                client.Opened -= openHandler;
                 tcs.SetResult(true);
             };
-            client.Error += (s, e) => {
+            client.Opened += openHandler;
+
+            EventHandler<ErrorEventArgs> errorHandler = null;
+            errorHandler = (s, e) => {
+                client.Error -= errorHandler;
                 tcs.TrySetException(e.Exception);
             };
+            client.Error += errorHandler;
 
             client.Open();
 
@@ -148,12 +151,12 @@ namespace DeepStreamNet
         }        
 
         async void Client_MessageReceived(object sender, MessageReceivedEventArgs e)
-        {
+        {           
             var groups = e.Message.Split(Constants.GroupSeperator);
 
             for (int i = 0; i < groups.Length - 1; i++)
             {
-                await Notify(groups[i]);
+                await Notify(groups[i]).ConfigureAwait(false);
             }           
         }
 
@@ -281,12 +284,11 @@ namespace DeepStreamNet
                     var dataWithType = Utils.ConvertPrefixedData(split[4]);
                     RemoteProcedureResultReceived?.Invoke(this, new RemoteProcedureMessageArgs(topic, responseAction, split[2], split[3], dataWithType.Key, dataWithType.Value));
                 }
-
                 //provider
                 else if (responseAction == Action.REQUEST)
                 {
                     var dataWithType = Utils.ConvertPrefixedData(split[4]);
-                    await Task.Factory.FromAsync((asyncCallback, @object) => this.PerformRemoteProcedureRequested.BeginInvoke(this, new RemoteProcedureMessageArgs(topic, responseAction, split[2], split[3], dataWithType.Key, dataWithType.Value), asyncCallback, @object), PerformRemoteProcedureRequested.EndInvoke, null);
+                    await Task.Factory.FromAsync((asyncCallback, @object) => PerformRemoteProcedureRequested.BeginInvoke(this, new RemoteProcedureMessageArgs(topic, responseAction, split[2], split[3], dataWithType.Key, dataWithType.Value), asyncCallback, @object), PerformRemoteProcedureRequested.EndInvoke, null).ConfigureAwait(false);
                 }
                 else if (responseAction == Action.ERROR)
                 {
@@ -319,6 +321,8 @@ namespace DeepStreamNet
         {
             if (disposing)
             {
+                client.MessageReceived -= Client_MessageReceived;
+
 #if NET40 || NET45 || NET451
                 client.Close();
                 (client as IDisposable).Dispose();
