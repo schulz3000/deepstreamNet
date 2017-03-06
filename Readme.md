@@ -9,7 +9,7 @@ dotnet Client for [deepstream.io](https://deepstream.io)
 ##Usage
 
 ```csharp
-var client = new DeepStreamClient("localhost", 6021);
+var client = new DeepStreamClient("localhost", 6021, "deepstream");
 
 if(await client.LoginAsync())
 {
@@ -30,13 +30,13 @@ client.Dispose();
 var eventSubscription = await client.Events.Subscribe("test", x => { Console.WriteLine(x); });
 
 // Send 'Hello' to all Subscribers of Event 'test'
-await client.PublishAsync("test", "Hello");
+await client.Publish("test", "Hello");
 
 // Send number '42' to all Subscribers of Event 'test'
-await client.PublishAsync("test", 42);
+await client.Publish("test", 42);
 
 // Send object '{Property1="Hello", Property2=42}' to all Subscribers of Event 'test'
-await client.PublishAsync("test", new {Property1="Hello", Property2=42});
+await client.Publish("test", new {Property1="Hello", Property2=42});
 
 // Unsubscribe from Event 'test'
 await eventSubscription.DisposeAsync();
@@ -84,9 +84,15 @@ var result = await client.Rpcs.Request<string,string>("toLowerCase", "abc");
 
 ```csharp
 //Define Method for RemoteProcedure
-string ToUpperCase(string input)
+async Task ToUpperCase(string input, IRpcResponse<string> response)
 {
-    return input.ToUpper();
+    if (string.IsNullOrEmpty(input))
+        await response.Error("input must not be empty");
+
+    if (input == "ABC")
+        await response.Reject();
+
+    await response.Send(input.ToUpper());
 }
 
 //Register RemoteProcedure 'toUpperCase' with InputArgs as string and Result as string

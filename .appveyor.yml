@@ -1,11 +1,12 @@
 version: 1.0.{build}
+os: Visual Studio 2015
 pull_requests:
   do_not_increment_build_number: true
+environment:
+  # Don't report back to the mothership
+  DOTNET_CLI_TELEMETRY_OPTOUT: 1
 skip_tags: true
-image: Visual Studio 2015
-before_build:
-- cmd: nuget restore src/DeepStreamNet.sln
-build:
-  project: src/DeepStreamNet.sln
-  parallel: true
-  verbosity: minimal
+build_script:
+  - ps: dotnet --info  
+  - ps: dotnet restore
+  - ps: dotnet --verbose build .\src\DeepStreamNet
