@@ -1,5 +1,4 @@
 ﻿using DeepStreamNet.Contracts;
-using System.Threading.Tasks;
 
 namespace DeepStreamNet
 {

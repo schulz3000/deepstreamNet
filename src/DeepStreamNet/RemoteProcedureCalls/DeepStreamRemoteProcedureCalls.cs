@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Reflection;
 
 namespace DeepStreamNet
 {
@@ -18,10 +17,9 @@ namespace DeepStreamNet
         }
 
         async void Connection_PerformRemoteProcedureRequested(object sender, RemoteProcedureMessageArgs e)
-        {
-            var ackCommand = Utils.BuildCommand(Topic.RPC, Action.ACK, e.Identifier, e.Uid);
-
-            Connection.Send(ackCommand);
+        {            
+            var command = Utils.BuildCommand(Topic.RPC, Action.ACK, Action.REQUEST, e.Identifier, e.Uid);
+            Connection.Send(command);
 
             if (!remoteProcedures.Any(a => a.Name == e.Identifier))
             {
@@ -45,8 +43,11 @@ namespace DeepStreamNet
 
                     var rpcResponseType = typeof(RpcResponse<>).MakeGenericType(procedure.ReturnType);
                     var response = Activator.CreateInstance(rpcResponseType, e.Identifier, e.Uid, Connection);
+                                        
+                    var result = procedure.Procedure.DynamicInvoke(parameter, response);
 
-                    await (Task)procedure.Procedure.DynamicInvoke(parameter, response);
+                    if (result != null)
+                        await (Task)result;
                 }
                 catch
                 {
@@ -56,7 +57,17 @@ namespace DeepStreamNet
             }
         }
 
-        public async Task<IAsyncDisposable> RegisterProvider<TInput, TResult>(string procedureName, Func<TInput, IRpcResponse<TResult>, Task> procedure)
+        public Task<IAsyncDisposable> RegisterProviderAsync<TInput, TResult>(string procedureName, Func<TInput, IRpcResponse<TResult>, Task> procedure)
+        {
+            return InnerRegisterProviderAsync(procedureName, procedure);
+        }
+
+        public Task<IAsyncDisposable> RegisterProviderAsync<TInput, TResult>(string procedureName, Action<TInput, IRpcResponse<TResult>> procedure)
+        {
+           return InnerRegisterProviderAsync(procedureName ,procedure);            
+        }
+
+        async Task<IAsyncDisposable> InnerRegisterProviderAsync(string procedureName, Delegate procedure)
         {
             if (string.IsNullOrWhiteSpace(procedureName))
                 throw new ArgumentNullException(nameof(procedureName));
@@ -73,7 +84,7 @@ namespace DeepStreamNet
             return new AsyncDisposableAction(async () =>
             {
                 remoteProcedures.RemoveWhere(w => w.Name == procedureName);
-                await Connection.SendWithAckAsync(Topic.RPC, Action.UNSUBSCRIBE, Action.UNSUBSCRIBE, procedureName, Options.RpcAckTimeout).ConfigureAwait(false);
+                await Connection.SendWithAckAsync(Topic.RPC, Action.UNSUBSCRIBE, Action.ACK, procedureName, Options.RpcAckTimeout).ConfigureAwait(false);
             });
         }
 
@@ -91,7 +102,7 @@ namespace DeepStreamNet
 
             ackHandler = (s, e) =>
             {
-                if (e.Uid != uid && e.Identifier != procedureName)
+                if (e.Uid != uid || e.Identifier != procedureName)
                     return;
 
                 Connection.Error -= errorHandler;
@@ -201,6 +212,6 @@ namespace DeepStreamNet
                 if (Connection != null)
                     Connection.PerformRemoteProcedureRequested -= Connection_PerformRemoteProcedureRequested;
             }
-        }        
+        }
     }
 }
