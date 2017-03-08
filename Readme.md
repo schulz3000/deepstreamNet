@@ -6,10 +6,13 @@ dotnet Client for [deepstream.io](https://deepstream.io)
 ##Builds
 [![Build status](https://ci.appveyor.com/api/projects/status/aj8op4emvlivn7jx/branch/develop?svg=true)](https://ci.appveyor.com/project/schulz3000/deepstreamnet/branch/develop) [![Build Status](https://travis-ci.org/schulz3000/deepstreamNet.svg?branch=develop)](https://travis-ci.org/schulz3000/deepstreamNet)
 
+##NuGet
+[![deepstreamNet](https://img.shields.io/nuget/v/deepstreamNet.svg?style=flat)](https://www.nuget.org/packages/deepstreamNet)
+
 ##Usage
 
 ```csharp
-var client = new DeepStreamClient("localhost", 6021, "deepstream");
+var client = new DeepStreamClient("localhost", 6020, "deepstream");
 
 if(await client.LoginAsync())
 {
@@ -30,13 +33,13 @@ client.Dispose();
 var eventSubscription = await client.Events.Subscribe("test", x => { Console.WriteLine(x); });
 
 // Send 'Hello' to all Subscribers of Event 'test'
-await client.Publish("test", "Hello");
+client.Publish("test", "Hello");
 
 // Send number '42' to all Subscribers of Event 'test'
-await client.Publish("test", 42);
+client.Publish("test", 42);
 
 // Send object '{Property1="Hello", Property2=42}' to all Subscribers of Event 'test'
-await client.Publish("test", new {Property1="Hello", Property2=42});
+client.Publish("test", new {Property1="Hello", Property2=42});
 
 // Unsubscribe from Event 'test'
 await eventSubscription.DisposeAsync();
@@ -75,8 +78,8 @@ await client.Records.SaveAsync(record);
 ###RPC Request
 
 ```csharp
-//Request RemoteProcedure 'toLowerCase' with argument 'abc'
-var result = await client.Rpcs.Request<string,string>("toLowerCase", "abc");
+//Request RemoteProcedure 'toUpperCase' with argument 'abc'
+var result = await client.Rpcs.MakeRequest<string,string>("toUpperCase", "abc");
 //result == "ABC"
 ```
 
@@ -84,22 +87,46 @@ var result = await client.Rpcs.Request<string,string>("toLowerCase", "abc");
 
 ```csharp
 //Define Method for RemoteProcedure
-async Task ToUpperCase(string input, IRpcResponse<string> response)
+void ToUpperCase(string input, IRpcResponse<string> response)
 {
     if (string.IsNullOrEmpty(input))
-        await response.Error("input must not be empty");
+        response.Error("input must not be empty");
 
     if (input == "ABC")
-        await response.Reject();
+        response.Reject();
 
-    await response.Send(input.ToUpper());
+    response.Send(input.ToUpper());
 }
 
 //Register RemoteProcedure 'toUpperCase' with InputArgs as string and Result as string
-var proc = await client.Rpcs.Register<string, string>("toUpperCase", ToUpperCase);
+var proc = await client.Rpcs.RegisterProviderAsync<string, string>("toUpperCase", ToUpperCase);
 
 //alternative with anonymous Method as RemoteProcedure
-var proc = await client.Rpcs.Register<string, string>("toUpperCase", (input)=>input.ToUpper());
+var proc = await client.Rpcs.RegisterProviderAsync<string, string>("toUpperCase", (input,response)=> response.Send(input.ToUpper()));
+
+
+//Define async Method for RemoteProcedure
+async Task ToUpperCaseAsync(string input, IRpcResponse<string> response)
+{
+    if (string.IsNullOrEmpty(input))
+        response.Error("input must not be empty");
+
+    if (input == "ABC")
+        response.Reject();
+
+    await Task.Delay(500);
+
+    response.Send(input.ToUpper());
+}
+
+//Register async RemoteProcedure 'toUpperCase' with InputArgs as string and Result as string
+var proc = await client.Rpcs.RegisterProviderAsync<string, string>("toUpperCase", ToUpperCaseAsync);
+
+//alternative with anonymous Method as RemoteProcedure
+var proc = await client.Rpcs.RegisterProviderAsync<string, string>("toUpperCase", async (input,response)=> {
+    await Task.Delay(500);
+    response.Send(input.ToUpper();
+    }));
 
 //Unregister RemoteProcedure
 await proc.DisposeAsync(); 
