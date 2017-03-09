@@ -51,7 +51,11 @@ namespace DeepStreamNet
             State = ConnectionState.NONE;
 
             client = new WebSocket($"ws://{host}:{port}/{path}", userAgent: "deepstreamNet Client");
+
+#if !__IOS__
             client.NoDelay = true;
+#endif
+
         }
 
         public Task OpenAsync()
