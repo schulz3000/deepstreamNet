@@ -17,6 +17,8 @@ namespace DeepStreamNet
 
         internal event EventHandler ChallangeReceived;
 
+        internal event EventHandler PingReceived;
+
         internal event EventHandler<AcknoledgedArgs> Acknoledged;
 
         internal event EventHandler<ErrorArgs> Error;
@@ -174,6 +176,8 @@ namespace DeepStreamNet
             {
                 if (responseAction == Action.CHALLENGE)
                     ChallangeReceived?.Invoke(this, EventArgs.Empty);
+                else if (responseAction == Action.PING)
+                    PingReceived?.Invoke(this, EventArgs.Empty);
             }
             else if (topic == Topic.AUTH)
             {

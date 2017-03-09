@@ -106,7 +106,8 @@ namespace DeepStreamNet
             if (result)
             {
                 connection.State = ConnectionState.OPEN;
-            }
+                connection.PingReceived += Connection_PingReceived;
+            }            
 
             return result;
         }
@@ -130,6 +131,11 @@ namespace DeepStreamNet
             return tcs.Task;
         }
 
+        void Connection_PingReceived(object sender, EventArgs e)
+        {
+            connection.Send(Utils.BuildCommand(Topic.CONNECTION, Action.PONG));
+        }
+
         /// <summary>
         /// Closing connection to deepstream.io server
         /// </summary>
@@ -143,6 +149,7 @@ namespace DeepStreamNet
         {
             if (disposing)
             {
+                connection.PingReceived -= Connection_PingReceived;
                 connection.Dispose();
             }
         }

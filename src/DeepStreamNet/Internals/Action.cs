@@ -6,6 +6,8 @@ namespace DeepStreamNet
     {
         public static Action Empty { get { return new Action(null); } }
         public static Action ACK { get { return new Action("A"); } }
+        public static Action PING { get { return new Action("PI"); } }
+        public static Action PONG { get { return new Action("PO"); } }
         public static Action READ { get { return new Action("R"); } }
         public static Action REDIRECT { get { return new Action("RED"); } }
         public static Action CHALLENGE { get { return new Action("CH"); } }
