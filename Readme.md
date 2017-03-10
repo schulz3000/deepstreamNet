@@ -79,6 +79,9 @@ await listener.DisposeAsync();
 ```csharp
 var record = await client.Records.GetRecordAsync("test");
 
+// check if Record exists
+bool has = await client.Records.HasAsync("test"); //returns true
+
 record["FirstName"] = "John";
 record["Age"] = 28;
 

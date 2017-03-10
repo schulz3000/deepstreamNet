@@ -98,8 +98,8 @@ namespace DeepStreamNet
                 return list;
 
             dynamic innerRecord = await GetRecordAsync(name).ConfigureAwait(false);
-            
-            list = new DeepStreamList(name,this,innerRecord);
+
+            list = new DeepStreamList(name, this, innerRecord);
 
             lists.Add(list);
             return list;
@@ -159,6 +159,27 @@ namespace DeepStreamNet
             {
                 records.Remove(wrapper);
             }
+        }
+
+        public Task<bool> HasAsync(string name)
+        {
+            var tcs = new TaskCompletionSource<bool>();
+
+            EventHandler<HasRecordArgs> handler = null;
+            handler = (s, e) =>
+            {
+                if (e.Topic == Topic.RECORD && e.Action == Action.HAS && e.Name == name)
+                {
+                    Connection.HasRecordReceived -= handler;
+                    tcs.TrySetResult(e.Result);
+                }
+            };
+
+            Connection.HasRecordReceived += handler;
+
+            Connection.Send(Utils.BuildCommand(Topic.RECORD, Action.HAS, name));
+
+            return tcs.Task;
         }
 
         async Task<DeepStreamRecord> InnerGetRecord(string identifier)

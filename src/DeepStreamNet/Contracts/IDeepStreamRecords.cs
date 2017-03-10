@@ -41,5 +41,12 @@ namespace DeepStreamNet.Contracts
         /// <param name="name"></param>
         /// <returns></returns>
         Task<IDeepStreamList> GetListAsync(string name);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        Task<bool> HasAsync(string name);
     }
 }

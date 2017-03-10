@@ -3,7 +3,6 @@ using SuperSocket.ClientEngine;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Threading;
 using System.Threading.Tasks;
 using WebSocket4Net;
 
@@ -33,6 +32,8 @@ namespace DeepStreamNet
 
         internal event EventHandler<RecordPatchedArgs> RecordPatched;
 
+        internal event EventHandler<HasRecordArgs> HasRecordReceived;
+
         internal event EventHandler<RemoteProcedureMessageArgs> PerformRemoteProcedureRequested;
 
         internal event EventHandler<RemoteProcedureMessageArgs> RemoteProcedureResultReceived;
@@ -60,7 +61,7 @@ namespace DeepStreamNet
 
         public Task OpenAsync()
         {
-            TaskCompletionSource<bool> tcs = new TaskCompletionSource<bool>();
+            var tcs = new TaskCompletionSource<bool>();
 
             EventHandler openHandler = null;
             openHandler = (s, e) =>
@@ -126,12 +127,12 @@ namespace DeepStreamNet
 
             timerHandler = (s, e) =>
             {
-                 timer.Elapsed -= timerHandler;
-                 timer.Dispose();
-                 Acknoledged -= ackHandler;
-                 Error -= errorHandler;
+                timer.Elapsed -= timerHandler;
+                timer.Dispose();
+                Acknoledged -= ackHandler;
+                Error -= errorHandler;
 
-                 tcs.TrySetException(new DeepStreamException(Constants.Errors.ACK_TIMEOUT));
+                tcs.TrySetException(new DeepStreamException(Constants.Errors.ACK_TIMEOUT));
             };
 
             var command = Utils.BuildCommand(topic, action, identifier);
@@ -211,7 +212,7 @@ namespace DeepStreamNet
                 }
                 else if (responseAction == Action.SUBSCRIPTION_FOR_PATTERN_FOUND)
                 {
-                    EventListenerChanged?.Invoke(this, new EventListenerChangedArgs(split[2],split[3], EventListenerState.Add));
+                    EventListenerChanged?.Invoke(this, new EventListenerChangedArgs(split[2], split[3], EventListenerState.Add));
                 }
                 else if (responseAction == Action.SUBSCRIPTION_FOR_PATTERN_REMOVED)
                 {
@@ -239,6 +240,10 @@ namespace DeepStreamNet
                 else if (responseAction == Action.PATCH)
                 {
                     RecordPatched?.Invoke(this, new RecordPatchedArgs(topic, responseAction, split[2], int.Parse(split[3], CultureInfo.InvariantCulture), split[4], Utils.ConvertPrefixedData(split[5])));
+                }
+                else if (responseAction == Action.HAS)
+                {
+                    HasRecordReceived?.Invoke(this, new HasRecordArgs(topic, responseAction, split[2], "T".Equals(split[3], StringComparison.Ordinal)));
                 }
                 else
                 {
