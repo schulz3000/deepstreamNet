@@ -23,12 +23,12 @@ namespace DeepStreamNet.Core.ConsoleSample
 
             if (await client.LoginAsync())
             {
-                var disp = await client.Events.Subscribe("test", Console.WriteLine);
+                var disp = await client.Events.SubscribeAsync("test", Console.WriteLine);
 
                 await Task.Delay(2000);
 
                 client.Events.Publish("test", "Hello World");
-                
+
                 await Task.Delay(30000);
 
                 Console.ReadKey();

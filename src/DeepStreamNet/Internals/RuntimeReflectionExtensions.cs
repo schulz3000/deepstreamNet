@@ -13,7 +13,8 @@ namespace System.Reflection
         /// <returns></returns>
         public static MethodInfo GetMethodInfo(this Delegate del)
         {
-            if (del == null) throw new ArgumentNullException(nameof(del));
+            if (del == null)
+                throw new ArgumentNullException(nameof(del));
 
             return del.Method;
         }

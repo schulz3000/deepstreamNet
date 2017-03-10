@@ -9,6 +9,10 @@ dotnet Client for [deepstream.io](https://deepstream.io)
 ##NuGet
 [![deepstreamNet](https://img.shields.io/nuget/v/deepstreamNet.svg?style=flat)](https://www.nuget.org/packages/deepstreamNet)
 
+##Frameworks
+DotNet >= 4.0
+NetStandard >= 1.5
+
 ##Usage
 
 ```csharp
@@ -30,7 +34,7 @@ client.Dispose();
 
 ```csharp
 // Subscribe to Event 'test'
-var eventSubscription = await client.Events.Subscribe("test", x => { Console.WriteLine(x); });
+var eventSubscription = await client.Events.SubscribeAsync("test", x => { Console.WriteLine(x); });
 
 // Send 'Hello' to all Subscribers of Event 'test'
 client.Publish("test", "Hello");
@@ -43,6 +47,31 @@ client.Publish("test", new {Property1="Hello", Property2=42});
 
 // Unsubscribe from Event 'test'
 await eventSubscription.DisposeAsync();
+
+// Listen to events
+var listener = await client.Events.ListenAsync("^test/.*", (eventName, isSubscribed, response) =>
+{
+   if (isSubscribed)
+   {
+      if (/* if you want to provide */)
+      {
+         response.Accept();
+         client.Events.Publish(eventName, "Hello World");
+         // start publishing data via client.Events.Publish(eventName, /* data */)
+      }
+      else
+      {
+          response.Reject(); // let deepstream ask another provider
+      }
+    }
+    else
+    {
+        // stop publishing data
+    }
+});
+
+// Unlisten
+await listener.DisposeAsync();
 ```
 
 ###Records

@@ -8,11 +8,24 @@ namespace DeepStreamNet
     class DeepStreamEvents : DeepStreamBase, IDeepStreamEvents
     {
         readonly Dictionary<string, int> eventsDict = new Dictionary<string, int>();
-        readonly Dictionary<string, int> listenerDict = new Dictionary<string, int>();
+        readonly Dictionary<string, Delegate> listenerDict = new Dictionary<string, Delegate>();
 
         public DeepStreamEvents(Connection connection, DeepStreamOptions options)
             : base(connection, options)
         {
+            Connection.EventListenerChanged += Connection_EventListenerChanged;
+        }
+
+        async void Connection_EventListenerChanged(object sender, EventListenerChangedArgs e)
+        {
+            if (!listenerDict.ContainsKey(e.Pattern))
+                return;
+
+            var listener = listenerDict[e.Pattern];
+
+            var result = listener.DynamicInvoke(e.Name, e.EventListenerState == EventListenerState.Add, new EventListenerResponse(e.Pattern, e.Name, Connection));
+            if (result != null)
+                await (Task)result;
         }
 
         public void Publish<T>(string eventName, T data)
@@ -28,7 +41,7 @@ namespace DeepStreamNet
             Connection.Send(command);
         }
 
-        public async Task<IAsyncDisposable> Subscribe(string eventName, Action<object> data)
+        public async Task<IAsyncDisposable> SubscribeAsync(string eventName, Action<object> data)
         {
             ThrowIfConnectionNotOpened();
 
@@ -42,7 +55,7 @@ namespace DeepStreamNet
 
             if (!eventsDict.ContainsKey(eventName))
             {
-                await Subscribe(eventName).ConfigureAwait(false);
+                await SubscribeAsync(eventName).ConfigureAwait(false);
                 eventsDict.Add(eventName, 0);
             }
             else
@@ -56,12 +69,22 @@ namespace DeepStreamNet
                 Connection.EventReceived -= handler;
                 if (eventsDict[eventName] == 0)
                 {
-                    await UnSubscribe(eventName).ConfigureAwait(false);
+                    await UnSubscribeAsync(eventName).ConfigureAwait(false);
                 }
             });
         }
 
-        public async Task<IAsyncDisposable> Listen(string pattern)
+        public Task<IAsyncDisposable> ListenAsync(string pattern, Action<string, bool, IEventListenerResponse> listener)
+        {
+            return InnerListenAsync(pattern, listener);
+        }
+
+        public Task<IAsyncDisposable> ListenAsync(string pattern, Func<string, bool, IEventListenerResponse, Task> listener)
+        {
+            return InnerListenAsync(pattern, listener);
+        }
+
+        async Task<IAsyncDisposable> InnerListenAsync(string pattern, Delegate listener)
         {
             if (string.IsNullOrWhiteSpace(pattern))
                 throw new ArgumentNullException(nameof(pattern));
@@ -69,35 +92,23 @@ namespace DeepStreamNet
             ThrowIfConnectionNotOpened();
 
             if (listenerDict.ContainsKey(pattern))
-                throw new DeepStreamException("we still listen for " + pattern);
+                throw new DeepStreamException("we already listen for " + pattern);
 
-            EventHandler<EventListenerChangedArgs> handler = (s, e) =>
+            if (!listenerDict.ContainsKey(pattern) && await Connection.SendWithAckAsync(Topic.EVENT, Action.LISTEN, Action.LISTEN, pattern, Options.SubscriptionTimeout).ConfigureAwait(false))
             {
-                if (string.Equals(e.Pattern, pattern, StringComparison.Ordinal) && listenerDict.ContainsKey(pattern))
-                    listenerDict[pattern] += (int)e.EventListenerState;
-            };
-
-            if (!listenerDict.ContainsKey(pattern))
-            {
-                if (await Connection.SendWithAckAsync(Topic.EVENT, Action.LISTEN, Action.LISTEN, pattern, Options.SubscriptionTimeout))
-                {
-                    listenerDict.Add(pattern, 0);
-                }
+                listenerDict.Add(pattern, listener);
             }
-
-            Connection.EventListenerChanged += handler;
 
             return new AsyncDisposableAction(async () =>
             {
                 if (await Connection.SendWithAckAsync(Topic.EVENT, Action.UNLISTEN, Action.UNLISTEN, pattern, Options.SubscriptionTimeout).ConfigureAwait(false))
                 {
-                    Connection.EventListenerChanged -= handler;
                     listenerDict.Remove(pattern);
                 }
             });
         }
 
-        async Task Subscribe(string eventName)
+        async Task SubscribeAsync(string eventName)
         {
             if (string.IsNullOrWhiteSpace(eventName))
                 throw new ArgumentNullException(nameof(eventName));
@@ -108,7 +119,7 @@ namespace DeepStreamNet
                 throw new DeepStreamException(Constants.Errors.ACK_TIMEOUT);
         }
 
-        async Task UnSubscribe(string eventName)
+        async Task UnSubscribeAsync(string eventName)
         {
             if (string.IsNullOrWhiteSpace(eventName))
                 throw new ArgumentNullException(nameof(eventName));

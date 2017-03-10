@@ -41,7 +41,6 @@ namespace DeepStreamNet
             Rpcs = new DeepStreamRemoteProcedureCalls(connection, options);
         }
 
-
         /// <summary>
         /// DeepStreamClient for connecting to deepstream.io server
         /// </summary>
@@ -51,7 +50,6 @@ namespace DeepStreamNet
         public DeepStreamClient(string host, int port = 6020, string path = "deepstream")
             : this(host, port, path, new DeepStreamOptions())
         {
-
         }
 
         /// <summary>
@@ -82,7 +80,7 @@ namespace DeepStreamNet
 
             connection.StartMessageLoop();
 
-            await RegisterAuthChallange();
+            await RegisterAuthChallange().ConfigureAwait(false);
 
             EventHandler<ErrorArgs> errorHandler = null;
 
@@ -107,20 +105,18 @@ namespace DeepStreamNet
             {
                 connection.State = ConnectionState.OPEN;
                 connection.PingReceived += Connection_PingReceived;
-            }            
+            }
 
             return result;
         }
 
         Task RegisterAuthChallange()
         {
-            TaskCompletionSource<bool> tcs = new TaskCompletionSource<bool>();
+            var tcs = new TaskCompletionSource<bool>();
 
             EventHandler handler = null;
-
             handler = (s, e) =>
             {
-
                 connection.Send(Utils.BuildCommand(Topic.CONNECTION, Action.CHALLENGE_RESPONSE));
                 connection.ChallangeReceived -= handler;
                 tcs.SetResult(true);

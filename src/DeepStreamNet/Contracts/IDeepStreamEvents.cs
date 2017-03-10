@@ -23,13 +23,22 @@ namespace DeepStreamNet.Contracts
         /// <param name="eventName"></param>
         /// <param name="data"></param>
         /// <returns></returns>
-        Task<IAsyncDisposable> Subscribe(string eventName, Action<object> data);
+        Task<IAsyncDisposable> SubscribeAsync(string eventName, Action<object> data);
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="pattern"></param>
+        /// <param name="listener"></param>
         /// <returns></returns>
-        Task<IAsyncDisposable> Listen(string pattern);
+        Task<IAsyncDisposable> ListenAsync(string pattern, Action<string, bool, IEventListenerResponse> listener);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="pattern"></param>
+        /// <param name="listener"></param>
+        /// <returns></returns>
+        Task<IAsyncDisposable> ListenAsync(string pattern, Func<string, bool, IEventListenerResponse, Task> listener);
     }
 }

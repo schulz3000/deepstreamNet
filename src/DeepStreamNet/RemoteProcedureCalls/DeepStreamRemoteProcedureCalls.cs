@@ -135,7 +135,7 @@ namespace DeepStreamNet
 
             await SendWithAckAsync(Topic.RPC, Action.REQUEST, Action.ACK, procedureName, uid, parameter, Options.RpcAckTimeout).ConfigureAwait(false);
 
-            return await tcs.Task;
+            return await tcs.Task.ConfigureAwait(false);
         }
 
         async Task<bool> SendWithAckAsync<T>(Topic topic, Action action, Action expectedReceivedAction, string identifier, string uid, T parameter, int ackTimeout)

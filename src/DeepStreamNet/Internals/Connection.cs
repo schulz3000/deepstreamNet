@@ -88,7 +88,7 @@ namespace DeepStreamNet
             client.Send(command);
         }
 
-        public async Task<bool> SendWithAckAsync(Topic topic, Action action, Action expectedReceivedAction, string identifier, int ackTimeout)
+        public Task<bool> SendWithAckAsync(Topic topic, Action action, Action expectedReceivedAction, string identifier, int ackTimeout)
         {
             var tcs = new TaskCompletionSource<bool>();
 
@@ -144,7 +144,7 @@ namespace DeepStreamNet
 
             Send(command);
 
-            return await tcs.Task.ConfigureAwait(false);
+            return tcs.Task;
         }
 
         public void StartMessageLoop()
@@ -211,11 +211,11 @@ namespace DeepStreamNet
                 }
                 else if (responseAction == Action.SUBSCRIPTION_FOR_PATTERN_FOUND)
                 {
-                    EventListenerChanged?.Invoke(this, new EventListenerChangedArgs(split[2], EventListenerState.Add));
+                    EventListenerChanged?.Invoke(this, new EventListenerChangedArgs(split[2],split[3], EventListenerState.Add));
                 }
                 else if (responseAction == Action.SUBSCRIPTION_FOR_PATTERN_REMOVED)
                 {
-                    EventListenerChanged?.Invoke(this, new EventListenerChangedArgs(split[2], EventListenerState.Remove));
+                    EventListenerChanged?.Invoke(this, new EventListenerChangedArgs(split[2], split[3], EventListenerState.Remove));
                 }
                 else
                 {

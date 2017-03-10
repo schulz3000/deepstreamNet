@@ -25,6 +25,8 @@ namespace DeepStreamNet
         public static Action SUBSCRIPTION_FOR_PATTERN_REMOVED { get { return new Action("SR"); } }
         public static Action LISTEN { get { return new Action("L"); } }
         public static Action UNLISTEN { get { return new Action("UL"); } }
+        public static Action LISTEN_ACCEPT { get { return new Action("LA"); } }
+        public static Action LISTEN_REJECT { get { return new Action("LR"); } }
         public static Action PROVIDER_UPDATE { get { return new Action("PU"); } }
         public static Action QUERY { get { return new Action("Q"); } }
         public static Action CREATEORREAD { get { return new Action("CR"); } }
