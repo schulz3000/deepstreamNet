@@ -8,5 +8,5 @@ environment:
 skip_tags: true
 build_script:
   - ps: dotnet --info  
-  - ps: dotnet restore
-  - ps: dotnet --verbose build .\src
+  - ps: dotnet restore .\src\DeepStreamNet
+  - ps: dotnet --verbose build .\src\DeepStreamNet
