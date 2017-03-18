@@ -1,33 +1,40 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
 
-namespace DeepStreamNet.Records
+namespace DeepStreamNet
 {
     class CollectionChangeListener : ChangeListener
     {
-        readonly INotifyCollectionChanged _value;
+        public INotifyCollectionChanged Value { get; private set; }
         readonly Dictionary<INotifyPropertyChanged, ChangeListener> _collectionListeners = new Dictionary<INotifyPropertyChanged, ChangeListener>();
 
         public CollectionChangeListener(INotifyCollectionChanged collection, string propertyName)
         {
-            _value = collection;
+            Value = collection;
             _propertyName = propertyName;
 
             Subscribe();
         }
 
+        public override void Resubscribe(INotifyCollectionChanged item)
+        {
+            Unsubscribe();
+            Value = item;
+            Subscribe();
+        }
+
         void Subscribe()
         {
-            _value.CollectionChanged += value_CollectionChanged;
+            Value.CollectionChanged += Value_CollectionChanged;
 
-            foreach (var item in (IEnumerable)_value)
+            foreach (var item in (IEnumerable)Value)
             {
-                var notifyableItem = item as INotifyPropertyChanged;
-                if (notifyableItem != null)
+                if (item is INotifyPropertyChanged notifyableItem)
                     ResetChildListener(notifyableItem);
             }
         }
@@ -47,7 +54,7 @@ namespace DeepStreamNet.Records
             else
                 listener = new ChildChangeListener(item as INotifyPropertyChanged);
 
-            listener.PropertyChanged += listener_PropertyChanged;
+            listener.PropertyChanged += Listener_PropertyChanged;
             _collectionListeners.Add(item, listener);
         }
 
@@ -56,13 +63,12 @@ namespace DeepStreamNet.Records
             // Remove old
             if (_collectionListeners.ContainsKey(item))
             {
-                _collectionListeners[item].PropertyChanged -= listener_PropertyChanged;
+                _collectionListeners[item].PropertyChanged -= Listener_PropertyChanged;
 
                 _collectionListeners[item].Dispose();
                 _collectionListeners.Remove(item);
             }
         }
-
 
         void ClearCollection()
         {
@@ -74,7 +80,7 @@ namespace DeepStreamNet.Records
             _collectionListeners.Clear();
         }
 
-        void value_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        void Value_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
             if (e.Action == NotifyCollectionChangedAction.Reset)
             {
@@ -93,26 +99,34 @@ namespace DeepStreamNet.Records
                 if (e.NewItems != null)
                 {
                     foreach (var item in e.NewItems.OfType<INotifyPropertyChanged>().ToArray())
+                    {
                         ResetChildListener(item);
+                    }
 
                     foreach (var item in e.NewItems.OfType<object>().Where(w => !(w is INotifyPropertyChanged)).ToArray())
-                        RaisePropertyChanged(_propertyName + "." + e.NewStartingIndex);
+                    {
+                        RaisePropertyChanged(((JToken)item).Path);
+                    }
+                        //RaisePropertyChanged(_propertyName + "." + e.NewStartingIndex);
                 }
             }
         }
 
-
-        void listener_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        void Listener_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             // ...then, notify about it
 
-            var record = ((sender as ChildChangeListener)?.Value as DeepStreamInnerRecord)?.RecordName;
+            var record = ((sender as ChildChangeListener)?.Value as IDeepStreamRecordWrapper)?.RecordName;
 
             if (record != null)
+            {
                 RaisePropertyChanged(record + "." + e.PropertyName);
+            }
             else
+            {
                 RaisePropertyChanged(string.Format("{0}{1}{2}",
-                    _propertyName, _propertyName != null ? "[]." : null, e.PropertyName));
+                   _propertyName, _propertyName != null ? "[]." : null, e.PropertyName));
+            }
         }
 
         /// <summary>
@@ -122,7 +136,7 @@ namespace DeepStreamNet.Records
         {
             ClearCollection();
 
-            _value.CollectionChanged -= value_CollectionChanged;
+            Value.CollectionChanged -= Value_CollectionChanged;
         }
     }
 }

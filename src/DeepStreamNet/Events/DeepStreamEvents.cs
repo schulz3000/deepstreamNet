@@ -16,14 +16,14 @@ namespace DeepStreamNet
             Connection.EventListenerChanged += Connection_EventListenerChanged;
         }
 
-        async void Connection_EventListenerChanged(object sender, EventListenerChangedArgs e)
+        async void Connection_EventListenerChanged(object sender, EventListenerChangedEventArgs e)
         {
             if (!listenerDict.ContainsKey(e.Pattern))
                 return;
 
             var listener = listenerDict[e.Pattern];
 
-            var result = listener.DynamicInvoke(e.Name, e.EventListenerState == EventListenerState.Add, new EventListenerResponse(e.Pattern, e.Name, Connection));
+            var result = listener.DynamicInvoke(e.Name, e.ListenerState == ListenerState.Add, new EventListenerResponse(e.Pattern, e.Name, Connection));
             if (result != null)
                 await (Task)result;
         }
@@ -74,12 +74,12 @@ namespace DeepStreamNet
             });
         }
 
-        public Task<IAsyncDisposable> ListenAsync(string pattern, Action<string, bool, IEventListenerResponse> listener)
+        public Task<IAsyncDisposable> ListenAsync(string pattern, Action<string, bool, IListenerResponse> listener)
         {
             return InnerListenAsync(pattern, listener);
         }
 
-        public Task<IAsyncDisposable> ListenAsync(string pattern, Func<string, bool, IEventListenerResponse, Task> listener)
+        public Task<IAsyncDisposable> ListenAsync(string pattern, Func<string, bool, IListenerResponse, Task> listener)
         {
             return InnerListenAsync(pattern, listener);
         }

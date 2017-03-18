@@ -1,8 +1,9 @@
 ﻿using DeepStreamNet.Contracts;
-using DeepStreamNet.Records;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
@@ -13,12 +14,14 @@ namespace DeepStreamNet
     {
         readonly HashSet<IDeepStreamRecordWrapper> records = new HashSet<IDeepStreamRecordWrapper>(new DeepStreamRecordComparer());
         readonly HashSet<IDeepStreamList> lists = new HashSet<IDeepStreamList>();
+        readonly Dictionary<string, Delegate> listenerDict = new Dictionary<string, Delegate>();
 
         public DeepStreamRecords(Connection connection, DeepStreamOptions options)
             : base(connection, options)
         {
             connection.RecordUpdated += Con_RecordUpdated;
             connection.RecordPatched += Con_RecordPatched;
+            connection.RecordListenerChanged += Connection_RecordListenerChanged;
         }
 
         void Con_RecordPatched(object sender, RecordPatchedArgs e)
@@ -27,39 +30,11 @@ namespace DeepStreamNet
             if (record == null)
                 return;
 
-            var listener = (record as DeepStreamRecord).Listener;
-            listener.PropertyChanged -= Listener_PropertyChanged;
+            record.PropertyChanged -= Record_PropertyChanged;
 
-            var data = (KeyValuePair<Type, object>)e.Data;
+            record.Patch(e.Property, e.Data);
 
-            var path = e.Property.Split(Constants.PathSplitter, StringSplitOptions.RemoveEmptyEntries);
-
-            if (path.Length == 1)
-                record[e.Property] = data.Value;
-            else
-            {
-                var item = record as IDeepStreamRecord;
-                var max = path.Length - 1;
-                var index = -1;
-                for (int i = 0; i <= max; i++)
-                {
-                    if (i == max)
-                    {
-                        item[path[i]] = data.Value;
-                    }
-                    else if (int.TryParse(path[i + 1], out index))
-                    {
-                        item = (item[path[i]] as object[])[index] as IDeepStreamRecord;
-                        i++;
-                    }
-                    else
-                    {
-                        item = item[path[i]] as IDeepStreamRecord;
-                    }
-                }
-            }
-
-            listener.PropertyChanged += Listener_PropertyChanged;
+            record.PropertyChanged += Record_PropertyChanged;
         }
 
         void Con_RecordUpdated(object sender, RecordUpdatedArgs e)
@@ -68,52 +43,85 @@ namespace DeepStreamNet
             if (record == null)
                 return;
 
-            var listener = (record as DeepStreamRecord).Listener;
-            listener.PropertyChanged -= Listener_PropertyChanged;
+            record.PropertyChanged -= Record_PropertyChanged;
 
-            //TODO implement full update
+            record.Update(e.Data);
 
-            listener.PropertyChanged += Listener_PropertyChanged;
+            record.PropertyChanged += Record_PropertyChanged;
+        }
+
+        async void Connection_RecordListenerChanged(object sender, RecordListenerChangedEventArgs e)
+        {
+            if (!listenerDict.ContainsKey(e.Pattern))
+                return;
+
+            var listener = listenerDict[e.Pattern];
+
+            var result = listener.DynamicInvoke(e.Name, e.ListenerState == ListenerState.Add, new RecordListenerResponse(e.Pattern, e.Name, Connection));
+            if (result != null)
+                await (Task)result;
         }
 
         public async Task<IDeepStreamRecord> GetRecordAsync(string name)
         {
+            if (string.IsNullOrWhiteSpace(name))
+                throw new ArgumentNullException(nameof(name));
+
             var record = records.FirstOrDefault(f => f.RecordName == name);
             if (record != null)
                 return record;
 
-            var result = await InnerGetRecord(name).ConfigureAwait(false);
+            var result = await InnerGetRecordAsync<JObject>(name).ConfigureAwait(false);
 
             records.Add(result);
 
-            result.Listener.PropertyChanged += Listener_PropertyChanged;
+            result.PropertyChanged += Record_PropertyChanged;
 
             return result;
         }
 
         public async Task<IDeepStreamList> GetListAsync(string name)
         {
+            if (string.IsNullOrWhiteSpace(name))
+                throw new ArgumentNullException(nameof(name));
+
             var list = lists.FirstOrDefault(f => f.ListName == name);
             if (list != null)
                 return list;
 
-            dynamic innerRecord = await GetRecordAsync(name).ConfigureAwait(false);
+            var innerRecord = await InnerGetRecordAsync<JArray>(name).ConfigureAwait(false);
 
-            list = new DeepStreamList(name, this, innerRecord);
+            records.Add(innerRecord);
+
+            innerRecord.PropertyChanged += Record_PropertyChanged;
+
+            list = new DeepStreamList(name, innerRecord);
+
+            list.CollectionChanged += List_CollectionChanged;
 
             lists.Add(list);
             return list;
-
         }
 
-        void Listener_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        void List_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
-            var record = (sender as ChildChangeListener)?.Value as DeepStreamRecord;
+            var list = sender as DeepStreamList;
 
+            var record = records.FirstOrDefault(f => f.RecordName == list.ListName);
             if (record == null)
                 return;
 
-            var changedData = Utils.GetValueByPath(e.PropertyName, record);
+            Set(record, list.ToArray());
+        }
+
+        void Record_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            var recordName = ((sender as CollectionChangeListener)?.Value as JToken).Annotation<string>();
+            var record = records.FirstOrDefault(f => f.RecordName == recordName);
+            if (record == null)
+                return;
+
+            var changedData = record.Get(e.PropertyName);
 
             record.IncrementVersion();
 
@@ -122,25 +130,17 @@ namespace DeepStreamNet
             Connection.Send(command);
         }
 
-        public void Save(IDeepStreamRecord record)
-        {
-            if (!IsRecordTracked(record))
-                throw new DeepStreamException("Record not tracked");
-
-            var wrapper = record as DeepStreamRecord;
-
-            wrapper.IncrementVersion();
-
-            var command = Utils.BuildCommand(Topic.RECORD, Action.UPDATE, wrapper.RecordName, wrapper.RecordVersion, JsonConvert.SerializeObject(record));
-            Connection.Send(command);
-        }
-
         public async Task DiscardAsync(IDeepStreamRecord record)
         {
+            if (record == null)
+                throw new ArgumentNullException(nameof(record));
+
             if (!IsRecordTracked(record))
                 throw new DeepStreamException("Record not tracked");
 
             var wrapper = record as IDeepStreamRecordWrapper;
+
+            record.PropertyChanged -= Record_PropertyChanged;
 
             if (await Connection.SendWithAckAsync(Topic.RECORD, Action.UNSUBSCRIBE, Action.UNSUBSCRIBE, wrapper.RecordName, Options.SubscriptionTimeout).ConfigureAwait(false))
             {
@@ -150,10 +150,15 @@ namespace DeepStreamNet
 
         public async Task DeleteAsync(IDeepStreamRecord record)
         {
+            if (record == null)
+                throw new ArgumentNullException(nameof(record));
+
             if (!IsRecordTracked(record))
                 throw new DeepStreamException("Record not tracked");
 
             var wrapper = record as IDeepStreamRecordWrapper;
+
+            record.PropertyChanged -= Record_PropertyChanged;
 
             if (await Connection.SendWithAckAsync(Topic.RECORD, Action.DELETE, Action.DELETE, wrapper.RecordName, Options.RecordDeleteTimeout).ConfigureAwait(false))
             {
@@ -163,6 +168,9 @@ namespace DeepStreamNet
 
         public Task<bool> HasAsync(string name)
         {
+            if (string.IsNullOrWhiteSpace(name))
+                throw new ArgumentNullException(nameof(name));
+
             var tcs = new TaskCompletionSource<bool>();
 
             EventHandler<HasRecordArgs> handler = null;
@@ -182,21 +190,80 @@ namespace DeepStreamNet
             return tcs.Task;
         }
 
-        async Task<DeepStreamRecord> InnerGetRecord(string identifier)
+        public async Task<IDeepStreamRecord> SnapshotAsync(string name)
         {
-            var tcs = new TaskCompletionSource<DeepStreamRecord>();
+            if (string.IsNullOrWhiteSpace(name))
+                throw new ArgumentNullException(nameof(name));
+
+            var record = await InnerGetRecordAsync<JObject>(name).ConfigureAwait(false);
+
+            return record as IDeepStreamRecord;
+        }
+
+        public IDeepStreamAnonymousRecord GetAnonymousRecord()
+        {
+            return new DeepStreamAnonymousRecord(this);
+        }
+
+        public Task<IAsyncDisposable> ListenAsync(string pattern, Action<string, bool, IListenerResponse> listener)
+        {
+            return InnerListenAsync(pattern, listener);
+        }
+
+        public Task<IAsyncDisposable> ListenAsync(string pattern, Func<string, bool, IListenerResponse, Task> listener)
+        {
+            return InnerListenAsync(pattern, listener);
+        }
+
+        async Task<IAsyncDisposable> InnerListenAsync(string pattern, Delegate listener)
+        {
+            if (string.IsNullOrWhiteSpace(pattern))
+                throw new ArgumentNullException(nameof(pattern));
+
+            ThrowIfConnectionNotOpened();
+
+            if (listenerDict.ContainsKey(pattern))
+                throw new DeepStreamException("we already listen for " + pattern);
+
+            if (!listenerDict.ContainsKey(pattern) && await Connection.SendWithAckAsync(Topic.RECORD, Action.LISTEN, Action.LISTEN, pattern, Options.SubscriptionTimeout).ConfigureAwait(false))
+            {
+                listenerDict.Add(pattern, listener);
+            }
+
+            return new AsyncDisposableAction(async () =>
+            {
+                if (await Connection.SendWithAckAsync(Topic.RECORD, Action.UNLISTEN, Action.UNLISTEN, pattern, Options.SubscriptionTimeout).ConfigureAwait(false))
+                {
+                    listenerDict.Remove(pattern);
+                }
+            });
+        }
+
+        async Task<IDeepStreamRecordWrapper> InnerGetRecordAsync<T>(string identifier)
+            where T : JContainer
+        {
+            var tcs = new TaskCompletionSource<IDeepStreamRecordWrapper>();
 
             var topic = Topic.RECORD;
             var isAck = false;
 
             EventHandler<RecordReceivedArgs> recHandler = null;
-
             recHandler = (s, e) =>
             {
                 if (isAck && e.Topic == topic && e.Action == Action.READ && e.Identifier == identifier)
                 {
                     Connection.RecordReceived -= recHandler;
-                    tcs.TrySetResult(new DeepStreamRecord(e.Identifier, e.Version, e.Data as Dictionary<string, object>));
+                    if (typeof(T) == typeof(JArray))
+                    {
+                        var data = e.Data;
+                        if (e.Data.Type != JTokenType.Array && !e.Data.HasValues)
+                            data = JToken.Parse("[]");
+                        tcs.TrySetResult(new DeepStreamRecordArray(e.Identifier, e.Version, (JArray)data));
+                    }
+                    else
+                    {
+                        tcs.TrySetResult(new DeepStreamRecordObject(e.Identifier, e.Version, (JObject)e.Data));
+                    }
                 }
             };
 
@@ -210,6 +277,87 @@ namespace DeepStreamNet
         bool IsRecordTracked(IDeepStreamRecord record)
         {
             return records.Contains(record);
+        }
+
+        public void Set(IDeepStreamRecord record, object item)
+        {
+            if (record == null)
+                throw new ArgumentNullException(nameof(record));
+
+            if (item == null)
+                throw new ArgumentNullException(nameof(item));
+
+            var result = JToken.FromObject(item);
+
+            if (result.Type != JTokenType.Object && result.Type != JTokenType.Array)
+                throw new DeepStreamException($"{nameof(item)} must be a class or an array");
+
+            var wrapper = record as IDeepStreamRecordWrapper;
+
+            wrapper.Update(result);
+
+            wrapper.IncrementVersion();
+
+            var command = Utils.BuildCommand(Topic.RECORD, Action.UPDATE, wrapper.RecordName, wrapper.RecordVersion, JsonConvert.SerializeObject(wrapper));
+            Connection.Send(command);
+        }
+
+        public void Set(IDeepStreamRecord record, string path, object item)
+        {
+            if (record == null)
+                throw new ArgumentNullException(nameof(record));
+
+            if (string.IsNullOrWhiteSpace(path))
+                throw new ArgumentNullException(nameof(path));
+
+            if (item == null)
+                throw new ArgumentNullException(nameof(item));
+
+            var wrapper = record as IDeepStreamRecordWrapper;
+
+            wrapper.Patch(path, JToken.FromObject(item));
+        }
+
+        public Task<bool> SetWithAckAsync(IDeepStreamRecord record, object item)
+        {
+            if (record == null)
+                throw new ArgumentNullException(nameof(record));
+
+            if (item == null)
+                throw new ArgumentNullException(nameof(item));
+
+            var wrapper = record as IDeepStreamRecordWrapper;
+
+            record.PropertyChanged -= Record_PropertyChanged;
+            wrapper.Update(JToken.FromObject(item));
+            record.PropertyChanged += Record_PropertyChanged;
+
+            wrapper.IncrementVersion();
+
+            return Connection.SendWithAckAsync(Topic.RECORD, Action.UPDATE, Action.ACK, record.RecordName, Options.RecordReadAckTimeout, wrapper.RecordVersion.ToString(), JsonConvert.SerializeObject(record));
+        }
+
+        public Task<bool> SetWithAckAsync(IDeepStreamRecord record, string path, object item)
+        {
+            if (record == null)
+                throw new ArgumentNullException(nameof(record));
+
+            if (string.IsNullOrWhiteSpace(path))
+                throw new ArgumentNullException(nameof(path));
+
+            if (item == null)
+                throw new ArgumentNullException(nameof(item));
+
+
+            var wrapper = record as IDeepStreamRecordWrapper;
+
+            record.PropertyChanged -= Record_PropertyChanged;
+            wrapper.Patch(path, JToken.FromObject(item));
+            record.PropertyChanged += Record_PropertyChanged;
+
+            wrapper.IncrementVersion();
+
+            return Connection.SendWithAckAsync(Topic.RECORD, Action.PATCH, Action.ACK, record.RecordName, Options.RecordReadAckTimeout, wrapper.RecordVersion.ToString(), JsonConvert.SerializeObject(record));
         }
     }
 }

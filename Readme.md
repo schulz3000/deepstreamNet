@@ -77,7 +77,7 @@ await listener.DisposeAsync();
 ###Records
 
 ```csharp
-var record = await client.Records.GetRecordAsync("test");
+IDeepStreamRecord record = await client.Records.GetRecordAsync("test");
 
 // check if Record exists
 bool has = await client.Records.HasAsync("test"); //returns true
@@ -85,8 +85,8 @@ bool has = await client.Records.HasAsync("test"); //returns true
 record["FirstName"] = "John";
 record["Age"] = 28;
 
-// Save all changes
-await client.Records.SaveAsync(record);
+//Snapshot of record without changetracking
+IDeepStreamRecord fixedRecord = await client.Records.SnapshotAsync("text");
 
 // Discard all changes
 await client.Records.DiscardAsync(record);
@@ -102,9 +102,14 @@ dynamic record = await client.Records.GetRecordAsync("test");
 
 record.FirstName = "Jane";
 record.Age = 21;
+```
 
-// Save all changes
-await client.Records.SaveAsync(record);
+###AnonymousRecord
+
+```csharp
+IDeepStreamAnonymousRecord arecord = client.Records.GetAnonymousRecord();
+
+await arecord.SetNameAsync("atest");
 ```
 
 ###RPC Request

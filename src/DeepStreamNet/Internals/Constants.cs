@@ -2,8 +2,8 @@
 {
     static class Constants
     {
-        internal const char RecordSeperator = (char)31;
-        internal const char GroupSeperator = (char)30;
+        internal static readonly char RecordSeperator = (char)31 ;
+        internal static readonly char GroupSeperator =  (char)30 ;
 
         internal static readonly char[] PathSplitter = { '.' };
 

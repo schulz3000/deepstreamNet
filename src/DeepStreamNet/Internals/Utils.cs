@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Text;
 using Newtonsoft.Json;
 using System.Reflection;
+using Newtonsoft.Json.Linq;
 
 namespace DeepStreamNet
 {
@@ -46,7 +46,7 @@ namespace DeepStreamNet
             {
                 return Constants.Types.NUMBER + data.ToString().Replace(',', '.');
             }
-            else if ((data as object) == null)
+            else if (!(data is object))
             {
                 return Constants.Types.NULL.ToString();
             }
@@ -63,33 +63,32 @@ namespace DeepStreamNet
             }
         }
 
-        public static KeyValuePair<Type, object> ConvertPrefixedData(string dataWithTypePrefix)
+        public static KeyValuePair<Type, JToken> ConvertPrefixedData(string dataWithTypePrefix)
         {
             var evtData = dataWithTypePrefix.Substring(1);
 
             switch (dataWithTypePrefix[0])
             {
                 case Constants.Types.STRING:
-                    return new KeyValuePair<Type, object>(typeof(string), evtData);
+                    return new KeyValuePair<Type, JToken>(typeof(string), JToken.Parse(evtData));
 
                 case Constants.Types.NUMBER:
-                    return new KeyValuePair<Type, object>(typeof(double), double.Parse(evtData, CultureInfo.InvariantCulture));
+                    return new KeyValuePair<Type, JToken>(typeof(double), JToken.Parse(evtData));
 
                 case Constants.Types.TRUE:
-                    return new KeyValuePair<Type, object>(typeof(bool), true);
+                    return new KeyValuePair<Type, JToken>(typeof(bool), JToken.FromObject(true));
 
                 case Constants.Types.FALSE:
-                    return new KeyValuePair<Type, object>(typeof(bool), false);
+                    return new KeyValuePair<Type, JToken>(typeof(bool), JToken.FromObject(false));
 
                 case Constants.Types.NULL:
-                    return new KeyValuePair<Type, object>(typeof(object), null);
+                    return new KeyValuePair<Type, JToken>(typeof(object), JValue.CreateNull());
 
                 case Constants.Types.OBJECT:
-                     return new KeyValuePair<Type, object>(typeof(object), JsonConvert.DeserializeObject(evtData));
-                    //return new KeyValuePair<Type, object>(typeof(object),Newtonsoft.Json.JsonConvert.DeserializeObject(evtData));
+                    return new KeyValuePair<Type, JToken>(typeof(object), JToken.Parse(evtData));
 
                 default:
-                    return new KeyValuePair<Type, object>(typeof(string), evtData);
+                    return new KeyValuePair<Type, JToken>(typeof(string), JToken.Parse(evtData));
             }
         }
 
@@ -97,7 +96,7 @@ namespace DeepStreamNet
         {
             if (type == null)
                 return false;
-           
+
             switch (Type.GetTypeCode(type))
             {
                 case TypeCode.Byte:
@@ -124,58 +123,12 @@ namespace DeepStreamNet
 
         static bool IsGenericTypeEx(Type type)
         {
-#if NET40
-            return type.IsGenericType;
-#else
+#if COREFX
             return type.GetTypeInfo().IsGenericType;
+#else
+            return type.IsGenericType;
 #endif
-        }
-        
-
-        public static object GetValueByPath(string path, DeepStreamInnerRecord record)
-        {
-            if (string.IsNullOrWhiteSpace(path))
-                throw new ArgumentNullException(nameof(path));
-
-            if (record == null)
-                throw new ArgumentNullException(nameof(record));
-
-
-            var spath = path.Split(Constants.PathSplitter, StringSplitOptions.RemoveEmptyEntries);
-
-            if (spath.Length == 1)
-                return record[path];
-            else
-            {
-                
-                var max = spath.Length - 1;
-                var index = -1;
-                for (int i = 0; i <= max; i++)
-                {
-                    if (i == max)
-                    {
-                       return record[spath[i]];
-                    }
-                    else if (int.TryParse(spath[i + 1], out index))
-                    {
-                        var item = (record[spath[i]] as DeepStreamRecordCollection<object>)[index];                                                
-                        i++;
-
-                        if (i == max)
-                            return item;
-                        else 
-                            record = item as DeepStreamInnerRecord;
-
-                    }
-                    else
-                    {
-                        record = record[spath[i]] as DeepStreamInnerRecord;
-                    }
-                }
-            }
-
-            return null;
-        }
+        }        
 
         public static string CreateUid()
         {

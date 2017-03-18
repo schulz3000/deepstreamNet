@@ -1,11 +1,12 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 
-namespace DeepStreamNet.Records
+namespace DeepStreamNet
 {
     class ChildChangeListener : ChangeListener
     {
@@ -16,13 +17,9 @@ namespace DeepStreamNet.Records
         readonly Type _type;
         readonly Dictionary<string, ChangeListener> _childListeners = new Dictionary<string, ChangeListener>();
 
-
         public ChildChangeListener(INotifyPropertyChanged instance)
         {
-            if (instance == null)
-                throw new ArgumentNullException(nameof(instance));
-
-            Value = instance;
+            Value = instance ?? throw new ArgumentNullException(nameof(instance));
             _type = Value.GetType();
 
             Subscribe();
@@ -34,15 +31,18 @@ namespace DeepStreamNet.Records
             _propertyName = propertyName;
         }
 
+        public override void Resubscribe(INotifyCollectionChanged item)
+        {
+            throw new NotImplementedException();
+        }
 
         void Subscribe()
         {
-            Value.PropertyChanged += value_PropertyChanged;
+            Value.PropertyChanged += Value_PropertyChanged;
 
-            var obj = Value as DeepStreamInnerRecord;
-            if (obj != null)
+            if (Value is JObject obj)
             {
-                var list = obj.GetDynamicMemberNames().ToArray();
+                var list = obj.Properties().Select(s => s.Name).ToArray();
                 foreach (var name in list)
                 {
                     _childListeners.Add(name, null);
@@ -64,15 +64,14 @@ namespace DeepStreamNet.Records
             }
         }
 
-
-        void ResetDynamicChildListener(string propertyName, DeepStreamInnerRecord obj)
+        void ResetDynamicChildListener(string propertyName, JToken obj)
         {
             if (_childListeners.ContainsKey(propertyName))
             {
                 // Unsubscribe if existing
                 if (_childListeners[propertyName] != null)
                 {
-                    _childListeners[propertyName].PropertyChanged -= child_PropertyChanged;
+                    _childListeners[propertyName].PropertyChanged -= Child_PropertyChanged;
 
                     // Should unsubscribe all events
                     _childListeners[propertyName].Dispose();
@@ -81,7 +80,7 @@ namespace DeepStreamNet.Records
 
                 var property = obj[propertyName];
                 if (property == null)
-                    throw new InvalidOperationException(string.Format("Was unable to get '{0}' property information from Type '{1}'", propertyName, obj.RecordName));
+                    throw new InvalidOperationException(string.Format("Was unable to get '{0}' property information from Type '{1}'", propertyName, "?"));
 
                 // Only recreate if there is a new value
                 if (property != null)
@@ -98,18 +97,16 @@ namespace DeepStreamNet.Records
                     }
 
                     if (_childListeners[propertyName] != null)
-                        _childListeners[propertyName].PropertyChanged += child_PropertyChanged;
+                        _childListeners[propertyName].PropertyChanged += Child_PropertyChanged;
                 }
-
             }
-
         }
-
 
         /// <summary>
         /// Resets known (must exist in children collection) child event handlers
         /// </summary>
         /// <param name="propertyName">Name of known child property</param>
+        /// <exception cref="InvalidOperationException"></exception>
         void ResetChildListener(string propertyName)
         {
             if (_childListeners.ContainsKey(propertyName))
@@ -117,7 +114,7 @@ namespace DeepStreamNet.Records
                 // Unsubscribe if existing
                 if (_childListeners[propertyName] != null)
                 {
-                    _childListeners[propertyName].PropertyChanged -= child_PropertyChanged;
+                    _childListeners[propertyName].PropertyChanged -= Child_PropertyChanged;
 
                     // Should unsubscribe all events
                     _childListeners[propertyName].Dispose();
@@ -145,21 +142,21 @@ namespace DeepStreamNet.Records
                     }
 
                     if (_childListeners[propertyName] != null)
-                        _childListeners[propertyName].PropertyChanged += child_PropertyChanged;
+                        _childListeners[propertyName].PropertyChanged += Child_PropertyChanged;
                 }
             }
         }
 
-        void child_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        void Child_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             RaisePropertyChanged(e.PropertyName);
         }
 
-        void value_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        void Value_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             // First, reset child on change, if required... 
-            if (sender is DeepStreamInnerRecord)
-                ResetDynamicChildListener(e.PropertyName, sender as DeepStreamInnerRecord);
+            if (sender is JToken)
+                ResetDynamicChildListener(e.PropertyName, sender as JToken);
             else
                 ResetChildListener(e.PropertyName);
 
@@ -169,9 +166,10 @@ namespace DeepStreamNet.Records
 
         protected override void RaisePropertyChanged(string propertyName)
         {
+            var x = propertyName;
             // Special Formatting
-            base.RaisePropertyChanged(string.Format("{0}{1}{2}",
-                _propertyName, _propertyName != null ? "." : null, propertyName));
+            //base.RaisePropertyChanged(string.Format("{0}{1}{2}",
+            //    _propertyName, _propertyName != null ? "." : null, propertyName));
         }
 
         /// <summary>
@@ -179,7 +177,7 @@ namespace DeepStreamNet.Records
         /// </summary>
         protected override void Unsubscribe()
         {
-            Value.PropertyChanged -= value_PropertyChanged;
+            Value.PropertyChanged -= Value_PropertyChanged;
 
             foreach (var binderKey in _childListeners.Keys)
             {
@@ -187,7 +185,7 @@ namespace DeepStreamNet.Records
                     _childListeners[binderKey].Dispose();
             }
 
-            _childListeners.Clear();            
+            _childListeners.Clear();
         }
     }
 }

@@ -3,7 +3,7 @@
     /// <summary>
     /// 
     /// </summary>
-    public interface IEventListenerResponse
+    public interface IListenerResponse
     {
         /// <summary>
         /// 

@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using SuperSocket.ClientEngine;
 using System;
 using System.Collections.Generic;
@@ -24,7 +25,7 @@ namespace DeepStreamNet
 
         internal event EventHandler<EventReceivedArgs> EventReceived;
 
-        internal event EventHandler<EventListenerChangedArgs> EventListenerChanged;
+        internal event EventHandler<EventListenerChangedEventArgs> EventListenerChanged;
 
         internal event EventHandler<RecordReceivedArgs> RecordReceived;
 
@@ -33,6 +34,8 @@ namespace DeepStreamNet
         internal event EventHandler<RecordPatchedArgs> RecordPatched;
 
         internal event EventHandler<HasRecordArgs> HasRecordReceived;
+
+        internal event EventHandler<RecordListenerChangedEventArgs> RecordListenerChanged;
 
         internal event EventHandler<RemoteProcedureMessageArgs> PerformRemoteProcedureRequested;
 
@@ -89,7 +92,7 @@ namespace DeepStreamNet
             client.Send(command);
         }
 
-        public Task<bool> SendWithAckAsync(Topic topic, Action action, Action expectedReceivedAction, string identifier, int ackTimeout)
+        public Task<bool> SendWithAckAsync(Topic topic, Action action, Action expectedReceivedAction, string identifier, int ackTimeout, params string[] additionalParams)
         {
             var tcs = new TaskCompletionSource<bool>();
 
@@ -135,7 +138,20 @@ namespace DeepStreamNet
                 tcs.TrySetException(new DeepStreamException(Constants.Errors.ACK_TIMEOUT));
             };
 
-            var command = Utils.BuildCommand(topic, action, identifier);
+            var parameter = new List<string>();
+
+            if(additionalParams.Length>0)
+            {
+                parameter.Add(identifier);
+                parameter.AddRange(additionalParams);
+            }
+            else
+            {
+                parameter.Add(identifier);
+            }
+                
+
+            var command = Utils.BuildCommand(topic, action, parameter.ToArray());
 
             timer.Elapsed += timerHandler;
             Acknoledged += ackHandler;
@@ -208,15 +224,15 @@ namespace DeepStreamNet
                 else if (responseAction == Action.EVENT)
                 {
                     var convertedDataWithType = Utils.ConvertPrefixedData(split[3]);
-                    EventReceived?.Invoke(this, new EventReceivedArgs(split[2], convertedDataWithType.Key, convertedDataWithType.Value));
+                    EventReceived?.Invoke(this, new EventReceivedArgs(split[2], convertedDataWithType.Key, convertedDataWithType.Value.ToObject(convertedDataWithType.Key)));
                 }
                 else if (responseAction == Action.SUBSCRIPTION_FOR_PATTERN_FOUND)
                 {
-                    EventListenerChanged?.Invoke(this, new EventListenerChangedArgs(split[2], split[3], EventListenerState.Add));
+                    EventListenerChanged?.Invoke(this, new EventListenerChangedEventArgs(split[2], split[3], ListenerState.Add));
                 }
                 else if (responseAction == Action.SUBSCRIPTION_FOR_PATTERN_REMOVED)
                 {
-                    EventListenerChanged?.Invoke(this, new EventListenerChangedArgs(split[2], split[3], EventListenerState.Remove));
+                    EventListenerChanged?.Invoke(this, new EventListenerChangedEventArgs(split[2], split[3], ListenerState.Remove));
                 }
                 else
                 {
@@ -231,19 +247,27 @@ namespace DeepStreamNet
                 }
                 else if (responseAction == Action.READ)
                 {
-                    RecordReceived?.Invoke(this, new RecordReceivedArgs(topic, responseAction, split[2], int.Parse(split[3], CultureInfo.InvariantCulture), JsonConvert.DeserializeObject<Dictionary<string, object>>(split[4])));
+                    RecordReceived?.Invoke(this, new RecordReceivedArgs(topic, responseAction, split[2], int.Parse(split[3], CultureInfo.InvariantCulture),JToken.Parse(split[4])));
                 }
                 else if (responseAction == Action.UPDATE)
                 {
-                    RecordUpdated?.Invoke(this, new RecordUpdatedArgs(topic, responseAction, split[2], int.Parse(split[3], CultureInfo.InvariantCulture), JsonConvert.DeserializeObject<Dictionary<string, object>>(split[4])));
+                    RecordUpdated?.Invoke(this, new RecordUpdatedArgs(topic, responseAction, split[2], int.Parse(split[3], CultureInfo.InvariantCulture), JToken.Parse(split[4])));
                 }
                 else if (responseAction == Action.PATCH)
                 {
-                    RecordPatched?.Invoke(this, new RecordPatchedArgs(topic, responseAction, split[2], int.Parse(split[3], CultureInfo.InvariantCulture), split[4], Utils.ConvertPrefixedData(split[5])));
+                    RecordPatched?.Invoke(this, new RecordPatchedArgs(topic, responseAction, split[2], int.Parse(split[3], CultureInfo.InvariantCulture), split[4], Utils.ConvertPrefixedData(split[5]).Value));
                 }
                 else if (responseAction == Action.HAS)
                 {
-                    HasRecordReceived?.Invoke(this, new HasRecordArgs(topic, responseAction, split[2], "T".Equals(split[3], StringComparison.Ordinal)));
+                    HasRecordReceived?.Invoke(this, new HasRecordArgs(topic, responseAction, split[2], Constants.Types.TRUE.ToString().Equals(split[3], StringComparison.Ordinal)));
+                }
+                else if (responseAction == Action.SUBSCRIPTION_FOR_PATTERN_FOUND)
+                {
+                    RecordListenerChanged?.Invoke(this, new RecordListenerChangedEventArgs(split[2], split[3], ListenerState.Add));
+                }
+                else if (responseAction == Action.SUBSCRIPTION_FOR_PATTERN_REMOVED)
+                {
+                    RecordListenerChanged?.Invoke(this, new RecordListenerChangedEventArgs(split[2], split[3], ListenerState.Remove));
                 }
                 else
                 {
@@ -276,6 +300,10 @@ namespace DeepStreamNet
                 else if (responseAction == Action.ERROR)
                 {
                     OnError(topic, responseAction, split[2], split[3]);
+                }
+                else
+                {
+                    OnError(topic, action, Constants.Errors.MESSAGE_PARSE_ERROR, "Unknown action " + action);
                 }
             }
             else

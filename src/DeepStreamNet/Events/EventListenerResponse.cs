@@ -1,28 +1,15 @@
-﻿using System;
-using DeepStreamNet.Contracts;
-
-namespace DeepStreamNet
+﻿namespace DeepStreamNet
 {
-    class EventListenerResponse : IEventListenerResponse
+    class EventListenerResponse : ListenerResponseBase
     {
-        readonly string Pattern;
-        readonly string Name;
-        readonly Connection Connection;
         public EventListenerResponse(string pattern, string name, Connection connection)
+            : base(pattern, name, connection)
         {
-            Pattern = pattern;
-            Name = name;
-            Connection = connection;
         }
 
-        public void Accept()
+        protected override Topic ListenerTopic
         {
-            Connection.Send(Utils.BuildCommand(Topic.EVENT, Action.LISTEN_ACCEPT, Pattern, Name));
-        }
-
-        public void Reject()
-        {
-            Connection.Send(Utils.BuildCommand(Topic.EVENT, Action.LISTEN_REJECT, Pattern, Name));
+            get { return Topic.EVENT; }
         }
     }
 }

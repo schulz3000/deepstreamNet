@@ -1,70 +1,101 @@
 ﻿using System.Collections.Generic;
-using System.Collections.Specialized;
 using DeepStreamNet.Contracts;
-using System.Threading.Tasks;
-using System.Linq;
+using System.Collections.Specialized;
+using System;
+using System.Collections;
 
-namespace DeepStreamNet.Records
+namespace DeepStreamNet
 {
-    class DeepStreamList : IDeepStreamList, INotifyCollectionChanged
+    class DeepStreamList : IDeepStreamList
     {
-        readonly HashSet<string> innerList = new HashSet<string>();
-        readonly DeepStreamRecords deepStreamRecordsHandler;
-        readonly dynamic innerRecord;
-
-        public event NotifyCollectionChangedEventHandler CollectionChanged;
-
         public string ListName { get; }
 
-        public DeepStreamList(string name, DeepStreamRecords deepStreamRecords , IDeepStreamRecord record)
-        {
-            ListName = name;
-            deepStreamRecordsHandler = deepStreamRecords;
-            innerRecord = record;
-        }
+        public int Count => innerList.Count;
 
-        public int Count
+        public bool IsReadOnly => false;
+
+        public string this[int index]
         {
-            get
-            {
-                return innerList.Count;
+            get =>  innerList[index];
+            set  {
+                var oldItem = innerList[index];
+                innerList[index] = value;
+                CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Replace, value, oldItem, index));
             }
         }
 
-        public bool IsEmpty { get { return innerList.Count == 0; } }
+        readonly IDeepStreamRecordWrapper ListRecord;
 
-        public async Task Add(string item)
+        readonly List<string> innerList = new List<string>();
+
+        public event NotifyCollectionChangedEventHandler CollectionChanged;
+
+        public DeepStreamList(string name, IDeepStreamRecordWrapper listRecord)
         {
-            innerList.Add(item);
-            innerRecord.Add(item);
-            ////(innerRecord as HashSet<string>).Add(item);
-            await deepStreamRecordsHandler.Save(innerRecord);
-            CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, item));
+            ListName = name;
+            ListRecord = listRecord;
         }
 
-        public void AddRange(IEnumerable<string> items)
+        public int IndexOf(string item)
         {
-            foreach (var item in items.ToArray())
-                innerList.Add(item);
+            return innerList.IndexOf(item);
+        }
 
-            CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, items));
+        public void Insert(int index, string item)
+        {
+            innerList.Insert(index, item);
+            CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, item, null, index));
+        }
+
+        public void RemoveAt(int index)
+        {
+            var oldItem = innerList[index];
+            innerList.RemoveAt(index);
+            CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, null, oldItem, index));
+        }
+
+        public void Add(string item)
+        {
+            innerList.Add(item);
+            CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, item));
         }
 
         public void Clear()
         {
+            var tmp = innerList;
             innerList.Clear();
-            CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
-        }       
+            CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset, null, tmp));
+        }
 
-        public bool Contains(string name)
+        public bool Contains(string item)
         {
-            return innerList.Contains(name);
+            return innerList.Contains(item);
+        }
+
+        public void CopyTo(string[] array, int arrayIndex)
+        {
+            innerList.CopyTo(array, arrayIndex);
         }
 
         public bool Remove(string item)
         {
-            CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, item));
-            return innerList.Remove(item);
-        }        
+            var result = innerList.Remove(item);
+            if (result)
+            {
+                CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, null, item));
+            }
+
+            return result;
+        }
+
+        public IEnumerator<string> GetEnumerator()
+        {
+            return innerList.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return innerList.GetEnumerator();
+        }
     }
 }

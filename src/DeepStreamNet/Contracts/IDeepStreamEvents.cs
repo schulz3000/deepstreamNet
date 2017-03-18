@@ -31,7 +31,7 @@ namespace DeepStreamNet.Contracts
         /// <param name="pattern"></param>
         /// <param name="listener"></param>
         /// <returns></returns>
-        Task<IAsyncDisposable> ListenAsync(string pattern, Action<string, bool, IEventListenerResponse> listener);
+        Task<IAsyncDisposable> ListenAsync(string pattern, Action<string, bool, IListenerResponse> listener);
 
         /// <summary>
         /// 
@@ -39,6 +39,6 @@ namespace DeepStreamNet.Contracts
         /// <param name="pattern"></param>
         /// <param name="listener"></param>
         /// <returns></returns>
-        Task<IAsyncDisposable> ListenAsync(string pattern, Func<string, bool, IEventListenerResponse, Task> listener);
+        Task<IAsyncDisposable> ListenAsync(string pattern, Func<string, bool, IListenerResponse, Task> listener);
     }
 }

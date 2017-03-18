@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using Newtonsoft.Json.Linq;
+using System.ComponentModel;
 using System.Dynamic;
 
 namespace DeepStreamNet.Contracts
@@ -6,7 +7,7 @@ namespace DeepStreamNet.Contracts
     /// <summary>
     /// 
     /// </summary>
-    public interface IDeepStreamRecord : IDynamicMetaObjectProvider, INotifyPropertyChanging, INotifyPropertyChanged
+    public interface IDeepStreamRecord : IDynamicMetaObjectProvider, /*INotifyPropertyChanging,*/ INotifyPropertyChanged
     {
         /// <summary>
         /// Name of record
@@ -16,12 +17,7 @@ namespace DeepStreamNet.Contracts
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="name"></param>
         /// <returns></returns>
-        object this[string name]
-        {
-            get;
-            set;
-        }
+        dynamic this[object key] { get; set; }
     }
 }
