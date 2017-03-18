@@ -3,17 +3,17 @@ DeepStreamNet
 
 dotnet Client for [deepstream.io](https://deepstream.io)
 
-##Builds
+## Builds
 [![Build status](https://ci.appveyor.com/api/projects/status/aj8op4emvlivn7jx/branch/develop?svg=true)](https://ci.appveyor.com/project/schulz3000/deepstreamnet/branch/develop) [![Build Status](https://travis-ci.org/schulz3000/deepstreamNet.svg?branch=develop)](https://travis-ci.org/schulz3000/deepstreamNet)
 
-##NuGet
+## NuGet
 [![deepstreamNet](https://img.shields.io/nuget/v/deepstreamNet.svg?style=flat)](https://www.nuget.org/packages/deepstreamNet)
 
-##Frameworks
-DotNet >= 4.0
-NetStandard >= 1.5
+## Frameworks
+- DotNet >= 4.5
+- NetStandard >= 1.5
 
-##Usage
+## Usage
 
 ```csharp
 var client = new DeepStreamClient("localhost", 6020, "deepstream");
@@ -30,7 +30,7 @@ await client.LoginAsync("Username", "Password");
 client.Dispose();
 ```
 
-###Events
+### Events
 
 ```csharp
 // Subscribe to Event 'test'
@@ -74,7 +74,7 @@ var listener = await client.Events.ListenAsync("^test/.*", (eventName, isSubscri
 await listener.DisposeAsync();
 ```
 
-###Records
+### Records
 
 ```csharp
 IDeepStreamRecord record = await client.Records.GetRecordAsync("test");
@@ -95,7 +95,7 @@ await client.Records.DiscardAsync(record);
 await client.Records.DeleteAsync(record);
 ```
 
-###Dynamic Records
+### Dynamic Records
 
 ```csharp
 dynamic record = await client.Records.GetRecordAsync("test");
@@ -104,7 +104,7 @@ record.FirstName = "Jane";
 record.Age = 21;
 ```
 
-###AnonymousRecord
+### AnonymousRecord
 
 ```csharp
 IDeepStreamAnonymousRecord arecord = client.Records.GetAnonymousRecord();
@@ -112,7 +112,7 @@ IDeepStreamAnonymousRecord arecord = client.Records.GetAnonymousRecord();
 await arecord.SetNameAsync("atest");
 ```
 
-###RPC Request
+### RPC Request
 
 ```csharp
 //Request RemoteProcedure 'toUpperCase' with argument 'abc'
@@ -120,7 +120,7 @@ var result = await client.Rpcs.MakeRequest<string,string>("toUpperCase", "abc");
 //result == "ABC"
 ```
 
-###RPC Provider
+### RPC Provider
 
 ```csharp
 //Define Method for RemoteProcedure

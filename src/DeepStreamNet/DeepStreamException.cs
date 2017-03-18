@@ -14,7 +14,6 @@ namespace DeepStreamNet
         /// </summary>
         public DeepStreamException()
         {
-
         }
 
         /// <summary>
@@ -34,7 +33,6 @@ namespace DeepStreamNet
         public DeepStreamException(string message, Exception innerException)
         : base(message, innerException)
         {
-
         }
 
         /// <summary>
@@ -47,8 +45,7 @@ namespace DeepStreamNet
         {
         }
 
-
-#if Net452
+#if !COREFX
         /// <summary>
         /// 
         /// </summary>
@@ -57,7 +54,6 @@ namespace DeepStreamNet
         protected DeepStreamException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
-
         }
 #endif
     }

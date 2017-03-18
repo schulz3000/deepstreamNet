@@ -15,7 +15,6 @@
         /// </summary>
         public int ReconnectIntervalIncrement { get; set; } = 4000;
 
-
         /// <summary>
         /// The number of reconnection attempts until the client gives
         /// up and declares the connection closed

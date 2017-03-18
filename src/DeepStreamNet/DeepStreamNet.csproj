@@ -4,7 +4,7 @@
     <Description>dotnet client for deepstream.io</Description>
     <Copyright>schulz3000</Copyright>
     <AssemblyTitle>DeepStreamNet</AssemblyTitle>
-    <VersionPrefix>0.0.0.2-alpha</VersionPrefix>
+    <VersionPrefix>0.0.0.3-alpha</VersionPrefix>
     <Authors>schulz3000</Authors>
     <TargetFrameworks>net45;net451;netstandard1.5</TargetFrameworks>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>

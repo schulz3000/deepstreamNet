@@ -348,7 +348,6 @@ namespace DeepStreamNet
             if (item == null)
                 throw new ArgumentNullException(nameof(item));
 
-
             var wrapper = record as IDeepStreamRecordWrapper;
 
             record.PropertyChanged -= Record_PropertyChanged;

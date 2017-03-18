@@ -11,7 +11,7 @@ namespace DeepStreamNet
     {
         public static string BuildCommand(Topic topic, Action action, params object[] args)
         {
-            var sb = new StringBuilder(4 + args.Length * 2);
+            var sb = new StringBuilder(4 + (args.Length * 2));
 
             sb.Append(topic);
             sb.Append(Constants.RecordSeperator);
@@ -128,7 +128,7 @@ namespace DeepStreamNet
 #else
             return type.IsGenericType;
 #endif
-        }        
+        }
 
         public static string CreateUid()
         {
