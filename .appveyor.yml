@@ -9,4 +9,4 @@ skip_tags: true
 build_script:
   - ps: dotnet --info  
   - ps: dotnet restore .\src\DeepStreamNet
-  - ps: dotnet build .\src\DeepStreamNet --verbose
+  - ps: dotnet build .\src\DeepStreamNet
