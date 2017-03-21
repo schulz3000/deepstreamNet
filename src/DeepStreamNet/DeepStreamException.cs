@@ -1,5 +1,7 @@
 ﻿using System;
+#if !COREFX
 using System.Runtime.Serialization;
+#endif
 
 namespace DeepStreamNet
 {
