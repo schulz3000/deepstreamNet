@@ -24,16 +24,14 @@ namespace DeepStreamNet
             }
         }
 
-        readonly IDeepStreamRecordWrapper ListRecord;
-
         readonly List<string> innerList = new List<string>();
 
         public event NotifyCollectionChangedEventHandler CollectionChanged;
 
-        public DeepStreamList(string name, IDeepStreamRecordWrapper listRecord)
+        public DeepStreamList(string name, IEnumerable<string> initialList)
         {
             ListName = name;
-            ListRecord = listRecord;
+            innerList.AddRange(initialList);
         }
 
         public int IndexOf(string item)
@@ -64,7 +62,7 @@ namespace DeepStreamNet
         {
             var tmp = innerList;
             innerList.Clear();
-            CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset, null, tmp));
+            CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
         }
 
         public bool Contains(string item)
@@ -79,10 +77,11 @@ namespace DeepStreamNet
 
         public bool Remove(string item)
         {
+            var index = innerList.IndexOf(item);
             var result = innerList.Remove(item);
             if (result)
             {
-                CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, null, item));
+                CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, item, index));
             }
 
             return result;

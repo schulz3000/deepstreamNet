@@ -95,7 +95,7 @@ namespace DeepStreamNet
 
             innerRecord.PropertyChanged += Record_PropertyChanged;
 
-            list = new DeepStreamList(name, innerRecord);
+            list = new DeepStreamList(name, JToken.FromObject(innerRecord).ToObject<List<string>>());
 
             list.CollectionChanged += List_CollectionChanged;
 
