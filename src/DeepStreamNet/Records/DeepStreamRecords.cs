@@ -334,7 +334,7 @@ namespace DeepStreamNet
 
             wrapper.IncrementVersion();
 
-            return Connection.SendWithAckAsync(Topic.RECORD, Action.UPDATE, Action.ACK, record.RecordName, Options.RecordReadAckTimeout, wrapper.RecordVersion.ToString(), JsonConvert.SerializeObject(record));
+            return Connection.SendWithAckAsync(Topic.RECORD, Action.UPDATE, Action.WRITE_ACKNOWLEDGEMENT, record.RecordName, Options.RecordReadAckTimeout, wrapper.RecordVersion.ToString(), JsonConvert.SerializeObject(record), Constants.WriteSuccessIdentifier);
         }
 
         public Task<bool> SetWithAckAsync(IDeepStreamRecord record, string path, object item)
@@ -356,7 +356,7 @@ namespace DeepStreamNet
 
             wrapper.IncrementVersion();
 
-            return Connection.SendWithAckAsync(Topic.RECORD, Action.PATCH, Action.ACK, record.RecordName, Options.RecordReadAckTimeout, wrapper.RecordVersion.ToString(), JsonConvert.SerializeObject(record));
+            return Connection.SendWithAckAsync(Topic.RECORD, Action.PATCH, Action.ACK, record.RecordName, Options.RecordReadAckTimeout, wrapper.RecordVersion.ToString(), path, JsonConvert.SerializeObject(record), Constants.WriteSuccessIdentifier);
         }
     }
 }

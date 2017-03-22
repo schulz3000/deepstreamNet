@@ -35,6 +35,7 @@ namespace DeepStreamNet
         public static Action REQUEST { get { return new Action("REQ"); } }
         public static Action RESPONSE { get { return new Action("RES"); } }
         public static Action REJECTION { get { return new Action("REJ"); } }
+        public static Action WRITE_ACKNOWLEDGEMENT { get { return new Action("WA"); } }
 
         readonly string Identifier;
 

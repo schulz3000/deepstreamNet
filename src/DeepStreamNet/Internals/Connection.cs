@@ -149,7 +149,6 @@ namespace DeepStreamNet
             {
                 parameter.Add(identifier);
             }
-                
 
             var command = Utils.BuildCommand(topic, action, parameter.ToArray());
 
@@ -268,6 +267,17 @@ namespace DeepStreamNet
                 else if (responseAction == Action.SUBSCRIPTION_FOR_PATTERN_REMOVED)
                 {
                     RecordListenerChanged?.Invoke(this, new RecordListenerChangedEventArgs(split[2], split[3], ListenerState.Remove));
+                }
+                else if(responseAction == Action.WRITE_ACKNOWLEDGEMENT)
+                {
+                    if ("L".Equals(split[4], StringComparison.Ordinal))
+                    {
+                        OnAcknoledged(topic, responseAction, split[2]);
+                    }
+                    else
+                    {
+                        OnError(topic, responseAction, "Record " + split[2], split[4].Substring(1, split[4].Length-2));
+                    }
                 }
                 else
                 {
