@@ -13,7 +13,7 @@ namespace DeepStreamNet
     class DeepStreamRecords : DeepStreamBase, IDeepStreamRecords
     {
         readonly HashSet<IDeepStreamRecordWrapper> records = new HashSet<IDeepStreamRecordWrapper>(new DeepStreamRecordComparer());
-        readonly HashSet<IDeepStreamList> lists = new HashSet<IDeepStreamList>();
+        readonly HashSet<IDeepStreamListWrapper> lists = new HashSet<IDeepStreamListWrapper>();
         readonly Dictionary<string, Delegate> listenerDict = new Dictionary<string, Delegate>();
 
         public DeepStreamRecords(Connection connection, DeepStreamOptions options)
@@ -44,10 +44,16 @@ namespace DeepStreamNet
                 return;
 
             record.PropertyChanged -= Record_PropertyChanged;
-
             record.Update(e.Data);
-
             record.PropertyChanged += Record_PropertyChanged;
+
+            var list = lists.FirstOrDefault(f=>f.ListName == e.Identifier);
+            if (list!=null)
+            {
+                list.CollectionChanged -= List_CollectionChanged;
+                list.Update(e.Data);
+                list.CollectionChanged += List_CollectionChanged;
+            }
         }
 
         async void Connection_RecordListenerChanged(object sender, RecordListenerChangedEventArgs e)

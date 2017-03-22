@@ -3,10 +3,12 @@ using DeepStreamNet.Contracts;
 using System.Collections.Specialized;
 using System;
 using System.Collections;
+using Newtonsoft.Json.Linq;
+using System.Linq;
 
 namespace DeepStreamNet
 {
-    class DeepStreamList : IDeepStreamList
+    class DeepStreamList : IDeepStreamListWrapper, IDeepStreamList
     {
         public string ListName { get; }
 
@@ -16,8 +18,9 @@ namespace DeepStreamNet
 
         public string this[int index]
         {
-            get =>  innerList[index];
-            set  {
+            get => innerList[index];
+            set
+            {
                 var oldItem = innerList[index];
                 innerList[index] = value;
                 CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Replace, value, oldItem, index));
@@ -95,6 +98,30 @@ namespace DeepStreamNet
         IEnumerator IEnumerable.GetEnumerator()
         {
             return innerList.GetEnumerator();
+        }
+
+        public void Update(JToken list)
+        {
+            var newList = list.ToObject<List<string>>();
+
+            if (newList.Count == 0 && innerList.Count != 0)
+            {
+                Clear();
+                return;
+            }
+
+            var newItems = newList.Except(innerList).ToList();
+            var removedItems = innerList.Except(newList).ToList();
+
+            for (int i = 0; i < newItems.Count; i++)
+            {
+                Add(newItems[i]);
+            }
+
+            for (int i = 0; i < removedItems.Count; i++)
+            {
+                Remove(removedItems[i]);
+            }
         }
     }
 }
