@@ -47,8 +47,8 @@ namespace DeepStreamNet
             record.Update(e.Data);
             record.PropertyChanged += Record_PropertyChanged;
 
-            var list = lists.FirstOrDefault(f=>f.ListName == e.Identifier);
-            if (list!=null)
+            var list = lists.FirstOrDefault(f => f.ListName == e.Identifier);
+            if (list != null)
             {
                 list.CollectionChanged -= List_CollectionChanged;
                 list.Update(e.Data);
@@ -201,9 +201,36 @@ namespace DeepStreamNet
             if (string.IsNullOrWhiteSpace(name))
                 throw new ArgumentNullException(nameof(name));
 
-            var record = await InnerGetRecordAsync<JObject>(name).ConfigureAwait(false);
+            var tcs = new TaskCompletionSource<IDeepStreamRecordWrapper>();
 
-            return record as IDeepStreamRecord;
+            var topic = Topic.RECORD;
+
+            EventHandler<RecordReceivedArgs> recHandler = null;
+            recHandler = (s, e) =>
+            {
+                if (e.Topic == topic && e.Action == Action.READ && e.Identifier == name)
+                {
+                    Connection.RecordReceived -= recHandler;
+
+                    var data = e.Data;
+                    if (e.Data.Type == JTokenType.Array)
+                    {
+                        if (!e.Data.HasValues)
+                            data = JToken.Parse("[]");
+                        tcs.TrySetResult(new DeepStreamRecordArray(e.Identifier, e.Version, (JArray)data));
+                    }
+                    else
+                    {
+                        tcs.TrySetResult(new DeepStreamRecordObject(e.Identifier, e.Version, (JObject)e.Data));
+                    }
+                }
+            };
+
+            Connection.RecordReceived += recHandler;
+
+            Connection.Send(Utils.BuildCommand(topic, Action.SNAPSHOT, name));
+
+            return (await tcs.Task) as IDeepStreamRecord;
         }
 
         public IDeepStreamAnonymousRecord GetAnonymousRecord()
