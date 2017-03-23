@@ -389,7 +389,7 @@ namespace DeepStreamNet
 
             wrapper.IncrementVersion();
 
-            return Connection.SendWithAckAsync(Topic.RECORD, Action.PATCH, Action.ACK, record.RecordName, Options.RecordReadAckTimeout, wrapper.RecordVersion.ToString(), path, JsonConvert.SerializeObject(record), Constants.WriteSuccessIdentifier);
+            return Connection.SendWithAckAsync(Topic.RECORD, Action.PATCH, Action.WRITE_ACKNOWLEDGEMENT, record.RecordName, Options.RecordReadAckTimeout, wrapper.RecordVersion.ToString(), path, Utils.ConvertAndPrefixData(wrapper.Get(path)), Constants.WriteSuccessIdentifier);
         }
     }
 }

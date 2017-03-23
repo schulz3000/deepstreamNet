@@ -10,7 +10,13 @@ namespace DeepStreamNet
         public DeepStreamRecordObject(string name, int version, JObject data)
             : base(name, version, data)
         {
-        }        
+        }
+
+        public override dynamic this[object key]
+        {
+            get => GetPropertyValue(key).ToObject<object>();
+            set => SetPropertyValue(key, JToken.FromObject(value));
+        }
 
         public override bool TryGetMember(GetMemberBinder binder, out object result)
         {

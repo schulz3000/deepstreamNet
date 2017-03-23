@@ -31,6 +31,11 @@ namespace DeepStreamNet
 
         public static string ConvertAndPrefixData<T>(T data)
         {
+            if (data is JToken)
+            {
+                return ConvertAndPrefixDataFromJToken(data as JToken);
+            }
+
             if (data is string)
             {
                 return Constants.Types.STRING + data.ToString();
@@ -60,6 +65,31 @@ namespace DeepStreamNet
                 {
                     return Constants.Types.UNDEFINED.ToString();
                 }
+            }
+        }
+
+        static string ConvertAndPrefixDataFromJToken(JToken data)
+        {
+            switch (data.Type)
+            {
+                case JTokenType.String:
+                    return Constants.Types.STRING + data.ToObject<string>();
+                case JTokenType.Boolean:
+                    return data.ToObject<bool>() ? Constants.Types.TRUE.ToString() : Constants.Types.FALSE.ToString();
+                case JTokenType.Float:
+                case JTokenType.Integer:
+                    return Constants.Types.NUMBER + data.ToObject<string>();
+                case JTokenType.Null:
+                    return Constants.Types.NULL.ToString();
+                default:
+                    try
+                    {
+                        return Constants.Types.OBJECT + JsonConvert.SerializeObject(data);
+                    }
+                    catch
+                    {
+                        return Constants.Types.UNDEFINED.ToString();
+                    }
             }
         }
 
