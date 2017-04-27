@@ -100,7 +100,7 @@ namespace DeepStreamNet
             switch (dataWithTypePrefix[0])
             {
                 case Constants.Types.STRING:
-                    return new KeyValuePair<Type, JToken>(typeof(string), JToken.Parse(evtData));
+                    return new KeyValuePair<Type, JToken>(typeof(string), JToken.FromObject(evtData));
 
                 case Constants.Types.NUMBER:
                     return new KeyValuePair<Type, JToken>(typeof(double), JToken.Parse(evtData));

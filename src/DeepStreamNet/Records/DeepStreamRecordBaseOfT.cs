@@ -1,13 +1,13 @@
 ﻿using System.ComponentModel;
 using Newtonsoft.Json.Linq;
-using System.Collections.Specialized;
+using System;
 
 namespace DeepStreamNet
 {
-    class DeepStreamRecordBase<T> : DeepStreamRecordBase, IDeepStreamRecordWrapper
+    class DeepStreamRecordBase<T> : DeepStreamRecordBase, IDeepStreamRecordWrapper, IDisposable
         where T : JContainer
     {
-        protected ChangeListener Listener;
+        protected JsonNetChangeListener Listener;
 
         public override dynamic this[object key]
         {
@@ -28,20 +28,47 @@ namespace DeepStreamNet
         {
             Data = data;
             Data.AddAnnotation(name);
-            Listener = ChangeListener.Create(Data);
+            Listener = JsonNetChangeListener.Create(Data);
         }
 
-        public void Patch(string path, JToken item) => Data.SelectToken(path)?.Replace(item);
+        public void Patch(string path, JToken item)
+        {
+            if (path.EndsWith("]", StringComparison.Ordinal) && Data.SelectToken(path) == null)
+            {
+                var arrayParentPath = path.Substring(0, path.Length - (path.LastIndexOf("[", StringComparison.Ordinal)+1));
+                var token = Data.SelectToken(arrayParentPath);
+                ((JArray)token).Add(item);
+
+            }
+            else
+            {
+                Data.SelectToken(path)?.Replace(item);
+            }
+        }
 
         public void Update(JToken item)
         {
             Data = (T)item;
             Data.AddAnnotation(RecordName);
-            Listener.Resubscribe((INotifyCollectionChanged)Data);
+            //Listener.Resubscribe(Data);
         }
 
         public object Get(string path) => Data.SelectToken(path);
 
         public override string ToString() => Data.ToString();
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                Listener.Dispose();
+            }
+        }
     }
 }

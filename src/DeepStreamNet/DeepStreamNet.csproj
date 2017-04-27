@@ -7,7 +7,7 @@
     <VersionPrefix>0.0.0.3-alpha</VersionPrefix>
     <Authors>schulz3000</Authors>
     <TargetFrameworks>net45;net451;netstandard1.5</TargetFrameworks>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>  
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <AssemblyName>DeepStreamNet</AssemblyName>
     <PackageId>DeepStreamNet</PackageId>

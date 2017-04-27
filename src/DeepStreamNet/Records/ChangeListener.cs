@@ -6,7 +6,7 @@ namespace DeepStreamNet
 {
     abstract class ChangeListener : INotifyPropertyChanged, IDisposable
     {
-        protected string _propertyName;
+        protected string PropertyName;
 
         protected abstract void Unsubscribe();
 
@@ -16,8 +16,6 @@ namespace DeepStreamNet
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
-
-        public abstract void Resubscribe(INotifyCollectionChanged item);
 
         public void Dispose()
         {
@@ -45,17 +43,11 @@ namespace DeepStreamNet
 
         public static ChangeListener Create(INotifyPropertyChanged value, string propertyName)
         {
-            if (value is INotifyCollectionChanged)
+            if (value is INotifyCollectionChanged trackableCollection)
             {
-                return new CollectionChangeListener(value as INotifyCollectionChanged, propertyName);
+                return new CollectionChangeListener(trackableCollection, propertyName);
             }
-
-            if (value is INotifyPropertyChanged)
-            {
-                return new ChildChangeListener(value, propertyName);
-            }
-
-            return null;
+            return value != null ? new ChildChangeListener(value, propertyName) : null;
         }
 
         public static ChangeListener Create(INotifyCollectionChanged value)

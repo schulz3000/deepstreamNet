@@ -31,9 +31,7 @@ namespace DeepStreamNet
                 return;
 
             record.PropertyChanged -= Record_PropertyChanged;
-
             record.Patch(e.Property, e.Data);
-
             record.PropertyChanged += Record_PropertyChanged;
         }
 
@@ -122,7 +120,7 @@ namespace DeepStreamNet
 
         void Record_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            var recordName = ((sender as CollectionChangeListener)?.Value as JToken).Annotation<string>();
+            var recordName = (sender as JToken).Annotation<string>();
             var record = records.FirstOrDefault(f => f.RecordName == recordName);
             if (record == null)
                 return;
@@ -151,6 +149,7 @@ namespace DeepStreamNet
             if (await Connection.SendWithAckAsync(Topic.RECORD, Action.UNSUBSCRIBE, Action.UNSUBSCRIBE, wrapper.RecordName, Options.SubscriptionTimeout).ConfigureAwait(false))
             {
                 records.Remove(wrapper);
+                ((IDisposable)wrapper).Dispose();
             }
         }
 
@@ -169,6 +168,7 @@ namespace DeepStreamNet
             if (await Connection.SendWithAckAsync(Topic.RECORD, Action.DELETE, Action.DELETE, wrapper.RecordName, Options.RecordDeleteTimeout).ConfigureAwait(false))
             {
                 records.Remove(wrapper);
+                ((IDisposable)wrapper).Dispose();
             }
         }
 
