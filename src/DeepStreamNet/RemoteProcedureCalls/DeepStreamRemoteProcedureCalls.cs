@@ -17,7 +17,7 @@ namespace DeepStreamNet
         }
 
         async void Connection_PerformRemoteProcedureRequested(object sender, RemoteProcedureMessageArgs e)
-        {            
+        {
             var command = Utils.BuildCommand(Topic.RPC, Action.ACK, Action.REQUEST, e.Identifier, e.Uid);
             Connection.Send(command);
 
@@ -39,11 +39,11 @@ namespace DeepStreamNet
             {
                 try
                 {
-                    var parameter = Convert.ChangeType(e.Data, procedure.OriginalParameterType);
+                    var parameter = e.Data.ToObject(procedure.OriginalParameterType);
 
                     var rpcResponseType = typeof(RpcResponse<>).MakeGenericType(procedure.ReturnType);
                     var response = Activator.CreateInstance(rpcResponseType, e.Identifier, e.Uid, Connection);
-                                        
+
                     var result = procedure.Procedure.DynamicInvoke(parameter, response);
 
                     if (result != null)
@@ -64,7 +64,7 @@ namespace DeepStreamNet
 
         public Task<IAsyncDisposable> RegisterProviderAsync<TInput, TResult>(string procedureName, Action<TInput, IRpcResponse<TResult>> procedure)
         {
-           return InnerRegisterProviderAsync(procedureName ,procedure);            
+            return InnerRegisterProviderAsync(procedureName, procedure);
         }
 
         async Task<IAsyncDisposable> InnerRegisterProviderAsync(string procedureName, Delegate procedure)
@@ -110,7 +110,7 @@ namespace DeepStreamNet
 
                 try
                 {
-                    var result = (TResult)Convert.ChangeType(e.Data, typeof(TResult));
+                    var result = e.Data.ToObject<TResult>();
                     tcs.TrySetResult(result);
                 }
                 catch (Exception ex)
