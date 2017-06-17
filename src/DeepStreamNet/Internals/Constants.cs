@@ -4,12 +4,14 @@ namespace DeepStreamNet
 {
     static class Constants
     {
-        internal static readonly char RecordSeperator = (char)31 ;
-        internal static readonly char GroupSeperator =  (char)30 ;
+        internal static readonly char RecordSeperator = (char)31;
+        internal static readonly char GroupSeperator = (char)30;
 
         internal static readonly char[] PathSplitter = { '.' };
 
         internal static readonly string WriteSuccessIdentifier = JsonConvert.SerializeObject(new { writeSuccess = true });
+
+        internal static readonly string EmptyCredentials = "{}";
 
         internal static class Types
         {

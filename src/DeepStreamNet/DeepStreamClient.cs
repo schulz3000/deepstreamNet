@@ -1,7 +1,6 @@
 ﻿using DeepStreamNet.Contracts;
 using Newtonsoft.Json;
 using System;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace DeepStreamNet
@@ -9,22 +8,57 @@ namespace DeepStreamNet
     /// <summary>
     /// DeepStreamClient
     /// </summary>
-    public class DeepStreamClient : IDisposable
+    public sealed class DeepStreamClient : IDisposable
     {
-        readonly Connection connection;
+        Connection connection;
+        /// <summary>
+        /// inner Connection
+        /// </summary>
+        Connection Connection { get { return connection; } }
 
+        IDeepStreamEvents events;
         /// <summary>
         /// DeepStreamEvents
         /// </summary>
-        public IDeepStreamEvents Events { get; }
+        public IDeepStreamEvents Events
+        {
+            get
+            {
+                if (events == null)
+                    throw new DeepStreamException("not initialized", "please login first");
+                return events;
+            }
+        }
+
+        IDeepStreamRecords records;
         /// <summary>
         /// DeepStreamRecords
         /// </summary>
-        public IDeepStreamRecords Records { get; }
+        public IDeepStreamRecords Records
+        {
+            get
+            {
+                if (records == null)
+                    throw new DeepStreamException("not initialized", "please login first");
+                return records;
+            }
+        }
+
+        IDeepStreamRemoteProcedureCalls rpcs;
         /// <summary>
         /// DeepStreamRemoteProcedures
         /// </summary>
-        public IDeepStreamRemoteProcedureCalls Rpcs { get; }
+        public IDeepStreamRemoteProcedureCalls Rpcs
+        {
+            get
+            {
+                if (rpcs == null)
+                    throw new DeepStreamException("not initialized", "please login first");
+                return rpcs;
+            }
+        }
+
+        readonly DeepStreamOptions Options;
 
         /// <summary>
         /// DeepStreamClient for connecting to deepstream.io server
@@ -32,13 +66,12 @@ namespace DeepStreamNet
         /// <param name="host">deepstream.io endpoint address or ip</param>
         /// <param name="port">deeptstream.io endpoint port</param>
         /// <param name="path">deeptstream.io endpoint path</param>
+        /// <param name="useSecureConnection"></param>
         /// <param name="options" cref="DeepStreamOptions">set options other then default</param>
-        public DeepStreamClient(string host, int port, string path, DeepStreamOptions options)
+        public DeepStreamClient(string host, int port, string path, bool useSecureConnection, DeepStreamOptions options)
         {
-            connection = new Connection(host, port, path);
-            Events = new DeepStreamEvents(connection, options);
-            Records = new DeepStreamRecords(connection, options);
-            Rpcs = new DeepStreamRemoteProcedureCalls(connection, options);
+            connection = new Connection(host, port, path, useSecureConnection);
+            Options = options;
         }
 
         /// <summary>
@@ -47,8 +80,9 @@ namespace DeepStreamNet
         /// <param name="host">deepstream.io endpoint address or ip</param>
         /// <param name="port">deeptstream.io endpoint port</param>
         /// <param name="path">deeptstream.io endpoint path</param>
-        public DeepStreamClient(string host, int port = 6020, string path = "deepstream")
-            : this(host, port, path, new DeepStreamOptions())
+        /// <param name="useSecureConnection"></param>
+        public DeepStreamClient(string host, int port = 6020, string path = "deepstream", bool useSecureConnection = false)
+            : this(host, port, path, useSecureConnection, new DeepStreamOptions())
         {
         }
 
@@ -58,7 +92,7 @@ namespace DeepStreamNet
         /// <returns>true if login was successful otherwise false</returns>
         public Task<bool> LoginAsync()
         {
-            return LoginAsync(null, null);
+            return LoginAsync(Constants.EmptyCredentials);
         }
 
         /// <summary>
@@ -67,69 +101,99 @@ namespace DeepStreamNet
         /// <param name="userName">Username for authentication on deepstream.io server</param>
         /// <param name="password">Password for authentication on deepstream.io server</param>
         /// <returns>true if login was successful otherwise false</returns>
-        public async Task<bool> LoginAsync(string userName, string password)
+        public Task<bool> LoginAsync(string userName, string password)
         {
-            var tcs = new TaskCompletionSource<bool>();
-
-            string credentials = "{}";
+            string credentials = Constants.EmptyCredentials;
             if (!string.IsNullOrWhiteSpace(userName) && !string.IsNullOrWhiteSpace(password))
                 credentials = JsonConvert.SerializeObject(new { username = userName, password });
 
-            await connection.OpenAsync().ConfigureAwait(false);
-            connection.State = ConnectionState.AWAITING_AUTHENTICATION;
+            return LoginAsync(credentials);
+        }
 
-            connection.StartMessageLoop();
+        async Task<bool> LoginAsync(string credentials)
+        {
+            var tcs = new TaskCompletionSource<bool>();
 
-            await RegisterAuthChallange().ConfigureAwait(false);
+            await Connection.OpenAsync().ConfigureAwait(false);
+            Connection.State = ConnectionState.AWAITING_AUTHENTICATION;
+
+            Connection.StartMessageLoop();
+
+            var challengeResult = await RegisterAuthChallenge(credentials).ConfigureAwait(false);
+            if (challengeResult.HasValue)
+            {
+                return challengeResult.Value;
+            }
 
             EventHandler<ErrorArgs> errorHandler = null;
 
             errorHandler = (s, e) =>
             {
-                if (e.Topic != Topic.AUTH && e.Action != Action.ERROR)
+                if (e.Action != Action.ERROR)
                     return;
 
-                connection.Error -= errorHandler;
-                connection.State = ConnectionState.AWAITING_AUTHENTICATION;
+                Connection.Error -= errorHandler;
+                Connection.State = ConnectionState.AWAITING_AUTHENTICATION;
 
                 tcs.TrySetException(new DeepStreamException(e.Error, e.Message));
             };
 
-            connection.Error += errorHandler;
+            Connection.Error += errorHandler;
 
-            connection.State = ConnectionState.AUTHENTICATING;
+            Connection.State = ConnectionState.AUTHENTICATING;
 
-            var result = await connection.SendWithAckAsync(Topic.AUTH, Action.REQUEST, Action.Empty, credentials, 1000).ConfigureAwait(false);
+            var result = await Connection.SendWithAckAsync(Topic.AUTH, Action.REQUEST, Action.Empty, credentials, Options.SubscriptionTimeout).ConfigureAwait(false);
 
             if (result)
             {
-                connection.State = ConnectionState.OPEN;
-                connection.PingReceived += Connection_PingReceived;
+                Connection.State = ConnectionState.OPEN;
+                Connection.PingReceived += Connection_PingReceived;
+                events = new DeepStreamEvents(Connection, Options);
+                records = new DeepStreamRecords(Connection, Options);
+                rpcs = new DeepStreamRemoteProcedureCalls(Connection, Options);
             }
 
             return result;
         }
 
-        Task RegisterAuthChallange()
+        Task<bool?> RegisterAuthChallenge(string credentials)
         {
-            var tcs = new TaskCompletionSource<bool>();
+            var tcs = new TaskCompletionSource<bool?>();
 
-            EventHandler handler = null;
-            handler = (s, e) =>
+            EventHandler<ChallengeEventArgs> handler = null;
+            handler = async (s, e) =>
             {
-                connection.Send(Utils.BuildCommand(Topic.CONNECTION, Action.CHALLENGE_RESPONSE));
-                connection.ChallangeReceived -= handler;
-                tcs.SetResult(true);
+                if (e.Action == Action.CHALLENGE)
+                {
+                    Connection.Send(Utils.BuildCommand(Topic.CONNECTION, Action.CHALLENGE_RESPONSE, Connection.Endpoint));
+                }
+                else if (e.Action == Action.REDIRECT && e is RedirectionEventArgs redirectArgs)
+                {
+                    Connection.ChallengeReceived -= handler;
+                    tcs.SetResult(await RecreateClientAsync(redirectArgs.RedirectUrl, credentials));
+                }
+                else if (e.Action == Action.ACK)
+                {
+                    Connection.ChallengeReceived -= handler;
+                    tcs.SetResult(null);
+                }
             };
 
-            connection.ChallangeReceived += handler;
+            Connection.ChallengeReceived += handler;
 
             return tcs.Task;
         }
 
         void Connection_PingReceived(object sender, EventArgs e)
         {
-            connection.Send(Utils.BuildCommand(Topic.CONNECTION, Action.PONG));
+            Connection.Send(Utils.BuildCommand(Topic.CONNECTION, Action.PONG));
+        }
+
+        Task<bool> RecreateClientAsync(string endPointUrl, string credentials)
+        {
+            Connection.Dispose();
+            connection = new Connection(endPointUrl);
+            return LoginAsync(credentials);
         }
 
         /// <summary>
@@ -145,8 +209,8 @@ namespace DeepStreamNet
         {
             if (disposing)
             {
-                connection.PingReceived -= Connection_PingReceived;
-                connection.Dispose();
+                Connection.PingReceived -= Connection_PingReceived;
+                Connection.Dispose();
             }
         }
     }

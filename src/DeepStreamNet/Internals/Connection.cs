@@ -1,5 +1,4 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json.Linq;
 using SuperSocket.ClientEngine;
 using System;
 using System.Collections.Generic;
@@ -11,11 +10,12 @@ namespace DeepStreamNet
 {
     class Connection : IDisposable
     {
-        readonly WebSocket client;
+        WebSocket client;
 
         public ConnectionState State { get; internal set; }
+        public string Endpoint { get; private set; }
 
-        internal event EventHandler ChallangeReceived;
+        internal event EventHandler<ChallengeEventArgs> ChallengeReceived;
 
         internal event EventHandler PingReceived;
 
@@ -41,7 +41,7 @@ namespace DeepStreamNet
 
         internal event EventHandler<RemoteProcedureMessageArgs> RemoteProcedureResultReceived;
 
-        public Connection(string host, int port, string path)
+        public Connection(string host, int port, string path, bool useSecureConnection)
         {
             if (port < 1)
                 throw new ArgumentOutOfRangeException(nameof(port));
@@ -52,14 +52,30 @@ namespace DeepStreamNet
             if (string.IsNullOrWhiteSpace(path))
                 throw new ArgumentNullException(nameof(path));
 
+            var protocol = useSecureConnection ? "wss" : "ws";
+
+            Connect($"{protocol}://{host}:{port}/{path}");
+        }
+
+        internal Connection(string url)
+        {
+            if (string.IsNullOrWhiteSpace(url))
+                throw new ArgumentNullException(nameof(url));
+
+            Connect(url);
+        }
+
+        void Connect(string url)
+        {
             State = ConnectionState.NONE;
 
-            client = new WebSocket($"ws://{host}:{port}/{path}", userAgent: "deepstreamNet Client");
+            Endpoint = url;
+
+            client = new WebSocket(Endpoint, userAgent: "deepstreamNet Client");
 
 #if !__IOS__
             client.NoDelay = true;
 #endif
-
         }
 
         public Task OpenAsync()
@@ -89,6 +105,7 @@ namespace DeepStreamNet
 
         public void Send(string command)
         {
+            System.Diagnostics.Debug.WriteLine("send: " + command);
             client.Send(command);
         }
 
@@ -140,7 +157,7 @@ namespace DeepStreamNet
 
             var parameter = new List<string>();
 
-            if(additionalParams.Length>0)
+            if (additionalParams.Length > 0)
             {
                 parameter.Add(identifier);
                 parameter.AddRange(additionalParams);
@@ -165,6 +182,7 @@ namespace DeepStreamNet
 
         public void StartMessageLoop()
         {
+            client.MessageReceived -= Client_MessageReceived;
             client.MessageReceived += Client_MessageReceived;
         }
 
@@ -180,6 +198,7 @@ namespace DeepStreamNet
 
         void Notify(string value)
         {
+            System.Diagnostics.Debug.WriteLine("receive: " + value);
             var split = value.Split(Constants.RecordSeperator);
 
             if (split.Length < 2)
@@ -195,9 +214,15 @@ namespace DeepStreamNet
             if (topic == Topic.CONNECTION)
             {
                 if (responseAction == Action.CHALLENGE)
-                    ChallangeReceived?.Invoke(this, EventArgs.Empty);
+                    ChallengeReceived?.Invoke(this, new ChallengeEventArgs(topic, responseAction));
                 else if (responseAction == Action.PING)
                     PingReceived?.Invoke(this, EventArgs.Empty);
+                else if (responseAction == Action.REDIRECT)
+                    ChallengeReceived?.Invoke(this, new RedirectionEventArgs(topic, responseAction, split[2]));
+                else if (responseAction == Action.ACK)
+                    ChallengeReceived?.Invoke(this, new ChallengeEventArgs(topic, responseAction));
+                else if (responseAction == Action.REJECTION)
+                    OnError(topic, action, "Connection rejected", "Connection rejected");
             }
             else if (topic == Topic.AUTH)
             {
@@ -246,7 +271,7 @@ namespace DeepStreamNet
                 }
                 else if (responseAction == Action.READ)
                 {
-                    RecordReceived?.Invoke(this, new RecordReceivedArgs(topic, responseAction, split[2], int.Parse(split[3], CultureInfo.InvariantCulture),JToken.Parse(split[4])));
+                    RecordReceived?.Invoke(this, new RecordReceivedArgs(topic, responseAction, split[2], int.Parse(split[3], CultureInfo.InvariantCulture), JToken.Parse(split[4])));
                 }
                 else if (responseAction == Action.UPDATE)
                 {
@@ -268,7 +293,7 @@ namespace DeepStreamNet
                 {
                     RecordListenerChanged?.Invoke(this, new RecordListenerChangedEventArgs(split[2], split[3], ListenerState.Remove));
                 }
-                else if(responseAction == Action.WRITE_ACKNOWLEDGEMENT)
+                else if (responseAction == Action.WRITE_ACKNOWLEDGEMENT)
                 {
                     if ("L".Equals(split[4], StringComparison.Ordinal))
                     {
@@ -276,7 +301,7 @@ namespace DeepStreamNet
                     }
                     else
                     {
-                        OnError(topic, responseAction, "Record " + split[2], split[4].Substring(1, split[4].Length-2));
+                        OnError(topic, responseAction, "Record " + split[2], split[4].Substring(1, split[4].Length - 2));
                     }
                 }
                 else

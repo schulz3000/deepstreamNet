@@ -38,7 +38,6 @@ namespace DeepStreamNet
                 var arrayParentPath = path.Substring(0, path.Length - (path.LastIndexOf("[", StringComparison.Ordinal)+1));
                 var token = Data.SelectToken(arrayParentPath);
                 ((JArray)token).Add(item);
-
             }
             else
             {

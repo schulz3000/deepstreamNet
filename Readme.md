@@ -16,7 +16,11 @@ dotnet Client for [deepstream.io](https://deepstream.io)
 ## Usage
 
 ```csharp
+//connect to default deepstream instance
 var client = new DeepStreamClient("localhost", 6020, "deepstream");
+
+//connect to deepstreamhub.com
+var client = new DeepStreamClient("123.deepstreamhub.com", 443, "?apiKey=abc", true);
 
 if(await client.LoginAsync())
 {
