@@ -7,9 +7,6 @@
         {
         }
 
-        protected override Topic ListenerTopic
-        {
-            get { return Topic.EVENT; }
-        }
+        protected override Topic ListenerTopic => Topic.EVENT;
     }
 }

@@ -20,9 +20,6 @@ namespace DeepStreamNet
             return x.Name.Equals(y.Name, StringComparison.OrdinalIgnoreCase);
         }
 
-        public int GetHashCode(RemoteProcedure obj)
-        {
-            return obj.Name.GetHashCode();
-        }
+        public int GetHashCode(RemoteProcedure obj) => obj.Name.GetHashCode();
     }
 }

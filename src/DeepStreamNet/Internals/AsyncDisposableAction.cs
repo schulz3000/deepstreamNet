@@ -13,10 +13,7 @@ namespace DeepStreamNet
             _asyncAction = asyncAction;
         }
 
-        public Task DisposeAsync()
-        {
-            return DisposeAsync(true);
-        }
+        public Task DisposeAsync() => DisposeAsync(true);
 
         async Task DisposeAsync(bool disposing)
         {

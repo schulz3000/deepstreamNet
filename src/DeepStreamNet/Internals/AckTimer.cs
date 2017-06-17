@@ -16,15 +16,9 @@ namespace DeepStreamNet
             timer = new Timer(OnElapsed, null, Timeout.Infinite, Timeout.Infinite);
         }
 
-        public void Start()
-        {
-            timer.Change(timeout, Timeout.Infinite);
-        }
+        public void Start() => timer.Change(timeout, Timeout.Infinite);
 
-        void OnElapsed(object state)
-        {
-            Elapsed?.Invoke(this, EventArgs.Empty);
-        }
+        void OnElapsed(object state) => Elapsed?.Invoke(this, EventArgs.Empty);
 
         public void Dispose()
         {
@@ -34,7 +28,7 @@ namespace DeepStreamNet
 
         void Dispose(bool disposing)
         {
-            if(disposing)
+            if (disposing)
             {
                 timer.Dispose();
             }

@@ -170,7 +170,7 @@ namespace DeepStreamNet
                 else if (e.Action == Action.REDIRECT && e is RedirectionEventArgs redirectArgs)
                 {
                     Connection.ChallengeReceived -= handler;
-                    tcs.SetResult(await RecreateClientAsync(redirectArgs.RedirectUrl, credentials));
+                    tcs.SetResult(await RecreateClientAsync(redirectArgs.RedirectUrl, credentials).ConfigureAwait(false));
                 }
                 else if (e.Action == Action.ACK)
                 {
@@ -184,10 +184,7 @@ namespace DeepStreamNet
             return tcs.Task;
         }
 
-        void Connection_PingReceived(object sender, EventArgs e)
-        {
-            Connection.Send(Utils.BuildCommand(Topic.CONNECTION, Action.PONG));
-        }
+        void Connection_PingReceived(object sender, EventArgs e) => Connection.Send(Utils.BuildCommand(Topic.CONNECTION, Action.PONG));
 
         Task<bool> RecreateClientAsync(string endPointUrl, string credentials)
         {

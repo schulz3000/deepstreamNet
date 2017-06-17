@@ -347,15 +347,9 @@ namespace DeepStreamNet
             }
         }
 
-        void OnAcknoledged(Topic topic, Action action, string identifier)
-        {
-            Acknoledged?.Invoke(this, new AcknoledgedArgs(topic, action, identifier));
-        }
+        void OnAcknoledged(Topic topic, Action action, string identifier) => Acknoledged?.Invoke(this, new AcknoledgedArgs(topic, action, identifier));
 
-        void OnError(Topic topic, Action action, string error, string message)
-        {
-            Error?.Invoke(this, new ErrorArgs(topic, action, error, message));
-        }
+        void OnError(Topic topic, Action action, string error, string message) => Error?.Invoke(this, new ErrorArgs(topic, action, error, message));
 
         public void Dispose()
         {

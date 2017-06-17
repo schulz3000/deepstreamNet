@@ -1,9 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Newtonsoft.Json;
-using System.Reflection;
+﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System;
+using System.Collections.Generic;
+using System.Reflection;
+using System.Text;
 
 namespace DeepStreamNet
 {
@@ -160,9 +160,6 @@ namespace DeepStreamNet
 #endif
         }
 
-        public static string CreateUid()
-        {
-            return Guid.NewGuid().ToString("N");
-        }
+        public static string CreateUid() => Guid.NewGuid().ToString("N");
     }
 }

@@ -57,15 +57,9 @@ namespace DeepStreamNet
             }
         }
 
-        public Task<IAsyncDisposable> RegisterProviderAsync<TInput, TResult>(string procedureName, Func<TInput, IRpcResponse<TResult>, Task> procedure)
-        {
-            return InnerRegisterProviderAsync(procedureName, procedure);
-        }
+        public Task<IAsyncDisposable> RegisterProviderAsync<TInput, TResult>(string procedureName, Func<TInput, IRpcResponse<TResult>, Task> procedure) => InnerRegisterProviderAsync(procedureName, procedure);
 
-        public Task<IAsyncDisposable> RegisterProviderAsync<TInput, TResult>(string procedureName, Action<TInput, IRpcResponse<TResult>> procedure)
-        {
-            return InnerRegisterProviderAsync(procedureName, procedure);
-        }
+        public Task<IAsyncDisposable> RegisterProviderAsync<TInput, TResult>(string procedureName, Action<TInput, IRpcResponse<TResult>> procedure) => InnerRegisterProviderAsync(procedureName, procedure);
 
         async Task<IAsyncDisposable> InnerRegisterProviderAsync(string procedureName, Delegate procedure)
         {
@@ -138,7 +132,7 @@ namespace DeepStreamNet
             return await tcs.Task.ConfigureAwait(false);
         }
 
-        async Task<bool> SendWithAckAsync<T>(Topic topic, Action action, Action expectedReceivedAction, string identifier, string uid, T parameter, int ackTimeout)
+        Task<bool> SendWithAckAsync<T>(Topic topic, Action action, Action expectedReceivedAction, string identifier, string uid, T parameter, int ackTimeout)
         {
             var tcs = new TaskCompletionSource<bool>();
 
@@ -149,9 +143,7 @@ namespace DeepStreamNet
 
             ackHandler = (s, e) =>
             {
-                var args = e as AcknoledgedWithUidArgs;
-
-                if (args != null && args.Topic == topic && args.Action == expectedReceivedAction && args.Identifier == identifier && args.Uid == uid)
+                if (e is AcknoledgedWithUidArgs args && args.Topic == topic && args.Action == expectedReceivedAction && args.Identifier == identifier && args.Uid == uid)
                     tcs.TrySetResult(true);
 
                 if (tcs.Task.IsCompleted)
@@ -196,7 +188,7 @@ namespace DeepStreamNet
 
             Connection.Send(command);
 
-            return await tcs.Task.ConfigureAwait(false);
+            return tcs.Task;
         }
 
         public void Dispose()
@@ -207,10 +199,9 @@ namespace DeepStreamNet
 
         void Dispose(bool disposing)
         {
-            if (disposing)
+            if (disposing && Connection != null)
             {
-                if (Connection != null)
-                    Connection.PerformRemoteProcedureRequested -= Connection_PerformRemoteProcedureRequested;
+                Connection.PerformRemoteProcedureRequested -= Connection_PerformRemoteProcedureRequested;
             }
         }
     }

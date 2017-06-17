@@ -15,22 +15,10 @@ namespace DeepStreamNet
             Connection = connection;
         }
 
-        public void Error(string message)
-        {
-            var exceptionCommand = Utils.BuildCommand(Topic.RPC, Action.ERROR, message, ProcedureName, Uid);
-             Connection.Send(exceptionCommand);
-        }
+        public void Error(string message) => Connection.Send(Utils.BuildCommand(Topic.RPC, Action.ERROR, message, ProcedureName, Uid));
 
-        public void Reject()
-        {
-            var rejectCommand = Utils.BuildCommand(Topic.RPC, Action.REJECTION, ProcedureName, Uid);
-            Connection.Send(rejectCommand);
-        }
+        public void Reject() => Connection.Send(Utils.BuildCommand(Topic.RPC, Action.REJECTION, ProcedureName, Uid));
 
-        public void Send(TResult result)
-        {
-            var resultCommand = Utils.BuildCommand(Topic.RPC, Action.RESPONSE, ProcedureName, Uid, Utils.ConvertAndPrefixData(result));
-            Connection.Send(resultCommand);
-        }
+        public void Send(TResult result) => Connection.Send(Utils.BuildCommand(Topic.RPC, Action.RESPONSE, ProcedureName, Uid, Utils.ConvertAndPrefixData(result)));
     }
 }
