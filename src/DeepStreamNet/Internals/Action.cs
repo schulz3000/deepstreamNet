@@ -4,55 +4,50 @@ namespace DeepStreamNet
 {
     struct Action
     {
-        public static Action Empty { get { return new Action(null); } }
-        public static Action ACK { get { return new Action("A"); } }
-        public static Action PING { get { return new Action("PI"); } }
-        public static Action PONG { get { return new Action("PO"); } }
-        public static Action READ { get { return new Action("R"); } }
-        public static Action REDIRECT { get { return new Action("RED"); } }
-        public static Action CHALLENGE { get { return new Action("CH"); } }
-        public static Action CHALLENGE_RESPONSE { get { return new Action("CHR"); } }
-        public static Action CREATE { get { return new Action("C"); } }
-        public static Action UPDATE { get { return new Action("U"); } }
-        public static Action PATCH { get { return new Action("P"); } }
-        public static Action DELETE { get { return new Action("D"); } }
-        public static Action HAS { get { return new Action("H"); } }
-        public static Action SNAPSHOT { get { return new Action("SN"); } }
-        public static Action LISTEN_SNAPSHOT { get { return new Action("LSN"); } }
-        public static Action SUBSCRIBE { get { return new Action("S"); } }
-        public static Action UNSUBSCRIBE { get { return new Action("US"); } }
-        public static Action SUBSCRIPTION_FOR_PATTERN_FOUND { get { return new Action("SP"); } }
-        public static Action SUBSCRIPTION_FOR_PATTERN_REMOVED { get { return new Action("SR"); } }
-        public static Action LISTEN { get { return new Action("L"); } }
-        public static Action UNLISTEN { get { return new Action("UL"); } }
-        public static Action LISTEN_ACCEPT { get { return new Action("LA"); } }
-        public static Action LISTEN_REJECT { get { return new Action("LR"); } }
-        public static Action PROVIDER_UPDATE { get { return new Action("PU"); } }
-        public static Action QUERY { get { return new Action("Q"); } }
-        public static Action CREATEORREAD { get { return new Action("CR"); } }
-        public static Action EVENT { get { return new Action("EVT"); } }
-        public static Action ERROR { get { return new Action("E"); } }
-        public static Action REQUEST { get { return new Action("REQ"); } }
-        public static Action RESPONSE { get { return new Action("RES"); } }
-        public static Action REJECTION { get { return new Action("REJ"); } }
-        public static Action WRITE_ACKNOWLEDGEMENT { get { return new Action("WA"); } }
+        public static Action Empty => new Action(null);
+        public static Action PING => new Action("PI");
+        public static Action PONG => new Action("PO");
+        public static Action ACK => new Action("A");
+        public static Action REDIRECT => new Action("RED");
+        public static Action CHALLENGE => new Action("CH");
+        public static Action CHALLENGE_RESPONSE => new Action("CHR");
+        public static Action READ => new Action("R");
+        public static Action CREATE => new Action("C");
+        public static Action UPDATE => new Action("U");
+        public static Action PATCH => new Action("P");
+        public static Action DELETE => new Action("D");
+        public static Action SUBSCRIBE => new Action("S");
+        public static Action UNSUBSCRIBE => new Action("US");
+        public static Action HAS => new Action("H");
+        public static Action SNAPSHOT => new Action("SN");
+        public static Action INVOKE => new Action("I");
+        public static Action SUBSCRIPTION_FOR_PATTERN_FOUND => new Action("SP");
+        public static Action SUBSCRIPTION_FOR_PATTERN_REMOVED => new Action("SR");
+        public static Action SUBSCRIPTION_HAS_PROVIDER => new Action("SH");
+        public static Action LISTEN => new Action("L");
+        public static Action UNLISTEN => new Action("UL");
+        public static Action LISTEN_ACCEPT => new Action("LA");
+        public static Action LISTEN_REJECT => new Action("LR");
+        public static Action PROVIDER_UPDATE => new Action("PU");
+        public static Action QUERY => new Action("Q");
+        public static Action CREATEORREAD => new Action("CR");
+        public static Action CREATEANDUPDATE => new Action("CU");
+        public static Action EVENT => new Action("EVT");
+        public static Action ERROR => new Action("E");
+        public static Action REQUEST => new Action("REQ");
+        public static Action RESPONSE => new Action("RES");
+        public static Action REJECTION => new Action("REJ");
+        public static Action PRESENCE_JOIN => new Action("PNJ");
+        public static Action PRESENCE_LEAVE => new Action("PNL");
+        public static Action WRITE_ACKNOWLEDGEMENT => new Action("WA");
 
         readonly string Identifier;
 
-        public Action(string identifier)
-        {
-            Identifier = identifier;
-        }
+        public Action(string identifier) => Identifier = identifier;
 
-        public static bool operator ==(Action a1, Action a2)
-        {
-            return a1.Equals(a2);
-        }
+        public static bool operator ==(Action a1, Action a2) => a1.Equals(a2);
 
-        public static bool operator !=(Action a1, Action a2)
-        {
-            return !a1.Equals(a2);
-        }
+        public static bool operator !=(Action a1, Action a2) => !a1.Equals(a2);
 
         public override bool Equals(object obj)
         {
@@ -64,14 +59,8 @@ namespace DeepStreamNet
             return string.Equals(Identifier, other.Identifier, StringComparison.Ordinal);
         }
 
-        public override int GetHashCode()
-        {
-            return Identifier.GetHashCode();
-        }
+        public override int GetHashCode() => Identifier.GetHashCode();
 
-        public override string ToString()
-        {
-            return Identifier;
-        }
+        public override string ToString() => Identifier;
     }
 }

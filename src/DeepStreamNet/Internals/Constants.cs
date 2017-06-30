@@ -4,12 +4,14 @@ namespace DeepStreamNet
 {
     static class Constants
     {
-        internal static readonly char RecordSeperator = (char)31 ;
-        internal static readonly char GroupSeperator =  (char)30 ;
+        internal const char RecordSeperator = (char)31;
+        internal const char GroupSeperator = (char)30;
 
         internal static readonly char[] PathSplitter = { '.' };
 
         internal static readonly string WriteSuccessIdentifier = JsonConvert.SerializeObject(new { writeSuccess = true });
+
+        internal const string EmptyCredentials = "{}";
 
         internal static class Types
         {
@@ -41,9 +43,10 @@ namespace DeepStreamNet
             public const string LISTENER_EXISTS = nameof(LISTENER_EXISTS);
             public const string NOT_LISTENING = nameof(NOT_LISTENING);
             public const string TOO_MANY_AUTH_ATTEMPTS = nameof(TOO_MANY_AUTH_ATTEMPTS);
+            public const string INVALID_AUTH_MSG = nameof(INVALID_AUTH_MSG);
             public const string IS_CLOSED = nameof(IS_CLOSED);
-            public const string UNKNOWN_CALLEE = nameof(UNKNOWN_CALLEE);
             public const string RECORD_NOT_FOUND = nameof(RECORD_NOT_FOUND);
+            public const string NOT_SUBSCRIBED = nameof(NOT_SUBSCRIBED);
         }
     }
 }

@@ -4,86 +4,31 @@ namespace DeepStreamNet
 {
     struct Topic
     {
-        public static Topic Empty
-        {
-            get
-            {
-                return new Topic(null);
-            }
-        }
+        public static Topic Empty => new Topic(null);
 
-        public static Topic CONNECTION
-        {
-            get
-            {
-                return new Topic("C");
-            }
-        }
+        public static Topic CONNECTION => new Topic("C");
 
-        public static Topic AUTH
-        {
-            get
-            {
-                return new Topic("A");
-            }
-        }
+        public static Topic AUTH => new Topic("A");
 
-        public static Topic ERROR
-        {
-            get
-            {
-                return new Topic("X");
-            }
-        }
+        public static Topic ERROR => new Topic("X");
 
-        public static Topic EVENT
-        {
-            get
-            {
-                return new Topic("E");
-            }
-        }
+        public static Topic EVENT => new Topic("E");
 
-        public static Topic RECORD
-        {
-            get
-            {
-                return new Topic("R");
-            }
-        }
+        public static Topic RECORD => new Topic("R");
 
-        public static Topic RPC
-        {
-            get
-            {
-                return new Topic("P");
-            }
-        }
+        public static Topic RPC => new Topic("P");
 
-        public static Topic PRIVATE
-        {
-            get
-            {
-                return new Topic("PRIVATE/");
-            }
-        }
+        public static Topic PRESENCE => new Topic("U");
+
+        public static Topic PRIVATE => new Topic("PRIVATE/");
 
         readonly string Identifier;
 
-        public Topic(string identifier)
-        {
-            Identifier = identifier;
-        }
+        public Topic(string identifier) => Identifier = identifier;
 
-        public static bool operator ==(Topic t1, Topic t2)
-        {
-            return t1.Equals(t2);
-        }
+        public static bool operator ==(Topic t1, Topic t2) => t1.Equals(t2);
 
-        public static bool operator !=(Topic t1, Topic t2)
-        {
-            return !t1.Equals(t2);
-        }
+        public static bool operator !=(Topic t1, Topic t2) => !t1.Equals(t2);
 
         public override bool Equals(object obj)
         {
@@ -95,14 +40,8 @@ namespace DeepStreamNet
             return string.Equals(Identifier, other.Identifier, StringComparison.Ordinal);
         }
 
-        public override int GetHashCode()
-        {
-            return Identifier.GetHashCode();
-        }
+        public override int GetHashCode() => Identifier.GetHashCode();
 
-        public override string ToString()
-        {
-            return Identifier;
-        }
+        public override string ToString() => Identifier;
     }
 }

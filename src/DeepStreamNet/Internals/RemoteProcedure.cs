@@ -10,11 +10,9 @@ namespace DeepStreamNet
             if (string.IsNullOrWhiteSpace(name))
                 throw new ArgumentNullException(nameof(name));
 
-            if (procedure == null)
-                throw new ArgumentNullException(nameof(procedure));
-
             Name = name;
-            Procedure = procedure;
+
+            Procedure = procedure ?? throw new ArgumentNullException(nameof(procedure));
 
             var methodInfo = procedure.GetMethodInfo();
 

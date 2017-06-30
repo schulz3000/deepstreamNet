@@ -11,10 +11,7 @@ namespace DeepStreamNet
             _action = action;
         }
 
-        public void Dispose()
-        {
-            Dispose(true);
-        }
+        public void Dispose() => Dispose(true);
 
         void Dispose(bool disposing)
         {

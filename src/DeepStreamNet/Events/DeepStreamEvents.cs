@@ -74,15 +74,9 @@ namespace DeepStreamNet
             });
         }
 
-        public Task<IAsyncDisposable> ListenAsync(string pattern, Action<string, bool, IListenerResponse> listener)
-        {
-            return InnerListenAsync(pattern, listener);
-        }
+        public Task<IAsyncDisposable> ListenAsync(string pattern, Action<string, bool, IListenerResponse> listener) => InnerListenAsync(pattern, listener);
 
-        public Task<IAsyncDisposable> ListenAsync(string pattern, Func<string, bool, IListenerResponse, Task> listener)
-        {
-            return InnerListenAsync(pattern, listener);
-        }
+        public Task<IAsyncDisposable> ListenAsync(string pattern, Func<string, bool, IListenerResponse, Task> listener) => InnerListenAsync(pattern, listener);
 
         async Task<IAsyncDisposable> InnerListenAsync(string pattern, Delegate listener)
         {
