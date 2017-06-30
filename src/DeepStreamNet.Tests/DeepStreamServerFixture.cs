@@ -9,7 +9,7 @@ namespace DeepStreamNet.Tests
     {
         static int ProcessId = -1;
 
-        readonly Process process = new Process();
+        readonly Process process;
 
         readonly string DeepstreamServerStartFile;
 
@@ -17,6 +17,8 @@ namespace DeepStreamNet.Tests
         {
             if (bool.Parse(TestHelper.Config["useLocalInstance"]))
             {
+                process = new Process();
+
                 DeepstreamServerStartFile = Path.Combine(TestHelper.Config["deepStreamServerDirectory"], "start_deepstream_server.js");
 
                 if (!File.Exists(DeepstreamServerStartFile))
@@ -63,8 +65,8 @@ namespace DeepStreamNet.Tests
 
         public void Dispose()
         {
-            process.Kill();
-            process.Dispose();
+            process?.Kill();
+            process?.Dispose();
 
             if (File.Exists(DeepstreamServerStartFile))
             {

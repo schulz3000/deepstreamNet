@@ -7,7 +7,7 @@ namespace DeepStreamNet.Tests
     {
         public static async Task<DeepStreamClient> GetClient()
         {
-            var client = new DeepStreamClient(Config["deepStreamHost"], int.Parse(Config["deepStreamPort"]), Config["deepStreamPath"]/*, bool.Parse(Config["useSecureConnection"])*/);
+            var client = new DeepStreamClient(Config["deepStreamHost"], int.Parse(Config["deepStreamPort"]), Config["deepStreamPath"], bool.Parse(Config["useSecureConnection"]));
             await client.LoginAsync();
             return client;
         }
