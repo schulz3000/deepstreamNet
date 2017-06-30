@@ -15,16 +15,22 @@ namespace DeepStreamNet.Tests
 
         public DeepStreamServerFixture()
         {
-            DeepstreamServerStartFile = Path.Combine(TestHelper.Config["deepStreamServerDirectory"], "start_deepstream_server.js");
-
-            if (!File.Exists(DeepstreamServerStartFile))
+            if (bool.Parse(TestHelper.Config["useLocalInstance"]))
             {
-                File.WriteAllText(DeepstreamServerStartFile, Properties.Resources.start_deepstream);
+                DeepstreamServerStartFile = Path.Combine(TestHelper.Config["deepStreamServerDirectory"], "start_deepstream_server.js");
+
+                if (!File.Exists(DeepstreamServerStartFile))
+                {
+                    File.WriteAllText(DeepstreamServerStartFile, Properties.Resources.start_deepstream);
+                }
             }
         }
 
         public void StartServer()
         {
+            if (!bool.Parse(TestHelper.Config["useLocalInstance"]))
+                return;
+
             if (ProcessId != -1 && IsProcessRunning(ProcessId))
                 return;
 
