@@ -11,7 +11,7 @@
             Value = value;
         }
 
-        public string Name { get; }        
+        public string Name { get; }
 
         object currentValue;
 
@@ -21,13 +21,7 @@
             set
             {
                 currentValue = value;
-                if (value == initialValue)
-                {
-                    IsDirty = false;
-                }
-                else {
-                    IsDirty = true;
-                }
+                IsDirty = value != initialValue;
             }
         }
 

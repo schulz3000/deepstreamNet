@@ -1,5 +1,4 @@
-﻿using Newtonsoft.Json.Linq;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Dynamic;
 
 namespace DeepStreamNet.Contracts
@@ -17,6 +16,7 @@ namespace DeepStreamNet.Contracts
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="key"></param>
         /// <returns></returns>
         dynamic this[object key] { get; set; }
     }

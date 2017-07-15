@@ -13,9 +13,9 @@ namespace DeepStreamNet
         {
             var sb = new StringBuilder(4 + (args.Length * 2));
 
-            sb.Append(topic);
+            sb.Append(topic.ToString());
             sb.Append(Constants.RecordSeperator);
-            sb.Append(action);
+            sb.Append(action.ToString());
             sb.Append(Constants.RecordSeperator);
 
             for (int i = 0; i < args.Length; i++)
@@ -38,33 +38,34 @@ namespace DeepStreamNet
 
             if (data is string)
             {
-                return Constants.Types.STRING + data.ToString();
+                return Constants.Types.STRING.ToString() + data;
             }
-            else if (data is bool)
+
+            if (data is bool)
             {
                 if (bool.Parse(data.ToString()))
                     return Constants.Types.TRUE.ToString();
-                else
-                    return Constants.Types.FALSE.ToString();
+
+                return Constants.Types.FALSE.ToString();
             }
-            else if (data is int || data is double || data is float || data is decimal)
+
+            if (data is int || data is double || data is float || data is decimal)
             {
-                return Constants.Types.NUMBER + data.ToString().Replace(',', '.');
+                return Constants.Types.NUMBER.ToString() + data.ToString().Replace(',', '.');
             }
-            else if (!(data is object))
+
+            if (!(data is object))
             {
                 return Constants.Types.NULL.ToString();
             }
-            else
+
+            try
             {
-                try
-                {
-                    return Constants.Types.OBJECT + JsonConvert.SerializeObject(data);
-                }
-                catch
-                {
-                    return Constants.Types.UNDEFINED.ToString();
-                }
+                return Constants.Types.OBJECT.ToString() + JsonConvert.SerializeObject(data);
+            }
+            catch
+            {
+                return Constants.Types.UNDEFINED.ToString();
             }
         }
 
@@ -73,18 +74,18 @@ namespace DeepStreamNet
             switch (data.Type)
             {
                 case JTokenType.String:
-                    return Constants.Types.STRING + data.ToObject<string>();
+                    return Constants.Types.STRING.ToString() + data.ToObject<string>();
                 case JTokenType.Boolean:
                     return data.ToObject<bool>() ? Constants.Types.TRUE.ToString() : Constants.Types.FALSE.ToString();
                 case JTokenType.Float:
                 case JTokenType.Integer:
-                    return Constants.Types.NUMBER + data.ToObject<string>();
+                    return Constants.Types.NUMBER.ToString() + data.ToObject<string>();
                 case JTokenType.Null:
                     return Constants.Types.NULL.ToString();
                 default:
                     try
                     {
-                        return Constants.Types.OBJECT + JsonConvert.SerializeObject(data);
+                        return Constants.Types.OBJECT.ToString() + JsonConvert.SerializeObject(data);
                     }
                     catch
                     {

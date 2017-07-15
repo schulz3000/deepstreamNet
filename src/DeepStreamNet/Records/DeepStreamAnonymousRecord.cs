@@ -1,9 +1,9 @@
 ﻿using DeepStreamNet.Contracts;
 using System;
-using System.Threading.Tasks;
 using System.ComponentModel;
 using System.Dynamic;
 using System.Linq.Expressions;
+using System.Threading.Tasks;
 
 namespace DeepStreamNet
 {
@@ -15,7 +15,7 @@ namespace DeepStreamNet
         {
             Context = context;
         }
-        
+
         public async Task SetNameAsync(string name)
         {
             if (string.IsNullOrWhiteSpace(name))

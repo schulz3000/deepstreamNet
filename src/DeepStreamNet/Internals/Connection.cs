@@ -54,7 +54,7 @@ namespace DeepStreamNet
 
             var protocol = useSecureConnection ? "wss" : "ws";
 
-            Connect($"{protocol}://{host}:{port}/{path}");
+            Connect($"{protocol}://{host}:{port.ToString()}/{path}");
         }
 
         internal Connection(string url)
@@ -105,7 +105,6 @@ namespace DeepStreamNet
 
         public void Send(string command)
         {
-            System.Diagnostics.Debug.WriteLine("send: " + command);
             client.Send(command);
         }
 
@@ -198,7 +197,6 @@ namespace DeepStreamNet
 
         void Notify(string value)
         {
-            System.Diagnostics.Debug.WriteLine("receive: " + value);
             var split = value.Split(Constants.RecordSeperator);
 
             if (split.Length < 2)
@@ -236,7 +234,7 @@ namespace DeepStreamNet
                 }
                 else
                 {
-                    OnError(topic, action, Constants.Errors.MESSAGE_PARSE_ERROR, "Unknown action " + action);
+                    OnError(topic, action, Constants.Errors.MESSAGE_PARSE_ERROR, "Unknown action " + action.ToString());
                 }
             }
             else if (topic == Topic.EVENT)
@@ -260,7 +258,7 @@ namespace DeepStreamNet
                 }
                 else
                 {
-                    OnError(topic, action, Constants.Errors.MESSAGE_PARSE_ERROR, "Unknown action " + action);
+                    OnError(topic, action, Constants.Errors.MESSAGE_PARSE_ERROR, "Unknown action " + action.ToString());
                 }
             }
             else if (topic == Topic.RECORD)
@@ -306,7 +304,7 @@ namespace DeepStreamNet
                 }
                 else
                 {
-                    OnError(topic, action, Constants.Errors.MESSAGE_PARSE_ERROR, "Unknown action " + action);
+                    OnError(topic, action, Constants.Errors.MESSAGE_PARSE_ERROR, "Unknown action " + action.ToString());
                 }
             }
             else if (topic == Topic.RPC)
@@ -338,12 +336,12 @@ namespace DeepStreamNet
                 }
                 else
                 {
-                    OnError(topic, action, Constants.Errors.MESSAGE_PARSE_ERROR, "Unknown action " + action);
+                    OnError(topic, action, Constants.Errors.MESSAGE_PARSE_ERROR, "Unknown action " + action.ToString());
                 }
             }
             else
             {
-                OnError(topic, action, Constants.Errors.MESSAGE_PARSE_ERROR, "Received message for unknown topic " + topic);
+                OnError(topic, action, Constants.Errors.MESSAGE_PARSE_ERROR, "Received message for unknown topic " + topic.ToString());
             }
         }
 

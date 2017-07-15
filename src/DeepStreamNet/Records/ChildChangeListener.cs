@@ -1,10 +1,8 @@
-﻿using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Linq;
 using System.Reflection;
 
 namespace DeepStreamNet
@@ -73,8 +71,10 @@ namespace DeepStreamNet
 
             var property = type.GetTypeInfo().GetDeclaredProperty(propertyName);
             if (property == null)
+            {
                 throw new InvalidOperationException(
-                    $"Was unable to get '{propertyName}' property information from Type '{type.Name}'");
+                   $"Was unable to get '{propertyName}' property information from Type '{type.Name}'");
+            }
 
             object newValue = property.GetValue(value, null);
 
