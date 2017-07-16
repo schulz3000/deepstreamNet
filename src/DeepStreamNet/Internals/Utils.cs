@@ -3,6 +3,7 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace DeepStreamNet
@@ -122,6 +123,7 @@ namespace DeepStreamNet
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsNumeric(Type type)
         {
             if (type == null)
@@ -142,7 +144,7 @@ namespace DeepStreamNet
                 case TypeCode.UInt64:
                     return true;
                 case TypeCode.Object:
-                    if (IsGenericTypeEx(type) && type.GetGenericTypeDefinition() == typeof(Nullable<>))
+                    if (type.GetTypeInfo().IsGenericType && type.GetGenericTypeDefinition() == NullableType)
                     {
                         return IsNumeric(Nullable.GetUnderlyingType(type));
                     }
@@ -151,14 +153,7 @@ namespace DeepStreamNet
             return false;
         }
 
-        static bool IsGenericTypeEx(Type type)
-        {
-#if COREFX
-            return type.GetTypeInfo().IsGenericType;
-#else
-            return type.IsGenericType;
-#endif
-        }
+        static readonly Type NullableType = typeof(Nullable<>);
 
         public static string CreateUid() => Guid.NewGuid().ToString("N");
     }

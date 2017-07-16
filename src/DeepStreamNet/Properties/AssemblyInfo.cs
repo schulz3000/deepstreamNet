@@ -20,3 +20,4 @@ using System.Runtime.InteropServices;
 [assembly: Guid("999f6955-8c07-42b5-b057-e7f96a1bf2cd")]
 
 [assembly: InternalsVisibleTo("DeepStreamNet.Tests")]
+[assembly: InternalsVisibleTo("DeepStreamNet.PerfTests")]
