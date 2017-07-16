@@ -1,6 +1,6 @@
-﻿using BenchmarkDotNet.Attributes.Jobs;
-using BenchmarkDotNet.Running;
+﻿using BenchmarkDotNet.Running;
 using System;
+using System.Reflection;
 
 namespace DeepStreamNet.PerfTests
 {
@@ -8,7 +8,7 @@ namespace DeepStreamNet.PerfTests
     {
         static void Main(string[] args)
         {
-            var summary = BenchmarkRunner.Run<UtilsTests>();
+            BenchmarkSwitcher.FromAssembly(typeof(Program).GetTypeInfo().Assembly).RunAll();
 
             Console.ReadKey();
         }

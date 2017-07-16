@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Text;
 
 namespace DeepStreamNet
 {
@@ -146,7 +145,7 @@ namespace DeepStreamNet
                 case TypeCode.Object:
                     if (type.GetTypeInfo().IsGenericType && type.GetGenericTypeDefinition() == NullableType)
                     {
-                        return IsNumeric(Nullable.GetUnderlyingType(type));
+                        return IsNumeric(type.GetGenericArguments()[0]);
                     }
                     return false;
             }
