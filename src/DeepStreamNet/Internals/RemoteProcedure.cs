@@ -14,14 +14,14 @@ namespace DeepStreamNet
 
             Procedure = procedure ?? throw new ArgumentNullException(nameof(procedure));
 
-            var methodInfo = procedure.GetMethodInfo();
+            var methodParameters = procedure.GetMethodInfo().GetParameters();
 
-            OriginalParameterType = methodInfo.GetParameters()[0].ParameterType;
+            OriginalParameterType = methodParameters[0].ParameterType;
             ParameterType = DetectDeepstreamParameterType(OriginalParameterType);
-            ReturnType = methodInfo.GetParameters()[1].ParameterType.GetGenericArguments()[0];
+            ReturnType = methodParameters[1].ParameterType.GetGenericArguments()[0];
         }
 
-        Type DetectDeepstreamParameterType(Type type)
+        static Type DetectDeepstreamParameterType(Type type)
         {
             if (Utils.IsNumeric(type))
                 return typeof(double);

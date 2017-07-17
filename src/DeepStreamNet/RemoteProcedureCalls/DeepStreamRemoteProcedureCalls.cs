@@ -2,6 +2,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
+using System.Reflection;
 using System.Threading.Tasks;
 
 namespace DeepStreamNet
@@ -10,10 +12,35 @@ namespace DeepStreamNet
     {
         readonly HashSet<RemoteProcedure> remoteProcedures = new HashSet<RemoteProcedure>(new RemoteProcedureEqualityComparer());
 
+        readonly Dictionary<Type, Func<string, string, Connection, IRpcResponse>> rpcResponses = new Dictionary<Type, Func<string, string, Connection, IRpcResponse>>();
+
         public DeepStreamRemoteProcedureCalls(Connection connection, DeepStreamOptions options)
             : base(connection, options)
         {
             Connection.PerformRemoteProcedureRequested += Connection_PerformRemoteProcedureRequested;
+        }
+
+        Func<string, string, Connection, IRpcResponse> GetRpcResponseByType(Type type)
+        {
+            if (rpcResponses.ContainsKey(type))
+                return rpcResponses[type];
+
+            var func = CreateRpcResponseFunc(type);
+
+            rpcResponses.Add(type, func);
+
+            return func;
+        }
+
+        static Func<string, string, Connection, IRpcResponse> CreateRpcResponseFunc(Type type)
+        {
+            var rpcResponseType = typeof(RpcResponse<>).MakeGenericType(type);
+            var expParameter = new[] {
+                        Expression.Parameter(typeof(string)),
+                        Expression.Parameter(typeof(string)),
+                        Expression.Parameter(typeof(Connection))
+                    };
+            return Expression.Lambda<Func<string, string, Connection, IRpcResponse>>(Expression.New(rpcResponseType.GetTypeInfo().GetConstructor(new Type[] { typeof(string), typeof(string), typeof(Connection) }), expParameter), expParameter).Compile();
         }
 
         async void Connection_PerformRemoteProcedureRequested(object sender, RemoteProcedureMessageArgs e)
@@ -41,13 +68,14 @@ namespace DeepStreamNet
                 {
                     var parameter = e.Data.ToObject(procedure.OriginalParameterType);
 
-                    var rpcResponseType = typeof(RpcResponse<>).MakeGenericType(procedure.ReturnType);
-                    var response = Activator.CreateInstance(rpcResponseType, e.Identifier, e.Uid, Connection);
+                    var func = GetRpcResponseByType(procedure.ReturnType);
 
-                    var result = procedure.Procedure.DynamicInvoke(parameter, response);
+                    var response = func(e.Identifier, e.Uid, Connection);
+
+                    var result = procedure.Procedure.GetMethodInfo().Invoke(procedure.Procedure.Target, new[] { parameter, response });
 
                     if (result != null)
-                        await (Task)result;
+                        await ((Task)result).ConfigureAwait(false);
                 }
                 catch
                 {

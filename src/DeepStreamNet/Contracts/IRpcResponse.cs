@@ -1,12 +1,10 @@
-﻿using System.Threading.Tasks;
-
-namespace DeepStreamNet.Contracts
+﻿namespace DeepStreamNet.Contracts
 {
     /// <summary>
     /// 
     /// </summary>
     /// <typeparam name="TResult"></typeparam>
-    public interface IRpcResponse<TResult>
+    public interface IRpcResponse<TResult> : IRpcResponse
     {
         /// <summary>
         /// 
@@ -22,5 +20,12 @@ namespace DeepStreamNet.Contracts
         /// </summary>
         /// <param name="message"></param>
         void Error(string message);
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public interface IRpcResponse
+    {
     }
 }
