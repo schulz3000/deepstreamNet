@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace DeepStreamNet.Core.ConsoleSample
 {
-    public class Program
+    public static class Program
     {
         public static void Main(string[] args)
         {

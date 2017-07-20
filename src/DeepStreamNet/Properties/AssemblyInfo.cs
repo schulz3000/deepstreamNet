@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 // General Information about an assembly is controlled through the following
@@ -17,3 +18,6 @@ using System.Runtime.InteropServices;
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
 [assembly: Guid("999f6955-8c07-42b5-b057-e7f96a1bf2cd")]
+
+[assembly: InternalsVisibleTo("DeepStreamNet.Tests")]
+[assembly: InternalsVisibleTo("DeepStreamNet.PerfTests")]
