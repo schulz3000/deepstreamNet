@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 
 namespace DeepStreamNet
@@ -61,7 +62,7 @@ namespace DeepStreamNet
 
             var listener = listenerDict[e.Pattern];
 
-            var result = listener.DynamicInvoke(e.Name, e.ListenerState == ListenerState.Add, new RecordListenerResponse(e.Pattern, e.Name, Connection));
+            var result = listener.GetMethodInfo().Invoke(listener.Target, new object[] { e.Name, e.ListenerState == ListenerState.Add, new RecordListenerResponse(e.Pattern, e.Name, Connection) });
             if (result != null)
                 await (Task)result;
         }
@@ -120,7 +121,7 @@ namespace DeepStreamNet
 
         void Record_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            var recordName = (sender as JToken).Annotation<string>();
+            var recordName = (sender as JToken)?.Annotation<string>();
             var record = records.FirstOrDefault(f => f.RecordName == recordName);
             if (record == null)
                 return;
@@ -233,20 +234,11 @@ namespace DeepStreamNet
             return (await tcs.Task) as IDeepStreamRecord;
         }
 
-        public IDeepStreamAnonymousRecord GetAnonymousRecord()
-        {
-            return new DeepStreamAnonymousRecord(this);
-        }
+        public IDeepStreamAnonymousRecord GetAnonymousRecord() => new DeepStreamAnonymousRecord(this);
 
-        public Task<IAsyncDisposable> ListenAsync(string pattern, Action<string, bool, IListenerResponse> listener)
-        {
-            return InnerListenAsync(pattern, listener);
-        }
+        public Task<IAsyncDisposable> ListenAsync(string pattern, Action<string, bool, IListenerResponse> listener) => InnerListenAsync(pattern, listener);
 
-        public Task<IAsyncDisposable> ListenAsync(string pattern, Func<string, bool, IListenerResponse, Task> listener)
-        {
-            return InnerListenAsync(pattern, listener);
-        }
+        public Task<IAsyncDisposable> ListenAsync(string pattern, Func<string, bool, IListenerResponse, Task> listener) => InnerListenAsync(pattern, listener);
 
         async Task<IAsyncDisposable> InnerListenAsync(string pattern, Delegate listener)
         {
@@ -307,10 +299,7 @@ namespace DeepStreamNet
             return await tcs.Task.ConfigureAwait(false);
         }
 
-        bool IsRecordTracked(IDeepStreamRecord record)
-        {
-            return records.Contains(record);
-        }
+        bool IsRecordTracked(IDeepStreamRecord record) => records.Contains(record);
 
         public void Set(IDeepStreamRecord record, object item)
         {

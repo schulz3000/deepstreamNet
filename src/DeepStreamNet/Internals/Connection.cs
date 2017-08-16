@@ -197,6 +197,7 @@ namespace DeepStreamNet
 
         void Notify(string value)
         {
+            Console.WriteLine(value);
             var split = value.Split(Constants.RecordSeperator);
 
             if (split.Length < 2)
@@ -363,7 +364,7 @@ namespace DeepStreamNet
 
 #if NET40 || NET45 || NET451
                 client.Close();
-                (client as IDisposable).Dispose();
+                (client as IDisposable)?.Dispose();
 #else
                 client.Dispose();
 #endif

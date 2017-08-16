@@ -8,7 +8,7 @@ namespace DeepStreamNet
     class DeepStreamEvents : DeepStreamBase, IDeepStreamEvents
     {
         readonly Dictionary<string, int> eventsDict = new Dictionary<string, int>();
-        readonly Dictionary<string, Delegate> listenerDict = new Dictionary<string, Delegate>();
+        readonly Dictionary<string, Func<string, bool, IListenerResponse, Task>> listenerDict = new Dictionary<string, Func<string, bool, IListenerResponse, Task>>();
 
         public DeepStreamEvents(Connection connection, DeepStreamOptions options)
             : base(connection, options)
@@ -23,9 +23,7 @@ namespace DeepStreamNet
 
             var listener = listenerDict[e.Pattern];
 
-            var result = listener.DynamicInvoke(e.Name, e.ListenerState == ListenerState.Add, new EventListenerResponse(e.Pattern, e.Name, Connection));
-            if (result != null)
-                await (Task)result;
+            await listener(e.Name, e.ListenerState == ListenerState.Add, new EventListenerResponse(e.Pattern, e.Name, Connection)).ConfigureAwait(false);
         }
 
         public void Publish<T>(string eventName, T data)
@@ -74,11 +72,18 @@ namespace DeepStreamNet
             });
         }
 
-        public Task<IAsyncDisposable> ListenAsync(string pattern, Action<string, bool, IListenerResponse> listener) => InnerListenAsync(pattern, listener);
+        public Task<IAsyncDisposable> ListenAsync(string pattern, Action<string, bool, IListenerResponse> listener)
+        {
+            return InnerListenAsync(pattern, (name, state, response) =>
+            {
+                listener(name, state, response);
+                return Task.FromResult(0);
+            });
+        }
 
         public Task<IAsyncDisposable> ListenAsync(string pattern, Func<string, bool, IListenerResponse, Task> listener) => InnerListenAsync(pattern, listener);
 
-        async Task<IAsyncDisposable> InnerListenAsync(string pattern, Delegate listener)
+        async Task<IAsyncDisposable> InnerListenAsync(string pattern, Func<string, bool, IListenerResponse, Task> listener)
         {
             if (string.IsNullOrWhiteSpace(pattern))
                 throw new ArgumentNullException(nameof(pattern));
