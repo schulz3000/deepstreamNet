@@ -4,13 +4,12 @@
     <Description>Console Sampleclient for DeepStreamNet</Description>
     <Copyright>schulz3000</Copyright>
     <AssemblyTitle>DeepStreamNet Console Sample</AssemblyTitle>
-    <VersionPrefix>0.0.0.2-alpha</VersionPrefix>
+    <VersionPrefix>0.0.0.4-alpha</VersionPrefix>
     <Authors>schulz3000</Authors>
-    <TargetFramework>netcoreapp1.1</TargetFramework>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
     <AssemblyName>DeepStreamNet.ConsoleSample</AssemblyName>
     <OutputType>Exe</OutputType>
-    <PackageId>DeepStreamNet.ConsoleSample</PackageId>
-    <RuntimeFrameworkVersion>1.1.1</RuntimeFrameworkVersion>
+    <PackageId>DeepStreamNet.ConsoleSample</PackageId>    
     <PackageTargetFallback>$(PackageTargetFallback);dnxcore50</PackageTargetFallback>
     <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
@@ -20,9 +19,5 @@
   <ItemGroup>
     <ProjectReference Include="..\DeepStreamNet\DeepStreamNet.csproj" />
   </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="WebSocket4Net" Version="0.15.0-beta9" />
-  </ItemGroup>
-
+  
 </Project>
