@@ -3,6 +3,7 @@ using SuperSocket.ClientEngine;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Threading.Tasks;
 using WebSocket4Net;
 
@@ -40,6 +41,10 @@ namespace DeepStreamNet
         internal event EventHandler<RemoteProcedureMessageArgs> PerformRemoteProcedureRequested;
 
         internal event EventHandler<RemoteProcedureMessageArgs> RemoteProcedureResultReceived;
+
+        internal event EventHandler<PresenceGetAllReceivedArgs> PresenceGetAllReceived;
+
+        internal event EventHandler<PresenceListenerChangedEventArgs> PresenceListenerChanged;
 
         public Connection(string host, int port, string path, bool useSecureConnection)
         {
@@ -197,7 +202,6 @@ namespace DeepStreamNet
 
         void Notify(string value)
         {
-            Console.WriteLine(value);
             var split = value.Split(Constants.RecordSeperator);
 
             if (split.Length < 2)
@@ -338,6 +342,32 @@ namespace DeepStreamNet
                 else
                 {
                     OnError(topic, action, Constants.Errors.MESSAGE_PARSE_ERROR, "Unknown action " + action.ToString());
+                }
+            }
+            else if (topic == Topic.PRESENCE)
+            {
+                if (responseAction == Action.QUERY)
+                {
+                    if (split.Length == 2)
+                    {
+                        PresenceGetAllReceived?.Invoke(this, new PresenceGetAllReceivedArgs());
+                    }
+                    else
+                    {
+                        PresenceGetAllReceived?.Invoke(this, new PresenceGetAllReceivedArgs(split.Skip(2).ToArray()));
+                    }
+                }
+                else if (responseAction == Action.ACK)
+                {
+                    OnAcknoledged(topic, responseAction, split[2]);
+                }
+                else if (responseAction == Action.PRESENCE_JOIN)
+                {
+                    PresenceListenerChanged?.Invoke(this, new PresenceListenerChangedEventArgs(split[2], true));
+                }
+                else if (responseAction == Action.PRESENCE_LEAVE)
+                {
+                    PresenceListenerChanged?.Invoke(this, new PresenceListenerChangedEventArgs(split[2], false));
                 }
             }
             else

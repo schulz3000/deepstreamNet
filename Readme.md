@@ -172,3 +172,23 @@ var proc = await client.Rpcs.RegisterProviderAsync<string, string>("toUpperCase"
 //Unregister RemoteProcedure
 await proc.DisposeAsync(); 
 ```
+
+### Presence
+
+```csharp
+
+var users = await client.Presence.GetAllAsync(); //result IEnumerable<string> -> usernames
+
+var subscription = await client.Presence.SubscribeAsync((username, isLoggedIn)=>{
+    if(isLoggedIn){
+        Console.WriteLine(username +" is logged in")
+    }
+    else{
+        Console.WriteLine(username +" is logged out")
+    }    
+});
+
+//Unregister Subscription
+await subscription.DisposeAsync();
+
+```

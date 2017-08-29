@@ -9,8 +9,8 @@
     <TargetFramework>netcoreapp2.0</TargetFramework>
     <AssemblyName>DeepStreamNet.ConsoleSample</AssemblyName>
     <OutputType>Exe</OutputType>
-    <PackageId>DeepStreamNet.ConsoleSample</PackageId>    
-    <PackageTargetFallback>$(PackageTargetFallback);dnxcore50</PackageTargetFallback>
+    <PackageId>DeepStreamNet.ConsoleSample</PackageId>
+    <LangVersion>latest</LangVersion>
     <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
     <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>

@@ -58,6 +58,20 @@ namespace DeepStreamNet
             }
         }
 
+        IDeepStreamPresence presence;
+        /// <summary>
+        /// DeepStreamPresence
+        /// </summary>
+        public IDeepStreamPresence Presence
+        {
+            get
+            {
+                if (presence == null)
+                    throw new DeepStreamException("not initialized", "please login first");
+                return presence;
+            }
+        }
+
         readonly DeepStreamOptions Options;
 
         /// <summary>
@@ -151,6 +165,7 @@ namespace DeepStreamNet
                 events = new DeepStreamEvents(Connection, Options);
                 records = new DeepStreamRecords(Connection, Options);
                 rpcs = new DeepStreamRemoteProcedureCalls(Connection, Options);
+                presence = new DeepStreamPresence(Connection, Options);
             }
 
             return result;
