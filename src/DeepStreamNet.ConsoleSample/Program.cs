@@ -5,20 +5,8 @@ namespace DeepStreamNet.Core.ConsoleSample
 {
     public static class Program
     {
-        public static void Main(string[] args)
-        {
-            MainAsync(args).GetAwaiter().GetResult();
-
-            Console.Read();
-        }
-
-        static Task MainAsync(string[] args)
-        {
-            return Exec();
-        }
-
-        async static Task Exec()
-        {
+        public static async Task Main(string[] args)
+        {            
             var client = new DeepStreamClient("localhost", 6020);
 
             if (await client.LoginAsync())
@@ -37,6 +25,8 @@ namespace DeepStreamNet.Core.ConsoleSample
             }
 
             client.Dispose();
+
+            Console.Read();
         }
     }
 }
