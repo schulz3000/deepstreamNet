@@ -16,7 +16,7 @@ namespace DeepStreamNet.Tests
         {
             using (var client = await TestHelper.GetClient())
             {
-              var users = await  client.Presence.GetAllAsync();
+                var users = await client.Presence.GetAllAsync();
                 Assert.Empty(users);
             }
         }

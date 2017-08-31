@@ -190,5 +190,4 @@ var subscription = await client.Presence.SubscribeAsync((username, isLoggedIn)=>
 
 //Unregister Subscription
 await subscription.DisposeAsync();
-
 ```
