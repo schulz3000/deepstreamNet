@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.Configuration;
-using System;
 using System.Threading.Tasks;
 
 namespace DeepStreamNet.Tests
@@ -8,9 +7,6 @@ namespace DeepStreamNet.Tests
     {
         public static async Task<DeepStreamClient> GetClient()
         {
-            Console.WriteLine("Custom output");
-            Console.WriteLine(Config["deepStreamHost"]);
-            Console.WriteLine(Config["ds-deepStreamHost"]);
             var client = new DeepStreamClient(Config["deepStreamHost"], int.Parse(Config["deepStreamPort"]), Config["deepStreamPath"], bool.Parse(Config["useSecureConnection"]));
             await client.LoginAsync();
             return client;
