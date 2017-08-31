@@ -11,3 +11,4 @@ build_script:
   - ps: dotnet restore .\src\DeepStreamNet
   - ps: dotnet build .\src\DeepStreamNet
   - ps: dotnet test .\src\DeepStreamNet.Tests
+  test: off
