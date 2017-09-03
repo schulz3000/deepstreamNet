@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading;
 
-namespace DeepStreamNet.Tests
+namespace DeepStreamNet.Tests.Helper
 {
     public class DeepStreamServerFixture : IDisposable
     {

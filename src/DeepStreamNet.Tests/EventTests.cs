@@ -1,3 +1,4 @@
+using DeepStreamNet.Tests.Helper;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -14,11 +15,11 @@ namespace DeepStreamNet.Tests
         [Fact]
         public async Task PublishSubscribeTest()
         {
-            using (var client1 = await TestHelper.GetClient())
+            using (var client1 = await TestHelper.GetClientAsync())
             {
                 var sub = await client1.Events.SubscribeAsync("unittest", x => Assert.Equal("msg", x));
 
-                using (var client2 = await TestHelper.GetClient())
+                using (var client2 = await TestHelper.GetClientAsync())
                 {
                     client2.Events.Publish("unittest", "msg");
                 }

@@ -19,7 +19,7 @@ namespace DeepStreamNet.Tests
         [Fact, TestPriority(1)]
         public async Task HasRecordFalseTest()
         {
-            using (var client = await TestHelper.GetClient())
+            using (var client = await TestHelper.GetClientAsync())
             {
                 var has = await client.Records.HasAsync(RecordSessionName);
 
@@ -30,7 +30,7 @@ namespace DeepStreamNet.Tests
         [Fact, TestPriority(2)]
         public async Task RecordNameTest()
         {
-            using (var client = await TestHelper.GetClient())
+            using (var client = await TestHelper.GetClientAsync())
             {
                 var record = await client.Records.GetRecordAsync(RecordSessionName);
 
@@ -41,7 +41,7 @@ namespace DeepStreamNet.Tests
         [Fact, TestPriority(3)]
         public async Task HasRecordTrueTest()
         {
-            using (var client = await TestHelper.GetClient())
+            using (var client = await TestHelper.GetClientAsync())
             {
                 var has = await client.Records.HasAsync(RecordSessionName);
 
@@ -63,7 +63,7 @@ namespace DeepStreamNet.Tests
         [Fact, TestPriority(5)]
         public async Task RecordSetLocalTest()
         {
-            using (var client = await TestHelper.GetClient())
+            using (var client = await TestHelper.GetClientAsync())
             {
                 var record = await client.Records.GetRecordAsync(RecordSessionName);
                 record["property1"] = "test";
@@ -74,12 +74,12 @@ namespace DeepStreamNet.Tests
         [Fact, TestPriority(6)]
         public async Task RecordSetRemoteTest()
         {
-            using (var client1 = await TestHelper.GetClient())
+            using (var client1 = await TestHelper.GetClientAsync())
             {
                 var record = await client1.Records.GetRecordAsync(RecordSessionName);
                 record["property1"] = "test2";
 
-                using (var client2 = await TestHelper.GetClient())
+                using (var client2 = await TestHelper.GetClientAsync())
                 {
                     var record2 = await client2.Records.GetRecordAsync(RecordSessionName);
                     Assert.Equal("test2", record2["property1"]);
@@ -90,7 +90,7 @@ namespace DeepStreamNet.Tests
         [Fact, TestPriority(7)]
         public async Task RecordDeleteTest()
         {
-            using (var client = await TestHelper.GetClient())
+            using (var client = await TestHelper.GetClientAsync())
             {
                 var record = await client.Records.GetRecordAsync(RecordSessionName);
                 await client.Records.DeleteAsync(record);
