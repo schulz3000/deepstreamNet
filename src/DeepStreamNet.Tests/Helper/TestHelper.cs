@@ -22,7 +22,7 @@ namespace DeepStreamNet.Tests.Helper
                 {
                     config = new ConfigurationBuilder()
                       .AddJsonFile("testsettings.json")
-                      .AddEnvironmentVariables("ds-")
+                      .AddEnvironmentVariables("ds_")
                       .Build();
                 }
 
