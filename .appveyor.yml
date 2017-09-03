@@ -6,9 +6,9 @@ environment:
   # Don't report back to the mothership
   DOTNET_CLI_TELEMETRY_OPTOUT: 1
 skip_tags: true
+test: off
 build_script:
   - ps: dotnet --info  
   - ps: dotnet restore .\src\DeepStreamNet
   - ps: dotnet build .\src\DeepStreamNet
   - ps: dotnet test .\src\DeepStreamNet.Tests
-  test: off
