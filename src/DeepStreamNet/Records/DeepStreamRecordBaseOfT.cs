@@ -7,6 +7,12 @@ namespace DeepStreamNet
     class DeepStreamRecordBase<T> : DeepStreamRecordBase, IDeepStreamRecordWrapper, IDisposable
         where T : JContainer
     {
+        static readonly JsonMergeSettings jsonMergeSettings = new JsonMergeSettings
+        {
+            MergeArrayHandling = MergeArrayHandling.Replace,
+            MergeNullValueHandling = MergeNullValueHandling.Merge
+        };
+
         protected JsonNetChangeListener Listener;
 
         public override dynamic this[object key]
@@ -35,7 +41,7 @@ namespace DeepStreamNet
         {
             if (path.EndsWith("]", StringComparison.Ordinal) && Data.SelectToken(path) == null)
             {
-                var arrayParentPath = path.Substring(0, path.Length - (path.LastIndexOf("[", StringComparison.Ordinal)+1));
+                var arrayParentPath = path.Substring(0, path.Length - (path.LastIndexOf("[", StringComparison.Ordinal) + 1));
                 var token = Data.SelectToken(arrayParentPath);
                 ((JArray)token).Add(item);
             }
@@ -47,9 +53,8 @@ namespace DeepStreamNet
 
         public void Update(JToken item)
         {
-            Data = (T)item;
+            Data.Merge(item, jsonMergeSettings);
             Data.AddAnnotation(RecordName);
-            //Listener.Resubscribe(Data);
         }
 
         public object Get(string path) => Data.SelectToken(path);
