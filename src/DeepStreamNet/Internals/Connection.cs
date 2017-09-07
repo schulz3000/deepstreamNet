@@ -108,6 +108,11 @@ namespace DeepStreamNet
             return tcs.Task;
         }
 
+        public void SendLocal(string command)
+        {
+            Notify(command);
+        }
+
         public void Send(string command)
         {
             client.Send(command);

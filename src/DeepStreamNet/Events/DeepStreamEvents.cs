@@ -37,6 +37,7 @@ namespace DeepStreamNet
 
             var command = Utils.BuildCommand(Topic.EVENT, Action.EVENT, eventName, sendData);
             Connection.Send(command);
+            Connection.SendLocal(command);
         }
 
         public async Task<IAsyncDisposable> SubscribeAsync(string eventName, Action<object> data)
