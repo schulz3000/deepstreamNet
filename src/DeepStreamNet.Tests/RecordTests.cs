@@ -5,7 +5,7 @@ using Xunit;
 
 namespace DeepStreamNet.Tests
 {
-    [Collection("ServerCommunication")]
+    [Collection(TestConstants.ServerCommunication)]
     [TestCaseOrderer("DeepStreamNet.Tests.Helper.TestCollectionOrderer", "DeepStreamNet.Tests")]
     public class RecordTests : IClassFixture<DeepStreamServerFixture>
     {
@@ -14,6 +14,60 @@ namespace DeepStreamNet.Tests
         public RecordTests(DeepStreamServerFixture fixture)
         {
             fixture.StartServer();
+        }
+
+        [Fact, TestPriority(2)]
+        public async Task GetRecordNullTest()
+        {
+            using (var client = await TestHelper.GetClientAsync())
+            {
+                await Assert.ThrowsAsync<ArgumentNullException>("name", () => client.Records.GetRecordAsync(null));
+            }
+        }
+
+        [Fact]
+        public async Task HasRecordRecordNameNullTest()
+        {
+            using (var client = await TestHelper.GetClientAsync())
+            {
+                await Assert.ThrowsAsync<ArgumentNullException>("recordName", () => client.Records.HasAsync(null));
+            }
+        }
+
+        [Fact]
+        public async Task SetRecordRecordNullTest()
+        {
+            using (var client = await TestHelper.GetClientAsync())
+            {
+                Assert.Throws<ArgumentNullException>("record", () => client.Records.Set(null, new { property = "abc" }));
+            }
+        }
+
+        [Fact]
+        public async Task SetRecordWithPathRecordNullTest()
+        {
+            using (var client = await TestHelper.GetClientAsync())
+            {
+                Assert.Throws<ArgumentNullException>("record", () => client.Records.Set(null, "path1", new { property = "abc" }));
+            }
+        }
+
+        [Fact]
+        public async Task SetRecordWithAckRecordNullTest()
+        {
+            using (var client = await TestHelper.GetClientAsync())
+            {
+                await Assert.ThrowsAsync<ArgumentNullException>("record", () => client.Records.SetWithAckAsync(null, new { property = "abc" }));
+            }
+        }
+
+        [Fact]
+        public async Task GetSnapshotRecordNameNulllTest()
+        {
+            using (var client = await TestHelper.GetClientAsync())
+            {
+                await Assert.ThrowsAsync<ArgumentNullException>("recordName", () => client.Records.SnapshotAsync(null));
+            }
         }
 
         [Fact, TestPriority(1)]
@@ -46,6 +100,46 @@ namespace DeepStreamNet.Tests
                 var has = await client.Records.HasAsync(RecordSessionName);
 
                 Assert.Equal(true, has);
+            }
+        }
+
+        [Fact, TestPriority(4)]
+        public async Task SetRecordWithAckContentNullTest()
+        {
+            using (var client = await TestHelper.GetClientAsync())
+            {
+                var record = await client.Records.GetRecordAsync(RecordSessionName);
+                await Assert.ThrowsAsync<ArgumentNullException>("item", () => client.Records.SetWithAckAsync(record, null));
+            }
+        }
+
+        [Fact, TestPriority(5)]
+        public async Task SetRecordContentNullTest()
+        {
+            using (var client = await TestHelper.GetClientAsync())
+            {
+                var record = await client.Records.GetRecordAsync(RecordSessionName);
+                Assert.Throws<ArgumentNullException>("item", () => client.Records.Set(record, null));
+            }
+        }
+
+        [Fact, TestPriority(5)]
+        public async Task SetRecordWithPathContentNullTest()
+        {
+            using (var client = await TestHelper.GetClientAsync())
+            {
+                var record = await client.Records.GetRecordAsync(RecordSessionName);
+                Assert.Throws<ArgumentNullException>("item", () => client.Records.Set(record, "path1", null));
+            }
+        }
+
+        [Fact, TestPriority(5)]
+        public async Task SetRecordPathNullTest()
+        {
+            using (var client = await TestHelper.GetClientAsync())
+            {
+                var record = await client.Records.GetRecordAsync(RecordSessionName);
+                Assert.Throws<ArgumentNullException>("path", () => client.Records.Set(record, null, new { property = "abc" }));
             }
         }
 
@@ -88,6 +182,42 @@ namespace DeepStreamNet.Tests
         }
 
         [Fact, TestPriority(7)]
+        public async Task GetSnapshotTest()
+        {
+            using (var client = await TestHelper.GetClientAsync())
+            {
+                var record = await client.Records.SnapshotAsync(RecordSessionName);                
+                Assert.Equal("test2", record["property1"]);
+            }
+        }
+
+        [Fact, TestPriority(8)]
+        public async Task RecordSetWithAckTest()
+        {
+            using (var client = await TestHelper.GetClientAsync())
+            {
+                var record = await client.Records.GetRecordAsync(RecordSessionName);
+                var result = await client.Records.SetWithAckAsync(record, new { property3 = "test3" });
+
+                Assert.True(result);
+            }
+        }
+
+        [Fact, TestPriority(9)]
+        public async Task RecordSetWithAckPathTest()
+        {
+            using (var client = await TestHelper.GetClientAsync())
+            {
+                var record = await client.Records.GetRecordAsync(RecordSessionName);
+                await client.Records.SetWithAckAsync(record, new { property4 = new { property44="test"} });
+                var result = await client.Records.SetWithAckAsync(record, "property4.property44", "change");
+
+                Assert.True(result);
+                Assert.Equal("change",record["property4"]["property44"].ToString());
+            }
+        }
+
+        [Fact, TestPriority(10)]
         public async Task RecordDeleteTest()
         {
             using (var client = await TestHelper.GetClientAsync())

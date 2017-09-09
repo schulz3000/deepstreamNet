@@ -4,7 +4,7 @@ using Xunit;
 
 namespace DeepStreamNet.Tests
 {
-    [Collection("ServerCommunication")]
+    [Collection(TestConstants.ServerCommunication)]
     public class RpcTests : IClassFixture<DeepStreamServerFixture>
     {
         public RpcTests(DeepStreamServerFixture fixture)
@@ -72,6 +72,15 @@ namespace DeepStreamNet.Tests
                 {
                     await Assert.ThrowsAsync<DeepStreamException>(() => client2.Rpcs.MakeRequest<string, string>("unittestrpc", "abc"));
                 }
+            }
+        }
+
+        [Fact]
+        public async Task NoProviderTest()
+        {
+            using (var client2 = await TestHelper.GetClientAsync())
+            {
+                await Assert.ThrowsAsync<DeepStreamException>(() => client2.Rpcs.MakeRequest<string, string>("unittestrpc", "abc"));
             }
         }
     }

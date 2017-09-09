@@ -82,7 +82,7 @@ namespace DeepStreamNet
         /// <param name="path">deeptstream.io endpoint path</param>
         /// <param name="useSecureConnection"></param>
         /// <param name="options" cref="DeepStreamOptions">set options other then default</param>
-        public DeepStreamClient(string host, int port, string path, bool useSecureConnection, DeepStreamOptions options)
+        public DeepStreamClient(string host, short port, string path, bool useSecureConnection, DeepStreamOptions options)
         {
             connection = new Connection(host, port, path, useSecureConnection);
             Options = options;
@@ -95,7 +95,7 @@ namespace DeepStreamNet
         /// <param name="port">deeptstream.io endpoint port</param>
         /// <param name="path">deeptstream.io endpoint path</param>
         /// <param name="useSecureConnection"></param>
-        public DeepStreamClient(string host, int port = 6020, string path = "deepstream", bool useSecureConnection = false)
+        public DeepStreamClient(string host, short port = 6020, string path = "deepstream", bool useSecureConnection = false)
             : this(host, port, path, useSecureConnection, new DeepStreamOptions())
         {
         }
@@ -221,6 +221,8 @@ namespace DeepStreamNet
         {
             if (disposing)
             {
+                (rpcs as IDisposable)?.Dispose();
+                (records as IDisposable)?.Dispose();
                 Connection.PingReceived -= Connection_PingReceived;
                 Connection.Dispose();
             }

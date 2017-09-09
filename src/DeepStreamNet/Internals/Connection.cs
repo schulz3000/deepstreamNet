@@ -46,7 +46,7 @@ namespace DeepStreamNet
 
         internal event EventHandler<PresenceListenerChangedEventArgs> PresenceListenerChanged;
 
-        public Connection(string host, int port, string path, bool useSecureConnection)
+        public Connection(string host, short port, string path, bool useSecureConnection)
         {
             if (port < 1)
                 throw new ArgumentOutOfRangeException(nameof(port));
@@ -110,11 +110,17 @@ namespace DeepStreamNet
 
         public void SendLocal(string command)
         {
-            Notify(command);
+            if (command == null)
+                throw new ArgumentNullException(nameof(command));
+
+            Notify(command.Trim(Constants.GroupSeperator));
         }
 
         public void Send(string command)
         {
+            if (command == null)
+                throw new ArgumentNullException(nameof(command));
+
             client.Send(command);
         }
 

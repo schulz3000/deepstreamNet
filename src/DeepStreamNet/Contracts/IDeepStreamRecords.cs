@@ -42,9 +42,10 @@ namespace DeepStreamNet.Contracts
         /// <param name="path"></param>
         /// <param name="item"></param>
         /// <returns></returns>
+        /// <exception cref="ArgumentNullException"><paramref name="record"/> is <c>null</c>.</exception>
         /// <exception cref="ArgumentNullException"><paramref name="path"/> is <c>null</c>.</exception>
         /// <exception cref="ArgumentNullException"><paramref name="item"/> is <c>null</c>.</exception>
-        void Set(IDeepStreamRecord record,string path, object item);
+        void Set(IDeepStreamRecord record, string path, object item);
 
         /// <summary>
         /// 
@@ -79,17 +80,18 @@ namespace DeepStreamNet.Contracts
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="name"></param>
-        /// <exception cref="System.ArgumentNullException">Throws when param name is null or empty</exception>
+        /// <param name="recordName"></param>
+        /// <exception cref="ArgumentNullException">Throws when param name is null or empty</exception>
         /// <returns></returns>
-        Task<bool> HasAsync(string name);
+        Task<bool> HasAsync(string recordName);
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="name"></param>
+        /// <param name="recordName"></param>
+        /// <exception cref="ArgumentNullException">Throws when param name is null or empty</exception>
         /// <returns></returns>
-        Task<IDeepStreamRecord> SnapshotAsync(string name);
+        Task<IDeepStreamRecord> SnapshotAsync(string recordName);
 
         /// <summary>
         /// 

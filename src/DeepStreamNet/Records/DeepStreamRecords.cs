@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace DeepStreamNet
 {
-    class DeepStreamRecords : DeepStreamBase, IDeepStreamRecords
+    class DeepStreamRecords : DeepStreamBase, IDeepStreamRecords,IDisposable
     {
         readonly HashSet<IDeepStreamRecordWrapper> records = new HashSet<IDeepStreamRecordWrapper>(new DeepStreamRecordComparer());
         readonly HashSet<IDeepStreamListWrapper> lists = new HashSet<IDeepStreamListWrapper>();
@@ -173,17 +173,17 @@ namespace DeepStreamNet
             }
         }
 
-        public Task<bool> HasAsync(string name)
+        public Task<bool> HasAsync(string recordName)
         {
-            if (string.IsNullOrWhiteSpace(name))
-                throw new ArgumentNullException(nameof(name));
+            if (string.IsNullOrWhiteSpace(recordName))
+                throw new ArgumentNullException(nameof(recordName));
 
             var tcs = new TaskCompletionSource<bool>();
 
             EventHandler<HasRecordArgs> handler = null;
             handler = (s, e) =>
             {
-                if (e.Topic == Topic.RECORD && e.Action == Action.HAS && e.Name == name)
+                if (e.Topic == Topic.RECORD && e.Action == Action.HAS && e.Name == recordName)
                 {
                     Connection.HasRecordReceived -= handler;
                     tcs.TrySetResult(e.Result);
@@ -192,15 +192,15 @@ namespace DeepStreamNet
 
             Connection.HasRecordReceived += handler;
 
-            Connection.Send(Utils.BuildCommand(Topic.RECORD, Action.HAS, name));
+            Connection.Send(Utils.BuildCommand(Topic.RECORD, Action.HAS, recordName));
 
             return tcs.Task;
         }
 
-        public async Task<IDeepStreamRecord> SnapshotAsync(string name)
+        public async Task<IDeepStreamRecord> SnapshotAsync(string recordName)
         {
-            if (string.IsNullOrWhiteSpace(name))
-                throw new ArgumentNullException(nameof(name));
+            if (string.IsNullOrWhiteSpace(recordName))
+                throw new ArgumentNullException(nameof(recordName));
 
             var tcs = new TaskCompletionSource<IDeepStreamRecordWrapper>();
 
@@ -209,7 +209,7 @@ namespace DeepStreamNet
             EventHandler<RecordReceivedArgs> recHandler = null;
             recHandler = (s, e) =>
             {
-                if (e.Topic == topic && e.Action == Action.READ && e.Identifier == name)
+                if (e.Topic == topic && e.Action == Action.READ && e.Identifier == recordName)
                 {
                     Connection.RecordReceived -= recHandler;
 
@@ -229,7 +229,7 @@ namespace DeepStreamNet
 
             Connection.RecordReceived += recHandler;
 
-            Connection.Send(Utils.BuildCommand(topic, Action.SNAPSHOT, name));
+            Connection.Send(Utils.BuildCommand(topic, Action.SNAPSHOT, recordName));
 
             return (await tcs.Task) as IDeepStreamRecord;
         }
@@ -379,6 +379,22 @@ namespace DeepStreamNet
             wrapper.IncrementVersion();
 
             return Connection.SendWithAckAsync(Topic.RECORD, Action.PATCH, Action.WRITE_ACKNOWLEDGEMENT, record.RecordName, Options.RecordReadAckTimeout, wrapper.RecordVersion.ToString(), path, Utils.ConvertAndPrefixData(wrapper.Get(path)), Constants.WriteSuccessIdentifier);
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        void Dispose(bool disposing)
+        {
+            if(disposing)
+            {
+                Connection.RecordUpdated += Con_RecordUpdated;
+                Connection.RecordPatched += Con_RecordPatched;
+                Connection.RecordListenerChanged += Connection_RecordListenerChanged;
+            }
         }
     }
 }

@@ -36,7 +36,7 @@ namespace DeepStreamNet
 
         void Collection_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
-            if (e.Action == NotifyCollectionChangedAction.Replace || e.Action == NotifyCollectionChangedAction.Remove || e.Action == NotifyCollectionChangedAction.Reset)
+            if ((e.Action == NotifyCollectionChangedAction.Replace || e.Action == NotifyCollectionChangedAction.Remove || e.Action == NotifyCollectionChangedAction.Reset) && e.OldItems!=null)
             {
                 foreach (var item in e.OldItems)
                 {
@@ -50,7 +50,7 @@ namespace DeepStreamNet
                 }
             }
 
-            if (e.Action == NotifyCollectionChangedAction.Add || e.Action == NotifyCollectionChangedAction.Replace)
+            if ((e.Action == NotifyCollectionChangedAction.Add || e.Action == NotifyCollectionChangedAction.Replace) && e.NewItems!=null)
             {
                 foreach (var item in e.NewItems.OfType<JContainer>().Where(w => w.Type == JTokenType.Array || w.Type == JTokenType.Object))
                 {
@@ -60,7 +60,7 @@ namespace DeepStreamNet
                 }
             }
 
-            if (e.Action != NotifyCollectionChangedAction.Add && e.Action != NotifyCollectionChangedAction.Replace)
+            if ((e.Action != NotifyCollectionChangedAction.Add && e.Action != NotifyCollectionChangedAction.Replace) || e.NewItems==null)
                 return;
 
             foreach (var item in e.NewItems.OfType<JValue>())

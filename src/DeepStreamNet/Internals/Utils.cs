@@ -26,7 +26,7 @@ namespace DeepStreamNet
 
             sb[sb.Length - 1] = Constants.GroupSeperator;
 
-            return sb.ToString();
+            return StringBuilderPool.ToStringAndRelease(sb);
         }
 
         public static string ConvertAndPrefixData<T>(T data)

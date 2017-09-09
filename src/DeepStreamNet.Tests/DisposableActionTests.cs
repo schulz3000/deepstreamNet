@@ -1,9 +1,10 @@
-﻿using System.Threading.Tasks;
+﻿using DeepStreamNet.Tests.Helper;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace DeepStreamNet.Tests
 {
-    [Collection("Local")]
+    [Collection(TestConstants.Local)]
     public class DisposableActionTests
     {
         [Fact]

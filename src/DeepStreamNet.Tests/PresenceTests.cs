@@ -4,7 +4,7 @@ using Xunit;
 
 namespace DeepStreamNet.Tests
 {
-    [Collection("ServerCommunication")]
+    [Collection(TestConstants.ServerCommunication)]
     public class PresenceTests : IClassFixture<DeepStreamServerFixture>
     {
         public PresenceTests(DeepStreamServerFixture fixture)
