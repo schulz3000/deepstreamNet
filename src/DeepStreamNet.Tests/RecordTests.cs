@@ -16,7 +16,7 @@ namespace DeepStreamNet.Tests
             fixture.StartServer();
         }
 
-        [Fact, TestPriority(2)]
+        [Fact]
         public async Task GetRecordNullTest()
         {
             using (var client = await TestHelper.GetClientAsync())
@@ -67,6 +67,24 @@ namespace DeepStreamNet.Tests
             using (var client = await TestHelper.GetClientAsync())
             {
                 await Assert.ThrowsAsync<ArgumentNullException>("recordName", () => client.Records.SnapshotAsync(null));
+            }
+        }
+
+        [Fact]
+        public async Task RecordDiscardNullTest()
+        {
+            using (var client = await TestHelper.GetClientAsync())
+            {
+                await Assert.ThrowsAsync<ArgumentNullException>("record", () => client.Records.DiscardAsync(null));
+            }
+        }
+
+        [Fact]
+        public async Task RecordDeleteNullTest()
+        {
+            using (var client = await TestHelper.GetClientAsync())
+            {
+                await Assert.ThrowsAsync<ArgumentNullException>("record", () => client.Records.DeleteAsync(null));
             }
         }
 
@@ -123,7 +141,7 @@ namespace DeepStreamNet.Tests
             }
         }
 
-        [Fact, TestPriority(5)]
+        [Fact, TestPriority(6)]
         public async Task SetRecordWithPathContentNullTest()
         {
             using (var client = await TestHelper.GetClientAsync())
@@ -133,7 +151,7 @@ namespace DeepStreamNet.Tests
             }
         }
 
-        [Fact, TestPriority(5)]
+        [Fact, TestPriority(7)]
         public async Task SetRecordPathNullTest()
         {
             using (var client = await TestHelper.GetClientAsync())
@@ -154,7 +172,7 @@ namespace DeepStreamNet.Tests
         //    }
         //}
 
-        [Fact, TestPriority(5)]
+        [Fact, TestPriority(8)]
         public async Task RecordSetLocalTest()
         {
             using (var client = await TestHelper.GetClientAsync())
@@ -165,7 +183,7 @@ namespace DeepStreamNet.Tests
             }
         }
 
-        [Fact, TestPriority(6)]
+        [Fact, TestPriority(9)]
         public async Task RecordSetRemoteTest()
         {
             using (var client1 = await TestHelper.GetClientAsync())
@@ -181,17 +199,17 @@ namespace DeepStreamNet.Tests
             }
         }
 
-        [Fact, TestPriority(7)]
+        [Fact, TestPriority(10)]
         public async Task GetSnapshotTest()
         {
             using (var client = await TestHelper.GetClientAsync())
             {
-                var record = await client.Records.SnapshotAsync(RecordSessionName);                
+                var record = await client.Records.SnapshotAsync(RecordSessionName);
                 Assert.Equal("test2", record["property1"]);
             }
         }
 
-        [Fact, TestPriority(8)]
+        [Fact, TestPriority(11)]
         public async Task RecordSetWithAckTest()
         {
             using (var client = await TestHelper.GetClientAsync())
@@ -203,21 +221,57 @@ namespace DeepStreamNet.Tests
             }
         }
 
-        [Fact, TestPriority(9)]
+        [Fact, TestPriority(12)]
         public async Task RecordSetWithAckPathTest()
         {
             using (var client = await TestHelper.GetClientAsync())
             {
                 var record = await client.Records.GetRecordAsync(RecordSessionName);
-                await client.Records.SetWithAckAsync(record, new { property4 = new { property44="test"} });
+                await client.Records.SetWithAckAsync(record, new { property4 = new { property44 = "test" } });
                 var result = await client.Records.SetWithAckAsync(record, "property4.property44", "change");
 
                 Assert.True(result);
-                Assert.Equal("change",record["property4"]["property44"].ToString());
+                Assert.Equal("change", record["property4"]["property44"].ToString());
             }
         }
 
-        [Fact, TestPriority(10)]
+        [Fact, TestPriority(13)]
+        public async Task RecordDiscardTest()
+        {
+            using (var client = await TestHelper.GetClientAsync())
+            {
+                var record = await client.Records.GetRecordAsync(RecordSessionName);
+                await client.Records.DiscardAsync(record);
+
+                Assert.True(true);//how to test??
+            }
+        }
+
+        [Fact, TestPriority(14)]
+        public async Task RecordRemoteChangeEventTest()
+        {
+            using (var client1 = await TestHelper.GetClientAsync())
+            { 
+                var record1 = await client1.Records.GetRecordAsync(RecordSessionName);
+                using (var client2 = await TestHelper.GetClientAsync())
+                {
+                    var record2 = await client2.Records.GetRecordAsync(RecordSessionName);
+                    string propertyName = null;
+                    record2.PropertyChanged += (s, e) =>
+                    {
+                        propertyName = e.PropertyName;
+                    };
+
+                    record1["property3"] = "testchange";
+
+                    await Task.Delay(500);
+
+                    Assert.Equal("property3", propertyName);
+                }
+            }
+        }
+
+        [Fact, TestPriority(15)]
         public async Task RecordDeleteTest()
         {
             using (var client = await TestHelper.GetClientAsync())

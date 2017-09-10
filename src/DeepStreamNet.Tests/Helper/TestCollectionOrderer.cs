@@ -7,7 +7,8 @@ namespace DeepStreamNet.Tests.Helper
 {
     public class TestCollectionOrderer: ITestCaseOrderer
     {
-        public IEnumerable<TTestCase> OrderTestCases<TTestCase>(IEnumerable<TTestCase> testCases) where TTestCase : ITestCase
+        public IEnumerable<TTestCase> OrderTestCases<TTestCase>(IEnumerable<TTestCase> testCases) 
+            where TTestCase : ITestCase
         {
             var sortedMethods = new SortedDictionary<int, TTestCase>();
 

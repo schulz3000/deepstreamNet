@@ -36,6 +36,6 @@ namespace DeepStreamNet.Contracts
         /// <param name="procedureName"></param>
         /// <param name="parameter"></param>
         /// <returns></returns>
-        Task<TResult> MakeRequest<TInput, TResult>(string procedureName, TInput parameter);        
+        Task<TResult> MakeRequestAsync<TInput, TResult>(string procedureName, TInput parameter);        
     }
 }

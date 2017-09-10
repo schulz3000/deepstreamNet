@@ -110,7 +110,7 @@ namespace DeepStreamNet
             });
         }
 
-        public async Task<TResult> MakeRequest<TInput, TResult>(string procedureName, TInput parameter)
+        public async Task<TResult> MakeRequestAsync<TInput, TResult>(string procedureName, TInput parameter)
         {
             var tcs = new TaskCompletionSource<TResult>();
 
@@ -132,8 +132,15 @@ namespace DeepStreamNet
 
                 try
                 {
-                    var result = e.Data.ToObject<TResult>();
-                    tcs.TrySetResult(result);
+                    if (!Utils.IsJTokenTypeEqualNetType(e.Data.Type, typeof(TResult)))
+                    {
+                        tcs.TrySetException(new DeepStreamException("Wrong datatype received for " + procedureName));
+                    }
+                    else
+                    {
+                        var result = e.Data.ToObject<TResult>();
+                        tcs.TrySetResult(result);
+                    }
                 }
                 catch (Exception ex)
                 {

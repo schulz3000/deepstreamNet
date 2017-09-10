@@ -79,6 +79,5 @@ namespace DeepStreamNet.Tests
                 Assert.Equal(0, list.Count);
             }
         }
-
     }
 }

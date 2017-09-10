@@ -123,6 +123,31 @@ namespace DeepStreamNet
             }
         }
 
+        static readonly Dictionary<Type, JTokenType> typeMappings = new Dictionary<Type, JTokenType>
+        {
+            [typeof(bool)] = JTokenType.Boolean,
+            [typeof(string)] = JTokenType.String,
+            [typeof(Guid)] = JTokenType.Guid,
+            [typeof(DateTime)] = JTokenType.Date,
+            [typeof(TimeSpan)] = JTokenType.TimeSpan,
+            [typeof(double)] = JTokenType.Float,
+            [typeof(float)] = JTokenType.Float,
+            [typeof(decimal)] = JTokenType.Float,
+            [typeof(int)] = JTokenType.Integer,
+            [typeof(short)] = JTokenType.Integer,
+            [typeof(byte)] = JTokenType.Integer
+        };
+
+        public static bool IsJTokenTypeEqualNetType(JTokenType tokenType, Type type)
+        {
+            if (typeMappings.ContainsKey(type))
+            {
+                return typeMappings[type] == tokenType;
+            }
+
+            return tokenType == JTokenType.Object || tokenType == JTokenType.Null;
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsNumeric(Type type)
         {

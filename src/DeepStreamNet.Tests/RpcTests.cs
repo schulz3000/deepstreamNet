@@ -21,7 +21,7 @@ namespace DeepStreamNet.Tests
 
                 using (var client2 = await TestHelper.GetClientAsync())
                 {
-                    var result = await client2.Rpcs.MakeRequest<string, string>("unittestrpc", "abc");
+                    var result = await client2.Rpcs.MakeRequestAsync<string, string>("unittestrpc", "abc");
 
                     Assert.Equal("ABC", result);
                 }
@@ -42,7 +42,7 @@ namespace DeepStreamNet.Tests
 
                 using (var client2 = await TestHelper.GetClientAsync())
                 {
-                    var result = await client2.Rpcs.MakeRequest<string, string>("unittestrpc", "abc");
+                    var result = await client2.Rpcs.MakeRequestAsync<string, string>("unittestrpc", "abc");
                 }
             }
         }
@@ -56,7 +56,7 @@ namespace DeepStreamNet.Tests
 
                 using (var client2 = await TestHelper.GetClientAsync())
                 {
-                    await Assert.ThrowsAsync<DeepStreamException>(() => client2.Rpcs.MakeRequest<string, string>("unittestrpc", "abc"));
+                    await Assert.ThrowsAsync<DeepStreamException>(() => client2.Rpcs.MakeRequestAsync<string, string>("unittestrpc", "abc"));
                 }
             }
         }
@@ -70,7 +70,7 @@ namespace DeepStreamNet.Tests
 
                 using (var client2 = await TestHelper.GetClientAsync())
                 {
-                    await Assert.ThrowsAsync<DeepStreamException>(() => client2.Rpcs.MakeRequest<string, string>("unittestrpc", "abc"));
+                    await Assert.ThrowsAsync<DeepStreamException>(() => client2.Rpcs.MakeRequestAsync<string, string>("unittestrpc", "abc"));
                 }
             }
         }
@@ -80,7 +80,35 @@ namespace DeepStreamNet.Tests
         {
             using (var client2 = await TestHelper.GetClientAsync())
             {
-                await Assert.ThrowsAsync<DeepStreamException>(() => client2.Rpcs.MakeRequest<string, string>("unittestrpc", "abc"));
+                await Assert.ThrowsAsync<DeepStreamException>(() => client2.Rpcs.MakeRequestAsync<string, string>("unittestrpc", "abc"));
+            }
+        }
+
+        [Fact]
+        public async Task WrongInputTypeTest()
+        {
+            using (var client1 = await TestHelper.GetClientAsync())
+            {
+                await client1.Rpcs.RegisterProviderAsync<bool, string>("unittestrpc", (input, rpc) => rpc.Send(input.ToString()));
+
+                using (var client2 = await TestHelper.GetClientAsync())
+                {
+                    await Assert.ThrowsAsync<DeepStreamException>(() => client2.Rpcs.MakeRequestAsync<string, string>("unittestrpc", "abc"));                    
+                }
+            }
+        }
+
+        [Fact]
+        public async Task WrongResultTypeTest()
+        {
+            using (var client1 = await TestHelper.GetClientAsync())
+            {
+                await client1.Rpcs.RegisterProviderAsync<string, int>("unittestrpc", (input, rpc) => rpc.Send(666));
+
+                using (var client2 = await TestHelper.GetClientAsync())
+                {
+                    await Assert.ThrowsAsync<DeepStreamException>(() => client2.Rpcs.MakeRequestAsync<string, bool>("unittestrpc", "abc"));
+                }
             }
         }
     }

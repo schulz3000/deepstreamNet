@@ -47,7 +47,14 @@ namespace DeepStreamNet
             }
             else
             {
-                Data.SelectToken(path)?.Replace(item);
+                if (!Data.HasValues)
+                {
+                    Data[path]=item;
+                }
+                else
+                {
+                    Data.SelectToken(path)?.Replace(item);
+                }
             }
         }
 
