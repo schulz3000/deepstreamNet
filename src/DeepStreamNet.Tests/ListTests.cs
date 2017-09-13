@@ -1,5 +1,8 @@
 ﻿using DeepStreamNet.Tests.Helper;
 using System;
+using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -77,6 +80,43 @@ namespace DeepStreamNet.Tests
                 list.Clear();
 
                 Assert.Equal(0, list.Count);
+            }
+        }
+        [Fact, TestPriority(6)]
+        public async Task TestAddingARecordToListAndListenToChanges()
+        {
+            var name = Guid.NewGuid().ToString();
+            var key = Guid.NewGuid().ToString();
+            var listKey = Guid.NewGuid().ToString();
+            using (var updateClient = await TestHelper.GetClientAsync())
+            {
+                var list = await updateClient.Records.GetListAsync(listKey);
+
+                var rec = await updateClient.Records.GetRecordAsync(key);
+                var res = await updateClient.Records.SetWithAckAsync(rec, "name", name);
+                Assert.True(res);
+                using (var readClient = await TestHelper.GetClientAsync())
+                {
+
+                    var listRead = await readClient.Records.GetListAsync(listKey);
+                    var changes = new List<NotifyCollectionChangedEventArgs>();
+                    listRead.CollectionChanged += (sender, args) =>
+                    {
+                        changes.Add(args);
+                    };
+                    list.Add(rec.RecordName);
+                    int time = 0;
+                    while (changes.Count == 0)
+                    {
+                        await Task.Delay(200);
+                        time += 200;
+                        if (time > 4000)
+                        {
+                            Assert.True(false, "Time out should have got changes");
+                        }
+                    }
+                    Assert.True(changes.Count(e => e.Action == NotifyCollectionChangedAction.Add) == 1);
+                }
             }
         }
     }

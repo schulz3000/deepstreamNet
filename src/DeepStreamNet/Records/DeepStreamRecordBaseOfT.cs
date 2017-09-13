@@ -42,6 +42,10 @@ namespace DeepStreamNet
             if (path.EndsWith("]", StringComparison.Ordinal) && Data.SelectToken(path) == null)
             {
                 var arrayParentPath = path.Substring(0, path.Length - (path.LastIndexOf("[", StringComparison.Ordinal) + 1));
+                if (path.StartsWith("[") && path.EndsWith("]"))
+                {
+                    arrayParentPath = String.Empty;
+                }
                 var token = Data.SelectToken(arrayParentPath);
                 ((JArray)token).Add(item);
             }
