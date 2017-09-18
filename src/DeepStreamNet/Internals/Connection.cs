@@ -88,16 +88,19 @@ namespace DeepStreamNet
             var tcs = new TaskCompletionSource<bool>();
 
             EventHandler openHandler = null;
+            EventHandler<ErrorEventArgs> errorHandler = null;
+
             openHandler = (s, e) =>
             {
                 client.Opened -= openHandler;
+                client.Error -= errorHandler;
                 tcs.SetResult(true);
             };
             client.Opened += openHandler;
-
-            EventHandler<ErrorEventArgs> errorHandler = null;
+            
             errorHandler = (s, e) =>
             {
+                client.Opened -= openHandler;
                 client.Error -= errorHandler;
                 tcs.TrySetException(e.Exception);
             };
