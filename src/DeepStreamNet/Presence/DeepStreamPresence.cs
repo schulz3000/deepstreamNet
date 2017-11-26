@@ -43,6 +43,27 @@ namespace DeepStreamNet
             return tcs.Task;
         }
 
+        public Task<IDictionary<string, bool>> GetAllAsync(string[] users)
+        {
+            if (users == null || users.Length < 1)
+                throw new ArgumentNullException(nameof(users));
+
+            var tcs = new TaskCompletionSource<IDictionary<string, bool>>();
+
+            EventHandler<PresenceGetAllWithStatusReceivedArgs> handler = null;
+            handler = (s, e) =>
+            {
+                Connection.PresenceGetAllWithStatusReceived -= handler;
+                tcs.TrySetResult(e.UsernamesWithStatus);
+            };
+
+            Connection.PresenceGetAllWithStatusReceived += handler;
+
+            Connection.Send(Utils.BuildCommand(Topic.PRESENCE, Action.QUERY, Action.QUERY,users));
+
+            return tcs.Task;
+        }
+
         public Task<IAsyncDisposable> SubscribeAsync(Action<string, bool> listener)
         {
             return InnerSubscribeAsync((username, isLoggedIn) =>

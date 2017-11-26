@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using SuperSocket.ClientEngine;
 using System;
 using System.Collections.Generic;
@@ -43,6 +44,8 @@ namespace DeepStreamNet
         internal event EventHandler<RemoteProcedureMessageArgs> RemoteProcedureResultReceived;
 
         internal event EventHandler<PresenceGetAllReceivedArgs> PresenceGetAllReceived;
+
+        internal event EventHandler<PresenceGetAllWithStatusReceivedArgs> PresenceGetAllWithStatusReceived;
 
         internal event EventHandler<PresenceListenerChangedEventArgs> PresenceListenerChanged;
 
@@ -368,8 +371,18 @@ namespace DeepStreamNet
                     }
                     else
                     {
-                        PresenceGetAllReceived?.Invoke(this, new PresenceGetAllReceivedArgs(split.Skip(2).ToArray()));
+                        if (split.Length == 3)
+                        {
+                            var usersWithStatus = JsonConvert.DeserializeObject<Dictionary<string, bool>>(split[2]);
+                            PresenceGetAllWithStatusReceived?.Invoke(this, new PresenceGetAllWithStatusReceivedArgs(usersWithStatus));
+                        }
+                        else
+                        {
+                            PresenceGetAllReceived?.Invoke(this, new PresenceGetAllReceivedArgs(split.Skip(2).ToArray()));
+                        }
                     }
+
+                    //PresenceGetAllWithStatusReceived
                 }
                 else if (responseAction == Action.ACK)
                 {
