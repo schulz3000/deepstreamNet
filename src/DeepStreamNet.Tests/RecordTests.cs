@@ -95,7 +95,7 @@ namespace DeepStreamNet.Tests
             {
                 var has = await client.Records.HasAsync(RecordSessionName);
 
-                Assert.Equal(false, has);
+                Assert.False(has);
             }
         }
 
@@ -117,7 +117,7 @@ namespace DeepStreamNet.Tests
             {
                 var has = await client.Records.HasAsync(RecordSessionName);
 
-                Assert.Equal(true, has);
+                Assert.True(has);
             }
         }
 
@@ -251,16 +251,13 @@ namespace DeepStreamNet.Tests
         public async Task RecordRemoteChangeEventTest()
         {
             using (var client1 = await TestHelper.GetClientAsync())
-            { 
+            {
                 var record1 = await client1.Records.GetRecordAsync(RecordSessionName);
                 using (var client2 = await TestHelper.GetClientAsync())
                 {
                     var record2 = await client2.Records.GetRecordAsync(RecordSessionName);
                     string propertyName = null;
-                    record2.PropertyChanged += (s, e) =>
-                    {
-                        propertyName = e.PropertyName;
-                    };
+                    record2.PropertyChanged += (s, e) => propertyName = e.PropertyName;
 
                     record1["property3"] = "testchange";
 
@@ -279,7 +276,7 @@ namespace DeepStreamNet.Tests
                 var record = await client.Records.GetRecordAsync(RecordSessionName);
                 await client.Records.DeleteAsync(record);
                 var has = await client.Records.HasAsync(RecordSessionName);
-                Assert.Equal(false, has);
+                Assert.False(has);
             }
         }
     }

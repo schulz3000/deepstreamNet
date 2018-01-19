@@ -4,11 +4,11 @@ using System.Reflection;
 
 namespace DeepStreamNet.PerfTests
 {
+    [MemoryDiagnoser]
     public class DelegateInvokeTest
     {
-
-        Func<string, string> func = (input) => input;
-        MethodInfo info;
+        readonly Func<string, string> func = (input) => input;
+        readonly MethodInfo info;
 
         public DelegateInvokeTest()
         {
@@ -26,7 +26,7 @@ namespace DeepStreamNet.PerfTests
         {
             return func.GetMethodInfo().Invoke(func.Target, new[] { "test" }).ToString();
         }
-       
+
         [Benchmark]
         public string NormalCall()
         {

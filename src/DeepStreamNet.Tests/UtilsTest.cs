@@ -91,7 +91,7 @@ namespace DeepStreamNet.Tests
 
         [Fact]
         public void IsNumericNullableGuidTest()
-        {            
+        {
             Assert.False(Utils.IsNumeric(typeof(Guid?)));
         }
 
@@ -119,7 +119,7 @@ namespace DeepStreamNet.Tests
             var type = Utils.ConvertPrefixedData("T");
             Assert.Equal(typeof(bool), type.Key);
             Assert.Equal(JTokenType.Boolean, type.Value.Type);
-            Assert.Equal(true, type.Value.ToObject<bool>());
+            Assert.True(type.Value.ToObject<bool>());
         }
 
         [Fact]
@@ -128,7 +128,7 @@ namespace DeepStreamNet.Tests
             var type = Utils.ConvertPrefixedData("F");
             Assert.Equal(typeof(bool), type.Key);
             Assert.Equal(JTokenType.Boolean, type.Value.Type);
-            Assert.Equal(false, type.Value.ToObject<bool>());
+            Assert.False(type.Value.ToObject<bool>());
         }
 
         [Fact]
@@ -153,7 +153,7 @@ namespace DeepStreamNet.Tests
         public void ConvertAndPrefixDataFromJTokenNullTest()
         {
             var result = Utils.ConvertAndPrefixData(JValue.CreateNull());
-            Assert.Equal(Constants.Types.NULL.ToString(),result);
+            Assert.Equal(Constants.Types.NULL.ToString(), result);
         }
 
         [Fact]
@@ -174,22 +174,22 @@ namespace DeepStreamNet.Tests
         public void ConvertAndPrefixDataFromJTokenIntegerTest()
         {
             var result = Utils.ConvertAndPrefixData(JToken.FromObject(1));
-            Assert.Equal(Constants.Types.NUMBER.ToString()+"1", result);
+            Assert.Equal(Constants.Types.NUMBER.ToString() + "1", result);
         }
 
         [Fact]
         public void ConvertAndPrefixDataFromJTokenDoubleTest()
         {
             var result = Utils.ConvertAndPrefixData(JToken.FromObject(1.1));
-            Assert.Equal(Constants.Types.NUMBER.ToString()+"1.1", result);
+            Assert.Equal(Constants.Types.NUMBER.ToString() + "1.1", result);
         }
 
         [Fact]
         public void ConvertAndPrefixDataFromJTokenObjectTest()
         {
-            var result = Utils.ConvertAndPrefixData(JToken.FromObject(new{ Property1="abc" }));
+            var result = Utils.ConvertAndPrefixData(JToken.FromObject(new { Property1 = "abc" }));
             Assert.Equal(Constants.Types.OBJECT.ToString() + "{\"Property1\":\"abc\"}", result);
-        }        
+        }
 
         [Fact]
         public void CreateUidTest()

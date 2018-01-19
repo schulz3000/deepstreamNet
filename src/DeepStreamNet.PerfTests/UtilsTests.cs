@@ -2,6 +2,7 @@
 
 namespace DeepStreamNet.PerfTests
 {
+    [MemoryDiagnoser]
     public class UtilsTests
     {
         [Benchmark]
