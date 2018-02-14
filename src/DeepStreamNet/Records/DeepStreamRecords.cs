@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace DeepStreamNet
 {
-    class DeepStreamRecords : DeepStreamBase, IDeepStreamRecords,IDisposable
+    class DeepStreamRecords : DeepStreamBase, IDeepStreamRecords, IDisposable
     {
         readonly HashSet<IDeepStreamRecordWrapper> records = new HashSet<IDeepStreamRecordWrapper>(new DeepStreamRecordComparer());
         readonly HashSet<IDeepStreamListWrapper> lists = new HashSet<IDeepStreamListWrapper>();
@@ -180,21 +180,20 @@ namespace DeepStreamNet
 
             var tcs = new TaskCompletionSource<bool>();
 
-            EventHandler<HasRecordArgs> handler = null;
-            handler = (s, e) =>
+            Connection.HasRecordReceived += handler;
+
+            Connection.Send(Utils.BuildCommand(Topic.RECORD, Action.HAS, recordName));
+
+            return tcs.Task;
+
+            void handler(object sender, HasRecordArgs e)
             {
                 if (e.Topic == Topic.RECORD && e.Action == Action.HAS && e.Name == recordName)
                 {
                     Connection.HasRecordReceived -= handler;
                     tcs.TrySetResult(e.Result);
                 }
-            };
-
-            Connection.HasRecordReceived += handler;
-
-            Connection.Send(Utils.BuildCommand(Topic.RECORD, Action.HAS, recordName));
-
-            return tcs.Task;
+            }
         }
 
         public async Task<IDeepStreamRecord> SnapshotAsync(string recordName)
@@ -206,8 +205,13 @@ namespace DeepStreamNet
 
             var topic = Topic.RECORD;
 
-            EventHandler<RecordReceivedArgs> recHandler = null;
-            recHandler = (s, e) =>
+            Connection.RecordReceived += recHandler;
+
+            Connection.Send(Utils.BuildCommand(topic, Action.SNAPSHOT, recordName));
+
+            return (await tcs.Task) as IDeepStreamRecord;
+
+            void recHandler(object sender, RecordReceivedArgs e)
             {
                 if (e.Topic == topic && e.Action == Action.READ && e.Identifier == recordName)
                 {
@@ -225,13 +229,7 @@ namespace DeepStreamNet
                         tcs.TrySetResult(new DeepStreamRecordObject(e.Identifier, e.Version, (JObject)e.Data));
                     }
                 }
-            };
-
-            Connection.RecordReceived += recHandler;
-
-            Connection.Send(Utils.BuildCommand(topic, Action.SNAPSHOT, recordName));
-
-            return (await tcs.Task) as IDeepStreamRecord;
+            }
         }
 
         public IDeepStreamAnonymousRecord GetAnonymousRecord() => new DeepStreamAnonymousRecord(this);
@@ -272,8 +270,13 @@ namespace DeepStreamNet
             var topic = Topic.RECORD;
             var isAck = false;
 
-            EventHandler<RecordReceivedArgs> recHandler = null;
-            recHandler = (s, e) =>
+            Connection.RecordReceived += recHandler;
+
+            isAck = await Connection.SendWithAckAsync(topic, Action.CREATEORREAD, Action.SUBSCRIBE, identifier, Options.RecordReadAckTimeout).ConfigureAwait(false);
+
+            return await tcs.Task.ConfigureAwait(false);
+
+            void recHandler(object sender, RecordReceivedArgs e)
             {
                 if (isAck && e.Topic == topic && e.Action == Action.READ && e.Identifier == identifier)
                 {
@@ -290,13 +293,7 @@ namespace DeepStreamNet
                         tcs.TrySetResult(new DeepStreamRecordObject(e.Identifier, e.Version, (JObject)e.Data));
                     }
                 }
-            };
-
-            Connection.RecordReceived += recHandler;
-
-            isAck = await Connection.SendWithAckAsync(topic, Action.CREATEORREAD, Action.SUBSCRIBE, identifier, Options.RecordReadAckTimeout).ConfigureAwait(false);
-
-            return await tcs.Task.ConfigureAwait(false);
+            }
         }
 
         bool IsRecordTracked(IDeepStreamRecord record) => records.Contains(record);
@@ -389,7 +386,7 @@ namespace DeepStreamNet
 
         void Dispose(bool disposing)
         {
-            if(disposing)
+            if (disposing)
             {
                 Connection.RecordUpdated += Con_RecordUpdated;
                 Connection.RecordPatched += Con_RecordPatched;

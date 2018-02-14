@@ -103,10 +103,10 @@ namespace DeepStreamNet
             await Connection.SendWithAckAsync(Topic.RPC, Action.SUBSCRIBE, Action.ACK, procedureName, Options.RpcAckTimeout).ConfigureAwait(false);
             remoteProcedures.Add(new RemoteProcedure(procedureName, procedure));
 
-            return new AsyncDisposableAction(async () =>
+            return new AsyncDisposableAction(() =>
             {
                 remoteProcedures.RemoveWhere(w => w.Name == procedureName);
-                await Connection.SendWithAckAsync(Topic.RPC, Action.UNSUBSCRIBE, Action.ACK, procedureName, Options.RpcAckTimeout).ConfigureAwait(false);
+                return Connection.SendWithAckAsync(Topic.RPC, Action.UNSUBSCRIBE, Action.ACK, procedureName, Options.RpcAckTimeout);
             });
         }
 
@@ -119,10 +119,14 @@ namespace DeepStreamNet
 
             var uid = Utils.CreateUid();
 
-            EventHandler<RemoteProcedureMessageArgs> ackHandler = null;
-            EventHandler<ErrorArgs> errorHandler = null;
+            Connection.RemoteProcedureResultReceived += ackHandler;
+            Connection.Error += errorHandler;
 
-            ackHandler = (s, e) =>
+            await SendWithAckAsync(Topic.RPC, Action.REQUEST, Action.ACK, procedureName, uid, parameter, Options.RpcAckTimeout).ConfigureAwait(false);
+
+            return await tcs.Task.ConfigureAwait(false);
+
+            void ackHandler(object sender, RemoteProcedureMessageArgs e)
             {
                 if (e.Uid != uid || e.Identifier != procedureName)
                     return;
@@ -146,9 +150,9 @@ namespace DeepStreamNet
                 {
                     tcs.TrySetException(new DeepStreamException("Wrong datatype received for " + procedureName, ex));
                 }
-            };
+            }
 
-            errorHandler = (s, e) =>
+            void errorHandler(object sender, ErrorArgs e)
             {
                 if (e.Message != procedureName)
                     return;
@@ -157,61 +161,13 @@ namespace DeepStreamNet
                 Connection.RemoteProcedureResultReceived -= ackHandler;
 
                 tcs.TrySetException(new DeepStreamException(e.Error + " | " + e.Message));
-            };
-
-            Connection.RemoteProcedureResultReceived += ackHandler;
-            Connection.Error += errorHandler;
-
-            await SendWithAckAsync(Topic.RPC, Action.REQUEST, Action.ACK, procedureName, uid, parameter, Options.RpcAckTimeout).ConfigureAwait(false);
-
-            return await tcs.Task.ConfigureAwait(false);
+            }
         }
 
         Task<bool> SendWithAckAsync<T>(Topic topic, Action action, Action expectedReceivedAction, string identifier, string uid, T parameter, int ackTimeout)
         {
             var tcs = new TaskCompletionSource<bool>();
-
-            EventHandler<AcknoledgedArgs> ackHandler = null;
-            EventHandler<ErrorArgs> errorHandler = null;
-            EventHandler timerHandler = null;
             var timer = new AckTimer(ackTimeout);
-
-            ackHandler = (s, e) =>
-            {
-                if (e is AcknoledgedWithUidArgs args && args.Topic == topic && args.Action == expectedReceivedAction && args.Identifier == identifier && args.Uid == uid)
-                    tcs.TrySetResult(true);
-
-                if (tcs.Task.IsCompleted)
-                {
-                    timer.Elapsed -= timerHandler;
-                    timer.Dispose();
-                    Connection.Acknoledged -= ackHandler;
-                    Connection.Error -= errorHandler;
-                }
-            };
-
-            errorHandler = (s, e) =>
-            {
-                if (e.Topic == Topic.RPC && e.Error == Constants.Errors.NO_RPC_PROVIDER)
-                {
-                    timer.Elapsed -= timerHandler;
-                    timer.Dispose();
-                    Connection.Acknoledged -= ackHandler;
-                    Connection.Error -= errorHandler;
-
-                    tcs.TrySetException(new DeepStreamException("No RPC Provider found for " + e.Message));
-                }
-            };
-
-            timerHandler = (s, e) =>
-            {
-                timer.Elapsed -= timerHandler;
-                timer.Dispose();
-                Connection.Acknoledged -= ackHandler;
-                Connection.Error -= errorHandler;
-                tcs.TrySetException(new DeepStreamException(Constants.Errors.ACK_TIMEOUT));
-            };
-
             timer.Elapsed += timerHandler;
 
             var command = Utils.BuildCommand(topic, action, identifier, uid, Utils.ConvertAndPrefixData(parameter));
@@ -224,6 +180,42 @@ namespace DeepStreamNet
             Connection.Send(command);
 
             return tcs.Task;
+
+            void ackHandler(object sender, AcknoledgedArgs e)
+            {
+                if (e is AcknoledgedWithUidArgs args && args.Topic == topic && args.Action == expectedReceivedAction && args.Identifier == identifier && args.Uid == uid)
+                    tcs.TrySetResult(true);
+
+                if (tcs.Task.IsCompleted)
+                {
+                    timer.Elapsed -= timerHandler;
+                    timer.Dispose();
+                    Connection.Acknoledged -= ackHandler;
+                    Connection.Error -= errorHandler;
+                }
+            }
+
+            void errorHandler(object sender, ErrorArgs e)
+            {
+                if (e.Topic == Topic.RPC && e.Error == Constants.Errors.NO_RPC_PROVIDER)
+                {
+                    timer.Elapsed -= timerHandler;
+                    timer.Dispose();
+                    Connection.Acknoledged -= ackHandler;
+                    Connection.Error -= errorHandler;
+
+                    tcs.TrySetException(new DeepStreamException("No RPC Provider found for " + e.Message));
+                }
+            }
+
+            void timerHandler(object sender, EventArgs e)
+            {
+                timer.Elapsed -= timerHandler;
+                timer.Dispose();
+                Connection.Acknoledged -= ackHandler;
+                Connection.Error -= errorHandler;
+                tcs.TrySetException(new DeepStreamException(Constants.Errors.ACK_TIMEOUT));
+            }
         }
 
         public void Dispose()

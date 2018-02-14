@@ -7,9 +7,6 @@
         {
         }
 
-        protected override Topic ListenerTopic
-        {
-            get { return Topic.RECORD; }
-        }
+        protected override Topic ListenerTopic => Topic.RECORD;
     }
 }

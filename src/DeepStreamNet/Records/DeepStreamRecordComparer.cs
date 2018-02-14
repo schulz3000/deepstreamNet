@@ -15,7 +15,7 @@ namespace DeepStreamNet
             }
 
             // If one object null the return false
-            if (ReferenceEquals(x, null) || ReferenceEquals(y, null))
+            if (x is null || y is null)
             {
                 return false;
             }
@@ -24,8 +24,6 @@ namespace DeepStreamNet
         }
 
         public int GetHashCode(IDeepStreamRecordWrapper obj)
-        {
-            return obj.RecordName.GetHashCode();
-        }
+            => obj.RecordName.GetHashCode();
     }
 }

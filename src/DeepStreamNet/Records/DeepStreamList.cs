@@ -8,7 +8,7 @@ using System.Linq;
 
 namespace DeepStreamNet
 {
-    class DeepStreamList : IDeepStreamListWrapper, IDeepStreamList
+    class DeepStreamList : IDeepStreamListWrapper
     {
         public string ListName { get; }
 
@@ -37,10 +37,7 @@ namespace DeepStreamNet
             innerList.AddRange(initialList);
         }
 
-        public int IndexOf(string item)
-        {
-            return innerList.IndexOf(item);
-        }
+        public int IndexOf(string item) => innerList.IndexOf(item);
 
         public void Insert(int index, string item)
         {
@@ -68,15 +65,9 @@ namespace DeepStreamNet
             CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
         }
 
-        public bool Contains(string item)
-        {
-            return innerList.Contains(item);
-        }
+        public bool Contains(string item) => innerList.Contains(item);
 
-        public void CopyTo(string[] array, int arrayIndex)
-        {
-            innerList.CopyTo(array, arrayIndex);
-        }
+        public void CopyTo(string[] array, int arrayIndex) => innerList.CopyTo(array, arrayIndex);
 
         public bool Remove(string item)
         {
@@ -90,15 +81,9 @@ namespace DeepStreamNet
             return result;
         }
 
-        public IEnumerator<string> GetEnumerator()
-        {
-            return innerList.GetEnumerator();
-        }
+        public IEnumerator<string> GetEnumerator() => innerList.GetEnumerator();
 
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return innerList.GetEnumerator();
-        }
+        IEnumerator IEnumerable.GetEnumerator() => innerList.GetEnumerator();
 
         public void Update(JToken list)
         {

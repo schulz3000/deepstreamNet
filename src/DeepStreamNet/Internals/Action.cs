@@ -51,10 +51,8 @@ namespace DeepStreamNet
 
         public override bool Equals(object obj)
         {
-            if (obj == null || !(obj is Action))
+            if (obj == null || !(obj is Action other))
                 return false;
-
-            var other = (Action)obj;
 
             return string.Equals(Identifier, other.Identifier, StringComparison.Ordinal);
         }

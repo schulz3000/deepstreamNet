@@ -140,7 +140,7 @@ namespace DeepStreamNet
         {
             // ...then, notify about it
             // ReSharper disable once ExplicitCallerInfoArgument
-            RaisePropertyChanged($"{PropertyName}{(PropertyName != null ? "[]." : null)}{e.PropertyName}");
+            RaisePropertyChanged(PropertyName+(PropertyName != null ? "[]." : string.Empty)+e.PropertyName);
         }
 
         /// <summary>

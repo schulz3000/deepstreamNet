@@ -15,10 +15,12 @@ namespace DeepStreamNet
 
         public Task DisposeAsync() => DisposeAsync(true);
 
-        async Task DisposeAsync(bool disposing)
+        Task DisposeAsync(bool disposing)
         {
             if (disposing)
-                await _asyncAction().ConfigureAwait(false);
+                return _asyncAction();
+
+            return Task.FromResult(0);
         }
     }
 }

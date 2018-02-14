@@ -42,7 +42,7 @@ namespace DeepStreamNet
             if (path.EndsWith("]", StringComparison.Ordinal) && Data.SelectToken(path) == null)
             {
                 var arrayParentPath = path.Substring(0, path.Length - (path.LastIndexOf("[", StringComparison.Ordinal) + 1));
-                if (path.StartsWith("[") && path.EndsWith("]"))
+                if (path.StartsWith("[", StringComparison.Ordinal) && path.EndsWith("]", StringComparison.Ordinal))
                 {
                     arrayParentPath = String.Empty;
                 }

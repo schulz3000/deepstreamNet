@@ -30,13 +30,11 @@ namespace DeepStreamNet
         }
 
         void OnPropertyChanged(object sender, PropertyChangedEventArgs args)
-        {
-            PropertyChanged?.Invoke(Collection, args);
-        }
+            => PropertyChanged?.Invoke(Collection, args);
 
         void Collection_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
-            if ((e.Action == NotifyCollectionChangedAction.Replace || e.Action == NotifyCollectionChangedAction.Remove || e.Action == NotifyCollectionChangedAction.Reset) && e.OldItems!=null)
+            if ((e.Action == NotifyCollectionChangedAction.Replace || e.Action == NotifyCollectionChangedAction.Remove || e.Action == NotifyCollectionChangedAction.Reset) && e.OldItems != null)
             {
                 foreach (var item in e.OldItems)
                 {
@@ -50,7 +48,7 @@ namespace DeepStreamNet
                 }
             }
 
-            if ((e.Action == NotifyCollectionChangedAction.Add || e.Action == NotifyCollectionChangedAction.Replace) && e.NewItems!=null)
+            if ((e.Action == NotifyCollectionChangedAction.Add || e.Action == NotifyCollectionChangedAction.Replace) && e.NewItems != null)
             {
                 foreach (var item in e.NewItems.OfType<JContainer>().Where(w => w.Type == JTokenType.Array || w.Type == JTokenType.Object))
                 {
@@ -60,7 +58,7 @@ namespace DeepStreamNet
                 }
             }
 
-            if ((e.Action != NotifyCollectionChangedAction.Add && e.Action != NotifyCollectionChangedAction.Replace) || e.NewItems==null)
+            if ((e.Action != NotifyCollectionChangedAction.Add && e.Action != NotifyCollectionChangedAction.Replace) || e.NewItems == null)
                 return;
 
             foreach (var item in e.NewItems.OfType<JValue>())
@@ -90,8 +88,6 @@ namespace DeepStreamNet
         }
 
         public static JsonNetChangeListener Create(INotifyCollectionChanged collection)
-        {
-            return new JsonNetChangeListener(collection);
-        }
+            => new JsonNetChangeListener(collection);
     }
 }

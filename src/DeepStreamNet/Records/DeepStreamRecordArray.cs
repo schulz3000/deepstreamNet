@@ -26,6 +26,7 @@ namespace DeepStreamNet
                 result = Data.ToArray();
                 return true;
             }
+
             return base.TryConvert(binder, out result);
         }
 
@@ -35,14 +36,8 @@ namespace DeepStreamNet
             return true;
         }
 
-        public IEnumerator<object> GetEnumerator()
-        {
-            return Data.GetEnumerator();
-        }
+        public IEnumerator<object> GetEnumerator() => Data.GetEnumerator();
 
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return Data.GetEnumerator();
-        }
+        IEnumerator IEnumerable.GetEnumerator() => Data.GetEnumerator();
     }
 }

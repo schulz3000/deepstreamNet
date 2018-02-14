@@ -32,10 +32,8 @@ namespace DeepStreamNet
 
         public override bool Equals(object obj)
         {
-            if (obj == null || !(obj is Topic))
+            if (obj == null || !(obj is Topic other))
                 return false;
-
-            var other = (Topic)obj;
 
             return string.Equals(Identifier, other.Identifier, StringComparison.Ordinal);
         }

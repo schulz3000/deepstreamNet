@@ -19,7 +19,7 @@ namespace DeepStreamNet.Tests
             using (var client = await TestHelper.GetClientAsync())
             {
                 var record = client.Records.GetAnonymousRecord();
-                await Assert.ThrowsAsync<ArgumentNullException>("name",()=> record.SetNameAsync(null)); 
+                await Assert.ThrowsAsync<ArgumentNullException>("name", () => record.SetNameAsync(null));
             }
         }
 

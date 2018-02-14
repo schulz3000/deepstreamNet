@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace DeepStreamNet
 {
-    class DeepStreamAnonymousRecord : IDeepStreamAnonymousRecord, IDeepStreamRecord
+    class DeepStreamAnonymousRecord : IDeepStreamAnonymousRecord
     {
         readonly DeepStreamRecords Context;
         IDeepStreamRecord innerRecord;
@@ -27,7 +27,6 @@ namespace DeepStreamNet
         public dynamic this[object key]
         {
             get => innerRecord[key];
-
             set => innerRecord[key] = value;
         }
 
@@ -40,8 +39,6 @@ namespace DeepStreamNet
         }
 
         public DynamicMetaObject GetMetaObject(Expression parameter)
-        {
-            return innerRecord.GetMetaObject(parameter);
-        }
+            => innerRecord.GetMetaObject(parameter);
     }
 }

@@ -44,12 +44,6 @@ namespace DeepStreamNet
         {
             ThrowIfConnectionNotOpened();
 
-            EventHandler<EventReceivedArgs> handler = (s, e) =>
-            {
-                if (string.Equals(e.EventName, eventName, StringComparison.Ordinal))
-                    data(e.Data);
-            };
-
             Connection.EventReceived += handler;
 
             if (!eventsDict.ContainsKey(eventName))
@@ -62,15 +56,23 @@ namespace DeepStreamNet
                 eventsDict[eventName]++;
             }
 
-            return new AsyncDisposableAction(async () =>
+            return new AsyncDisposableAction(() =>
             {
                 eventsDict[eventName]--;
                 Connection.EventReceived -= handler;
                 if (eventsDict[eventName] == 0)
                 {
-                    await UnSubscribeAsync(eventName).ConfigureAwait(false);
+                    return UnSubscribeAsync(eventName);
                 }
+
+                return Task.FromResult(0);
             });
+
+            void handler(object sender, EventReceivedArgs e)
+            {
+                if (string.Equals(e.EventName, eventName, StringComparison.Ordinal))
+                    data(e.Data);
+            }
         }
 
         public Task<IAsyncDisposable> ListenAsync(string pattern, Action<string, bool, IListenerResponse> listener)

@@ -90,28 +90,26 @@ namespace DeepStreamNet
         {
             var tcs = new TaskCompletionSource<bool>();
 
-            EventHandler openHandler = null;
-            EventHandler<ErrorEventArgs> errorHandler = null;
-
-            openHandler = (s, e) =>
-            {
-                client.Opened -= openHandler;
-                client.Error -= errorHandler;
-                tcs.SetResult(true);
-            };
             client.Opened += openHandler;
-            
-            errorHandler = (s, e) =>
-            {
-                client.Opened -= openHandler;
-                client.Error -= errorHandler;
-                tcs.TrySetException(e.Exception);
-            };
             client.Error += errorHandler;
 
             client.Open();
 
             return tcs.Task;
+
+            void openHandler(object sender, EventArgs e)
+            {
+                client.Opened -= openHandler;
+                client.Error -= errorHandler;
+                tcs.SetResult(true);
+            }
+
+            void errorHandler(object sender, ErrorEventArgs e)
+            {
+                client.Opened -= openHandler;
+                client.Error -= errorHandler;
+                tcs.TrySetException(e.Exception);
+            }
         }
 
         public void SendLocal(string command)
@@ -134,47 +132,7 @@ namespace DeepStreamNet
         {
             var tcs = new TaskCompletionSource<bool>();
 
-            EventHandler<AcknoledgedArgs> ackHandler = null;
-            EventHandler<ErrorArgs> errorHandler = null;
-            EventHandler timerHandler = null;
             var timer = new AckTimer(ackTimeout);
-
-            ackHandler = (s, e) =>
-            {
-                if (e.Topic == topic && e.Action == expectedReceivedAction && e.Identifier == identifier)
-                    tcs.TrySetResult(true);
-                else if (e.Topic == Topic.AUTH)
-                    tcs.TrySetResult(true);
-
-                if (tcs.Task.IsCompleted)
-                {
-                    timer.Elapsed -= timerHandler;
-                    timer.Dispose();
-                    Acknoledged -= ackHandler;
-                    Error -= errorHandler;
-                }
-            };
-
-            errorHandler = (s, e) =>
-            {
-                timer.Elapsed -= timerHandler;
-                timer.Dispose();
-                Acknoledged -= ackHandler;
-                Error -= errorHandler;
-
-                if (e.Topic == topic && e.Action == Action.ERROR)
-                    tcs.TrySetException(new DeepStreamException(e.Error, e.Message));
-            };
-
-            timerHandler = (s, e) =>
-            {
-                timer.Elapsed -= timerHandler;
-                timer.Dispose();
-                Acknoledged -= ackHandler;
-                Error -= errorHandler;
-
-                tcs.TrySetException(new DeepStreamException(Constants.Errors.ACK_TIMEOUT));
-            };
 
             var parameter = new List<string>();
 
@@ -199,6 +157,43 @@ namespace DeepStreamNet
             Send(command);
 
             return tcs.Task;
+
+            void ackHandler(object sender, AcknoledgedArgs e)
+            {
+                if (e.Topic == topic && e.Action == expectedReceivedAction && e.Identifier == identifier)
+                    tcs.TrySetResult(true);
+                else if (e.Topic == Topic.AUTH)
+                    tcs.TrySetResult(true);
+
+                if (tcs.Task.IsCompleted)
+                {
+                    timer.Elapsed -= timerHandler;
+                    timer.Dispose();
+                    Acknoledged -= ackHandler;
+                    Error -= errorHandler;
+                }
+            }
+
+            void errorHandler(object sender, ErrorArgs e)
+            {
+                timer.Elapsed -= timerHandler;
+                timer.Dispose();
+                Acknoledged -= ackHandler;
+                Error -= errorHandler;
+
+                if (e.Topic == topic && e.Action == Action.ERROR)
+                    tcs.TrySetException(new DeepStreamException(e.Error, e.Message));
+            }
+
+            void timerHandler(object sender, EventArgs e)
+            {
+                timer.Elapsed -= timerHandler;
+                timer.Dispose();
+                Acknoledged -= ackHandler;
+                Error -= errorHandler;
+
+                tcs.TrySetException(new DeepStreamException(Constants.Errors.ACK_TIMEOUT));
+            }
         }
 
         public void StartMessageLoop()

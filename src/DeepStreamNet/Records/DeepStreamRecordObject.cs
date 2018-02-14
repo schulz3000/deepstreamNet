@@ -28,19 +28,12 @@ namespace DeepStreamNet
         }
 
         public override bool TrySetMember(SetMemberBinder binder, object value)
-        {
-            return SetPropertyValue(binder.Name, JToken.FromObject(value));
-        }
+            => SetPropertyValue(binder.Name, JToken.FromObject(value));
 
         public override IEnumerable<string> GetDynamicMemberNames()
-        {
-            return Data.Properties().Select(s => s.Name).ToList();
-        }
+            => Data.Properties().Select(s => s.Name).ToList();
 
-        protected JToken GetPropertyValue(object key)
-        {
-            return Data[key];
-        }
+        protected JToken GetPropertyValue(object key) => Data[key];
 
         protected bool SetPropertyValue(object key, JToken value)
         {

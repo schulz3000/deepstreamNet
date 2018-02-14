@@ -29,18 +29,17 @@ namespace DeepStreamNet
         {
             var tcs = new TaskCompletionSource<IEnumerable<string>>();
 
-            EventHandler<PresenceGetAllReceivedArgs> handler = null;
-            handler = (s, e) =>
-            {
-                Connection.PresenceGetAllReceived -= handler;
-                tcs.TrySetResult(e.Usernames);
-            };
-
             Connection.PresenceGetAllReceived += handler;
 
             Connection.Send(Utils.BuildCommand(Topic.PRESENCE, Action.QUERY, Action.QUERY));
 
             return tcs.Task;
+
+            void handler(object sender, PresenceGetAllReceivedArgs e)
+            {
+                Connection.PresenceGetAllReceived -= handler;
+                tcs.TrySetResult(e.Usernames);
+            }
         }
 
         public Task<IDictionary<string, bool>> GetAllAsync(string[] users)
@@ -50,18 +49,17 @@ namespace DeepStreamNet
 
             var tcs = new TaskCompletionSource<IDictionary<string, bool>>();
 
-            EventHandler<PresenceGetAllWithStatusReceivedArgs> handler = null;
-            handler = (s, e) =>
+            Connection.PresenceGetAllWithStatusReceived += handler;
+
+            Connection.Send(Utils.BuildCommand(Topic.PRESENCE, Action.QUERY, Action.QUERY, users));
+
+            return tcs.Task;
+
+            void handler(object sender, PresenceGetAllWithStatusReceivedArgs e)
             {
                 Connection.PresenceGetAllWithStatusReceived -= handler;
                 tcs.TrySetResult(e.UsernamesWithStatus);
-            };
-
-            Connection.PresenceGetAllWithStatusReceived += handler;
-
-            Connection.Send(Utils.BuildCommand(Topic.PRESENCE, Action.QUERY, Action.QUERY,users));
-
-            return tcs.Task;
+            }
         }
 
         public Task<IAsyncDisposable> SubscribeAsync(Action<string, bool> listener)
@@ -73,10 +71,7 @@ namespace DeepStreamNet
             });
         }
 
-        public Task<IAsyncDisposable> SubscribeAsync(Func<string, bool, Task> listener)
-        {
-            return InnerSubscribeAsync(listener);
-        }
+        public Task<IAsyncDisposable> SubscribeAsync(Func<string, bool, Task> listener) => InnerSubscribeAsync(listener);
 
         async Task<IAsyncDisposable> InnerSubscribeAsync(Func<string, bool, Task> listener)
         {

@@ -139,19 +139,6 @@ namespace DeepStreamNet
                 return challengeResult.Value;
             }
 
-            EventHandler<ErrorArgs> errorHandler = null;
-
-            errorHandler = (s, e) =>
-            {
-                if (e.Action != Action.ERROR)
-                    return;
-
-                Connection.Error -= errorHandler;
-                Connection.State = ConnectionState.AWAITING_AUTHENTICATION;
-
-                tcs.TrySetException(new DeepStreamException(e.Error, e.Message));
-            };
-
             Connection.Error += errorHandler;
 
             Connection.State = ConnectionState.AUTHENTICATING;
@@ -169,14 +156,28 @@ namespace DeepStreamNet
             }
 
             return result;
+
+            void errorHandler(object sender, ErrorArgs e)
+            {
+                if (e.Action != Action.ERROR)
+                    return;
+
+                Connection.Error -= errorHandler;
+                Connection.State = ConnectionState.AWAITING_AUTHENTICATION;
+
+                tcs.TrySetException(new DeepStreamException(e.Error, e.Message));
+            }
         }
 
         Task<bool?> RegisterAuthChallenge(string credentials)
         {
             var tcs = new TaskCompletionSource<bool?>();
 
-            EventHandler<ChallengeEventArgs> handler = null;
-            handler = async (s, e) =>
+            Connection.ChallengeReceived += handler;
+
+            return tcs.Task;
+
+            async void handler(object sender, ChallengeEventArgs e)
             {
                 if (e.Action == Action.CHALLENGE)
                 {
@@ -192,11 +193,7 @@ namespace DeepStreamNet
                     Connection.ChallengeReceived -= handler;
                     tcs.SetResult(null);
                 }
-            };
-
-            Connection.ChallengeReceived += handler;
-
-            return tcs.Task;
+            }
         }
 
         void Connection_PingReceived(object sender, EventArgs e) => Connection.Send(Utils.BuildCommand(Topic.CONNECTION, Action.PONG));
