@@ -23,6 +23,12 @@ namespace DeepStreamNet
 
         protected T Data;
 
+        public override event PropertyChangingEventHandler PropertyChanging
+        {
+            add { Listener.PropertyChanging += value; }
+            remove { Listener.PropertyChanging -= value; }
+        }
+
         public override event PropertyChangedEventHandler PropertyChanged
         {
             add { Listener.PropertyChanged += value; }

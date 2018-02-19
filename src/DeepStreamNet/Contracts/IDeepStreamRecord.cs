@@ -6,7 +6,7 @@ namespace DeepStreamNet.Contracts
     /// <summary>
     /// 
     /// </summary>
-    public interface IDeepStreamRecord : IDynamicMetaObjectProvider, /*INotifyPropertyChanging,*/ INotifyPropertyChanged
+    public interface IDeepStreamRecord : IDynamicMetaObjectProvider, INotifyPropertyChanging, INotifyPropertyChanged
     {
         /// <summary>
         /// Name of record

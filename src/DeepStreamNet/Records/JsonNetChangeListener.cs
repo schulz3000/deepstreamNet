@@ -8,12 +8,13 @@ using System.Linq;
 
 namespace DeepStreamNet
 {
-    class JsonNetChangeListener : INotifyPropertyChanged, IDisposable
+    class JsonNetChangeListener : INotifyPropertyChanged, INotifyPropertyChanging, IDisposable
     {
         readonly INotifyCollectionChanged Collection;
         readonly HashSet<JsonNetChangeListener> subListener = new HashSet<JsonNetChangeListener>();
 
         public event PropertyChangedEventHandler PropertyChanged;
+        public event PropertyChangingEventHandler PropertyChanging;
 
         protected JsonNetChangeListener(INotifyCollectionChanged collection)
         {
@@ -23,11 +24,15 @@ namespace DeepStreamNet
             {
                 var nlistener = Create((INotifyCollectionChanged)item.Value);
                 subListener.Add(nlistener);
+                nlistener.PropertyChanging += OnPropertyChanging;
                 nlistener.PropertyChanged += OnPropertyChanged;
             }
 
             Collection.CollectionChanged += Collection_CollectionChanged;
         }
+
+        void OnPropertyChanging(object sender, PropertyChangingEventArgs args)
+            => PropertyChanging?.Invoke(Collection, args);
 
         void OnPropertyChanged(object sender, PropertyChangedEventArgs args)
             => PropertyChanged?.Invoke(Collection, args);
@@ -41,6 +46,7 @@ namespace DeepStreamNet
                     if (subListener.Contains(item))
                     {
                         var notify = subListener.FirstOrDefault(f => f == item);
+                        notify.PropertyChanging -= OnPropertyChanging;
                         notify.PropertyChanged -= OnPropertyChanged;
                         subListener.Remove(notify);
                         notify.Dispose();
@@ -54,6 +60,7 @@ namespace DeepStreamNet
                 {
                     var nlistener = Create((INotifyCollectionChanged)item);
                     subListener.Add(nlistener);
+                    nlistener.PropertyChanging += OnPropertyChanging;
                     nlistener.PropertyChanged += OnPropertyChanged;
                 }
             }
@@ -82,6 +89,7 @@ namespace DeepStreamNet
             Collection.CollectionChanged -= Collection_CollectionChanged;
             foreach (var item in subListener)
             {
+                item.PropertyChanging -= OnPropertyChanging;
                 item.PropertyChanged -= OnPropertyChanged;
                 item.Dispose();
             }

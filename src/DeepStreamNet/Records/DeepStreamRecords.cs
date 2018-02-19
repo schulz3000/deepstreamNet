@@ -30,7 +30,7 @@ namespace DeepStreamNet
             var record = records.FirstOrDefault(f => f.RecordName == e.Identifier);
             if (record == null)
                 return;
-
+            
             record.PropertyChanged -= Record_PropertyChanged;
             record.Patch(e.Property, e.Data);
             record.PropertyChanged += Record_PropertyChanged;
@@ -41,7 +41,7 @@ namespace DeepStreamNet
             var record = records.FirstOrDefault(f => f.RecordName == e.Identifier);
             if (record == null)
                 return;
-
+            
             record.PropertyChanged -= Record_PropertyChanged;
             record.Update(e.Data);
             record.PropertyChanged += Record_PropertyChanged;
@@ -79,7 +79,7 @@ namespace DeepStreamNet
             var result = await InnerGetRecordAsync<JObject>(name).ConfigureAwait(false);
 
             records.Add(result);
-
+            
             result.PropertyChanged += Record_PropertyChanged;
 
             return result;
@@ -97,7 +97,7 @@ namespace DeepStreamNet
             var innerRecord = await InnerGetRecordAsync<JArray>(name).ConfigureAwait(false);
 
             records.Add(innerRecord);
-
+            
             innerRecord.PropertyChanged += Record_PropertyChanged;
 
             list = new DeepStreamList(name, JToken.FromObject(innerRecord).ToObject<List<string>>());
@@ -144,7 +144,7 @@ namespace DeepStreamNet
                 throw new DeepStreamException("Record not tracked");
 
             var wrapper = record as IDeepStreamRecordWrapper;
-
+            
             record.PropertyChanged -= Record_PropertyChanged;
 
             if (await Connection.SendWithAckAsync(Topic.RECORD, Action.UNSUBSCRIBE, Action.UNSUBSCRIBE, wrapper.RecordName, Options.SubscriptionTimeout).ConfigureAwait(false))
@@ -163,7 +163,7 @@ namespace DeepStreamNet
                 throw new DeepStreamException("Record not tracked");
 
             var wrapper = record as IDeepStreamRecordWrapper;
-
+            
             record.PropertyChanged -= Record_PropertyChanged;
 
             if (await Connection.SendWithAckAsync(Topic.RECORD, Action.DELETE, Action.DELETE, wrapper.RecordName, Options.RecordDeleteTimeout).ConfigureAwait(false))
@@ -346,7 +346,7 @@ namespace DeepStreamNet
                 throw new ArgumentNullException(nameof(item));
 
             var wrapper = record as IDeepStreamRecordWrapper;
-
+            
             record.PropertyChanged -= Record_PropertyChanged;
             wrapper.Update(JToken.FromObject(item));
             record.PropertyChanged += Record_PropertyChanged;
@@ -368,7 +368,7 @@ namespace DeepStreamNet
                 throw new ArgumentNullException(nameof(item));
 
             var wrapper = record as IDeepStreamRecordWrapper;
-
+            
             record.PropertyChanged -= Record_PropertyChanged;
             wrapper.Patch(path, JToken.FromObject(item));
             record.PropertyChanged += Record_PropertyChanged;

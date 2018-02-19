@@ -1,5 +1,4 @@
 ﻿using DeepStreamNet.Contracts;
-using Newtonsoft.Json.Linq;
 using System.ComponentModel;
 using System.Dynamic;
 
@@ -18,6 +17,8 @@ namespace DeepStreamNet
         public abstract dynamic this[object key] { get; set; }
 
         public string RecordName { get; }
+
+        public abstract event PropertyChangingEventHandler PropertyChanging;
 
         public abstract event PropertyChangedEventHandler PropertyChanged;
 

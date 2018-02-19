@@ -32,6 +32,12 @@ namespace DeepStreamNet
 
         public string RecordName => innerRecord.RecordName;
 
+        public event PropertyChangingEventHandler PropertyChanging
+        {
+            add { innerRecord.PropertyChanging += value; }
+            remove { innerRecord.PropertyChanging -= value; }
+        }
+
         public event PropertyChangedEventHandler PropertyChanged
         {
             add { innerRecord.PropertyChanged += value; }
