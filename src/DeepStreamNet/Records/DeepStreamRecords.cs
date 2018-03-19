@@ -388,9 +388,9 @@ namespace DeepStreamNet
         {
             if (disposing)
             {
-                Connection.RecordUpdated += Con_RecordUpdated;
-                Connection.RecordPatched += Con_RecordPatched;
-                Connection.RecordListenerChanged += Connection_RecordListenerChanged;
+                Connection.RecordUpdated -= Con_RecordUpdated;
+                Connection.RecordPatched -= Con_RecordPatched;
+                Connection.RecordListenerChanged -= Connection_RecordListenerChanged;
             }
         }
     }
