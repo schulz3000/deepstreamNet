@@ -18,15 +18,10 @@ namespace DeepStreamNet.Tests.Helper
         {
             get
             {
-                if (config == null)
-                {
-                    config = new ConfigurationBuilder()
+                return config ?? (config = new ConfigurationBuilder()
                       .AddJsonFile("testsettings.json")
                       .AddEnvironmentVariables("ds_")
-                      .Build();
-                }
-
-                return config;
+                      .Build());
             }
         }
     }

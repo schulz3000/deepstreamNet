@@ -17,82 +17,29 @@ namespace DeepStreamNet.Tests
             Assert.Equal($"E{recordSeperator}EVT{recordSeperator}abc{recordSeperator}def{groupSeperator}", cmd);
         }
 
-        [Fact]
-        public void IsNumericIntTest()
+        [Theory]
+        [InlineData(typeof(int))]
+        [InlineData(typeof(double))]
+        [InlineData(typeof(decimal))]
+        [InlineData(typeof(short))]
+        [InlineData(typeof(byte))]
+        [InlineData(typeof(int?))]
+        [InlineData(typeof(double?))]
+        [InlineData(typeof(decimal?))]
+        [InlineData(typeof(short?))]
+        [InlineData(typeof(byte?))]
+        public void IsNumericTrue(Type type)
         {
-            Assert.True(Utils.IsNumeric(typeof(int)));
+            Assert.True(Utils.IsNumeric(type));
         }
 
-        [Fact]
-        public void IsNumericDoubleTest()
+        [Theory]
+        [InlineData(typeof(string))]
+        [InlineData(null)]
+        [InlineData(typeof(Guid?))]
+        public void IsNumericFalse(Type type)
         {
-            Assert.True(Utils.IsNumeric(typeof(double)));
-        }
-
-        [Fact]
-        public void IsNumericDecimalTest()
-        {
-            Assert.True(Utils.IsNumeric(typeof(decimal)));
-        }
-
-        [Fact]
-        public void IsNumericShortTest()
-        {
-            Assert.True(Utils.IsNumeric(typeof(short)));
-        }
-
-        [Fact]
-        public void IsNumericByteTest()
-        {
-            Assert.True(Utils.IsNumeric(typeof(byte)));
-        }
-
-        [Fact]
-        public void IsNumericNullableIntTest()
-        {
-            Assert.True(Utils.IsNumeric(typeof(int?)));
-        }
-
-        [Fact]
-        public void IsNumericNullableDoubleTest()
-        {
-            Assert.True(Utils.IsNumeric(typeof(double?)));
-        }
-
-        [Fact]
-        public void IsNumericNullableDecimalTest()
-        {
-            Assert.True(Utils.IsNumeric(typeof(decimal?)));
-        }
-
-        [Fact]
-        public void IsNumericNullableShortTest()
-        {
-            Assert.True(Utils.IsNumeric(typeof(short?)));
-        }
-
-        [Fact]
-        public void IsNumericNullableByteTest()
-        {
-            Assert.True(Utils.IsNumeric(typeof(byte?)));
-        }
-
-        [Fact]
-        public void IsNumericStringTest()
-        {
-            Assert.False(Utils.IsNumeric(typeof(string)));
-        }
-
-        [Fact]
-        public void IsNumericNullTest()
-        {
-            Assert.False(Utils.IsNumeric(null));
-        }
-
-        [Fact]
-        public void IsNumericNullableGuidTest()
-        {
-            Assert.False(Utils.IsNumeric(typeof(Guid?)));
+            Assert.False(Utils.IsNumeric(type));
         }
 
         [Fact]

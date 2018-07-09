@@ -6,6 +6,7 @@ namespace DeepStreamNet.Tests.Helper
     public class TestPriorityAttribute: Attribute
     {
         public int Priority { get; }
+
         public TestPriorityAttribute(int priority)
         {
             Priority = priority;

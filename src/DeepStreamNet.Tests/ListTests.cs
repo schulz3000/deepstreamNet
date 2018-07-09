@@ -22,7 +22,7 @@ namespace DeepStreamNet.Tests
         {
             using (var client = await TestHelper.GetClientAsync())
             {
-                await Assert.ThrowsAsync<ArgumentNullException>("name",()=>client.Records.GetListAsync(null));
+                await Assert.ThrowsAsync<ArgumentNullException>("name", () => client.Records.GetListAsync(null));
             }
         }
 
@@ -45,7 +45,7 @@ namespace DeepStreamNet.Tests
                 list.Add("item1");
                 list.Add("item2");
 
-                Assert.Equal(2,list.Count);
+                Assert.Equal(2, list.Count);
             }
         }
 
@@ -67,7 +67,7 @@ namespace DeepStreamNet.Tests
             using (var client = await TestHelper.GetClientAsync())
             {
                 var list = await client.Records.GetListAsync("list1");
-                Assert.True(list.Contains("item2"));                
+                Assert.True(list.Contains("item2"));
             }
         }
 
@@ -82,6 +82,7 @@ namespace DeepStreamNet.Tests
                 Assert.Equal(0, list.Count);
             }
         }
+
         [Fact, TestPriority(6)]
         public async Task TestAddingARecordToListAndListenToChanges()
         {
@@ -97,13 +98,9 @@ namespace DeepStreamNet.Tests
                 Assert.True(res);
                 using (var readClient = await TestHelper.GetClientAsync())
                 {
-
                     var listRead = await readClient.Records.GetListAsync(listKey);
                     var changes = new List<NotifyCollectionChangedEventArgs>();
-                    listRead.CollectionChanged += (sender, args) =>
-                    {
-                        changes.Add(args);
-                    };
+                    listRead.CollectionChanged += (sender, args) => changes.Add(args);
                     list.Add(rec.RecordName);
                     int time = 0;
                     while (changes.Count == 0)

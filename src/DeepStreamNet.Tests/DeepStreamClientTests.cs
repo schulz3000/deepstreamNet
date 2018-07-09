@@ -11,7 +11,7 @@ namespace DeepStreamNet.Tests
         {
             fixture.StartServer();
         }
-    
+
         [Fact]
         public void NotLoggedInTest()
         {

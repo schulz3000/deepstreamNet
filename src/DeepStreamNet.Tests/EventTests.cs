@@ -64,9 +64,9 @@ namespace DeepStreamNet.Tests
             using (var client2 = await TestHelper.GetClientAsync())
             {
                 await client1.Events.ListenAsync("test/*", (pattern, isSubscribed, response) =>
-                {                    
+                {
                     if (isSubscribed)
-                    {                       
+                    {
                         response.Accept();
                         client1.Events.Publish("test/hello", "world");
                     }
@@ -76,10 +76,7 @@ namespace DeepStreamNet.Tests
                     }
                 });
 
-                var sub = await client2.Events.SubscribeAsync("test/hello", result =>
-                {
-                    Assert.Equal("world", result);
-                });
+                var sub = await client2.Events.SubscribeAsync("test/hello", result => Assert.Equal("world", result));
 
                 await Task.Delay(500);
 
