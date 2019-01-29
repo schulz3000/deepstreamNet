@@ -1,9 +1,9 @@
-﻿using DeepStreamNet.Contracts;
-using System;
+﻿using System;
 using System.ComponentModel;
 using System.Dynamic;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
+using DeepStreamNet.Contracts;
 
 namespace DeepStreamNet
 {
@@ -42,6 +42,12 @@ namespace DeepStreamNet
         {
             add { innerRecord.PropertyChanged += value; }
             remove { innerRecord.PropertyChanged -= value; }
+        }
+
+        public event EventHandler RecordChanged
+        {
+            add { innerRecord.RecordChanged += value; }
+            remove { innerRecord.RecordChanged -= value; }
         }
 
         public DynamicMetaObject GetMetaObject(Expression parameter)

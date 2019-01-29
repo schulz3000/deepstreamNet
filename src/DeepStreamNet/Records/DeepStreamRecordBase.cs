@@ -1,6 +1,7 @@
-﻿using DeepStreamNet.Contracts;
+﻿using System;
 using System.ComponentModel;
 using System.Dynamic;
+using DeepStreamNet.Contracts;
 
 namespace DeepStreamNet
 {
@@ -21,6 +22,8 @@ namespace DeepStreamNet
         public abstract event PropertyChangingEventHandler PropertyChanging;
 
         public abstract event PropertyChangedEventHandler PropertyChanged;
+
+        public abstract event EventHandler RecordChanged;
 
         public void IncrementVersion() => RecordVersion++;
     }

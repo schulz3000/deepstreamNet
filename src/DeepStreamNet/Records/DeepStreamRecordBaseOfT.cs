@@ -1,6 +1,6 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 using Newtonsoft.Json.Linq;
-using System;
 
 namespace DeepStreamNet
 {
@@ -34,6 +34,8 @@ namespace DeepStreamNet
             add { Listener.PropertyChanged += value; }
             remove { Listener.PropertyChanged -= value; }
         }
+
+        public override event EventHandler RecordChanged;
 
         protected DeepStreamRecordBase(string name, int version, T data)
             : base(name, version)
@@ -71,6 +73,7 @@ namespace DeepStreamNet
         public void Update(JToken item)
         {
             Data.Merge(item, jsonMergeSettings);
+            RecordChanged.Invoke(this, EventArgs.Empty);
             Data.AddAnnotation(RecordName);
         }
 

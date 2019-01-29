@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 using System.Dynamic;
 
 namespace DeepStreamNet.Contracts
@@ -19,5 +20,10 @@ namespace DeepStreamNet.Contracts
         /// <param name="key"></param>
         /// <returns></returns>
         dynamic this[object key] { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        event EventHandler RecordChanged;
     }
 }
