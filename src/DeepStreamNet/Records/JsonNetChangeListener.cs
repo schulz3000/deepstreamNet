@@ -46,10 +46,13 @@ namespace DeepStreamNet
                     if (subListener.Contains(item))
                     {
                         var notify = subListener.FirstOrDefault(f => f == item);
-                        notify.PropertyChanging -= OnPropertyChanging;
-                        notify.PropertyChanged -= OnPropertyChanged;
-                        subListener.Remove(notify);
-                        notify.Dispose();
+                        if (notify != null)
+                        {
+                            notify.PropertyChanging -= OnPropertyChanging;
+                            notify.PropertyChanged -= OnPropertyChanged;
+                            subListener.Remove(notify);
+                            notify.Dispose();
+                        }
                     }
                 }
             }
@@ -58,7 +61,7 @@ namespace DeepStreamNet
             {
                 foreach (var item in e.NewItems.OfType<JContainer>().Where(w => w.Type == JTokenType.Array || w.Type == JTokenType.Object))
                 {
-                    var nlistener = Create((INotifyCollectionChanged)item);
+                    var nlistener = Create(item);
                     subListener.Add(nlistener);
                     nlistener.PropertyChanging += OnPropertyChanging;
                     nlistener.PropertyChanged += OnPropertyChanged;

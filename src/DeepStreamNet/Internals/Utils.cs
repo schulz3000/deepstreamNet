@@ -18,9 +18,9 @@ namespace DeepStreamNet
             sb.Append(action.ToString());
             sb.Append(Constants.RecordSeperator);
 
-            for (int i = 0; i < args.Length; i++)
+            foreach (var item in args)
             {
-                sb.Append(args[i]);
+                sb.Append(item);
                 sb.Append(Constants.RecordSeperator);
             }
 
@@ -31,9 +31,9 @@ namespace DeepStreamNet
 
         public static string ConvertAndPrefixData<T>(T data)
         {
-            if (data is JToken)
+            if (data is JToken token)
             {
-                return ConvertAndPrefixDataFromJToken(data as JToken);
+                return ConvertAndPrefixDataFromJToken(token);
             }
 
             if (data is string)
@@ -54,14 +54,14 @@ namespace DeepStreamNet
                 return Constants.Types.NUMBER.ToString() + data.ToString().Replace(',', '.');
             }
 
-            if (!(data is object))
+            if (data == null)
             {
                 return Constants.Types.NULL.ToString();
             }
 
             try
             {
-                return Constants.Types.OBJECT.ToString() + JsonConvert.SerializeObject(data);
+                return Constants.Types.OBJECT + JsonConvert.SerializeObject(data);
             }
             catch
             {
@@ -74,18 +74,18 @@ namespace DeepStreamNet
             switch (data.Type)
             {
                 case JTokenType.String:
-                    return Constants.Types.STRING.ToString() + data.ToObject<string>();
+                    return Constants.Types.STRING + data.ToObject<string>();
                 case JTokenType.Boolean:
                     return data.ToObject<bool>() ? Constants.Types.TRUE.ToString() : Constants.Types.FALSE.ToString();
                 case JTokenType.Float:
                 case JTokenType.Integer:
-                    return Constants.Types.NUMBER.ToString() + data.ToObject<string>();
+                    return Constants.Types.NUMBER + data.ToObject<string>();
                 case JTokenType.Null:
                     return Constants.Types.NULL.ToString();
                 default:
                     try
                     {
-                        return Constants.Types.OBJECT.ToString() + JsonConvert.SerializeObject(data);
+                        return Constants.Types.OBJECT + JsonConvert.SerializeObject(data);
                     }
                     catch
                     {
@@ -123,7 +123,7 @@ namespace DeepStreamNet
             }
         }
 
-        static readonly Dictionary<Type, JTokenType> typeMappings = new Dictionary<Type, JTokenType>
+        static readonly Dictionary<Type, JTokenType> TypeMappings = new Dictionary<Type, JTokenType>
         {
             [typeof(bool)] = JTokenType.Boolean,
             [typeof(string)] = JTokenType.String,
@@ -140,9 +140,9 @@ namespace DeepStreamNet
 
         public static bool IsJTokenTypeEqualNetType(JTokenType tokenType, Type type)
         {
-            if (typeMappings.ContainsKey(type))
+            if (TypeMappings.ContainsKey(type))
             {
-                return typeMappings[type] == tokenType;
+                return TypeMappings[type] == tokenType;
             }
 
             return tokenType == JTokenType.Object || tokenType == JTokenType.Null;

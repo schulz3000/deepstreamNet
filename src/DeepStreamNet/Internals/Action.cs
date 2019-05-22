@@ -2,9 +2,9 @@
 
 namespace DeepStreamNet
 {
-    struct Action
+    readonly struct Action : IEquatable<Action>
     {
-        public static Action Empty => new Action(null);
+        public static Action Empty => new Action(string.Empty);
         public static Action PING => new Action("PI");
         public static Action PONG => new Action("PO");
         public static Action ACK => new Action("A");
@@ -50,15 +50,13 @@ namespace DeepStreamNet
         public static bool operator !=(Action a1, Action a2) => !a1.Equals(a2);
 
         public override bool Equals(object obj)
-        {
-            if (obj == null || !(obj is Action other))
-                return false;
-
-            return string.Equals(Identifier, other.Identifier, StringComparison.Ordinal);
-        }
+            => obj is Action other && Equals(other);
 
         public override int GetHashCode() => Identifier.GetHashCode();
 
         public override string ToString() => Identifier;
+
+        public bool Equals(Action other)
+            => Identifier.Equals(other.Identifier, StringComparison.Ordinal);
     }
 }

@@ -205,17 +205,17 @@ namespace DeepStreamNet
 
             var topic = Topic.RECORD;
 
-            Connection.RecordReceived += recHandler;
+            Connection.RecordReceived += RecordReceivedHandler;
 
             Connection.Send(Utils.BuildCommand(topic, Action.SNAPSHOT, recordName));
 
-            return (await tcs.Task) as IDeepStreamRecord;
+            return await tcs.Task;
 
-            void recHandler(object sender, RecordReceivedArgs e)
+            void RecordReceivedHandler(object sender, RecordReceivedArgs e)
             {
                 if (e.Topic == topic && e.Action == Action.READ && e.Identifier == recordName)
                 {
-                    Connection.RecordReceived -= recHandler;
+                    Connection.RecordReceived -= RecordReceivedHandler;
 
                     var data = e.Data;
                     if (e.Data.Type == JTokenType.Array)
@@ -270,17 +270,17 @@ namespace DeepStreamNet
             var topic = Topic.RECORD;
             var isAck = false;
 
-            Connection.RecordReceived += recHandler;
+            Connection.RecordReceived += RecordReceivedHandler;
 
             isAck = await Connection.SendWithAckAsync(topic, Action.CREATEORREAD, Action.SUBSCRIBE, identifier, Options.RecordReadAckTimeout).ConfigureAwait(false);
 
             return await tcs.Task.ConfigureAwait(false);
 
-            void recHandler(object sender, RecordReceivedArgs e)
+            void RecordReceivedHandler(object sender, RecordReceivedArgs e)
             {
                 if (isAck && e.Topic == topic && e.Action == Action.READ && e.Identifier == identifier)
                 {
-                    Connection.RecordReceived -= recHandler;
+                    Connection.RecordReceived -= RecordReceivedHandler;
                     if (typeof(T) == typeof(JArray))
                     {
                         var data = e.Data;

@@ -1,8 +1,8 @@
 ﻿{
-  useLocalInstance: false,
-  deepStreamServerDirectory: "C:\\PathToNodeModules\\node_modules",
-  deepStreamHost: "localhost",
-  deepStreamPort: 6020,
-  deepStreamPath: "deepstream",
-  useSecureConnection: false
+  "useLocalInstance": false,
+  "deepStreamServerDirectory": "C:\\PathToNodeModules\\node_modules",
+  "deepStreamHost": "localhost",
+  "deepStreamPort": 6020,
+  "deepStreamPath": "deepstream",
+  "useSecureConnection": false
 }

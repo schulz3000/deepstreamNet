@@ -5,13 +5,13 @@ namespace DeepStreamNet
 {
     class PresenceGetAllWithStatusReceivedArgs : EventArgs
     {
-        readonly static Dictionary<string, bool> emptyUserNamesWithStatus = new Dictionary<string, bool>();
+        static readonly Dictionary<string, bool> EmptyUserNamesWithStatus = new Dictionary<string, bool>();
 
         public Dictionary<string, bool> UsernamesWithStatus { get; }
 
         public PresenceGetAllWithStatusReceivedArgs()
         {
-            UsernamesWithStatus = emptyUserNamesWithStatus;
+            UsernamesWithStatus = EmptyUserNamesWithStatus;
         }
 
         public PresenceGetAllWithStatusReceivedArgs(Dictionary<string, bool> usernamesWithStatus)

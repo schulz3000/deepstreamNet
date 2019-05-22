@@ -10,13 +10,13 @@ namespace DeepStreamNet
     /// </summary>
     public sealed class DeepStreamClient : IDisposable
     {
-        Connection connection;
+        Connection _connection;
         /// <summary>
         /// inner Connection
         /// </summary>
-        Connection Connection { get { return connection; } }
+        Connection Connection => _connection;
 
-        IDeepStreamEvents events;
+        IDeepStreamEvents _events;
         /// <summary>
         /// DeepStreamEvents
         /// </summary>
@@ -24,13 +24,13 @@ namespace DeepStreamNet
         {
             get
             {
-                if (events == null)
+                if (_events == null)
                     throw new DeepStreamException("not initialized", "please login first");
-                return events;
+                return _events;
             }
         }
 
-        IDeepStreamRecords records;
+        IDeepStreamRecords _records;
         /// <summary>
         /// DeepStreamRecords
         /// </summary>
@@ -38,13 +38,13 @@ namespace DeepStreamNet
         {
             get
             {
-                if (records == null)
+                if (_records == null)
                     throw new DeepStreamException("not initialized", "please login first");
-                return records;
+                return _records;
             }
         }
 
-        IDeepStreamRemoteProcedureCalls rpcs;
+        IDeepStreamRemoteProcedureCalls _rpcs;
         /// <summary>
         /// DeepStreamRemoteProcedures
         /// </summary>
@@ -52,13 +52,13 @@ namespace DeepStreamNet
         {
             get
             {
-                if (rpcs == null)
+                if (_rpcs == null)
                     throw new DeepStreamException("not initialized", "please login first");
-                return rpcs;
+                return _rpcs;
             }
         }
 
-        IDeepStreamPresence presence;
+        IDeepStreamPresence _presence;
         /// <summary>
         /// DeepStreamPresence
         /// </summary>
@@ -66,13 +66,13 @@ namespace DeepStreamNet
         {
             get
             {
-                if (presence == null)
+                if (_presence == null)
                     throw new DeepStreamException("not initialized", "please login first");
-                return presence;
+                return _presence;
             }
         }
 
-        readonly DeepStreamOptions Options;
+        readonly DeepStreamOptions _options;
 
         /// <summary>
         /// DeepStreamClient for connecting to deepstream.io server
@@ -84,8 +84,8 @@ namespace DeepStreamNet
         /// <param name="options" cref="DeepStreamOptions">set options other then default</param>
         public DeepStreamClient(string host, short port, string path, bool useSecureConnection, DeepStreamOptions options)
         {
-            connection = new Connection(host, port, path, useSecureConnection);
-            Options = options;
+            _connection = new Connection(host, port, path, useSecureConnection);
+            _options = options;
         }
 
         /// <summary>
@@ -139,30 +139,30 @@ namespace DeepStreamNet
                 return challengeResult.Value;
             }
 
-            Connection.Error += errorHandler;
+            Connection.Error += ErrorHandler;
 
             Connection.State = ConnectionState.AUTHENTICATING;
 
-            var result = await Connection.SendWithAckAsync(Topic.AUTH, Action.REQUEST, Action.Empty, credentials, Options.SubscriptionTimeout).ConfigureAwait(false);
+            var result = await Connection.SendWithAckAsync(Topic.AUTH, Action.REQUEST, Action.Empty, credentials, _options.SubscriptionTimeout).ConfigureAwait(false);
 
             if (result)
             {
                 Connection.State = ConnectionState.OPEN;
                 Connection.PingReceived += Connection_PingReceived;
-                events = new DeepStreamEvents(Connection, Options);
-                records = new DeepStreamRecords(Connection, Options);
-                rpcs = new DeepStreamRemoteProcedureCalls(Connection, Options);
-                presence = new DeepStreamPresence(Connection, Options);
+                _events = new DeepStreamEvents(Connection, _options);
+                _records = new DeepStreamRecords(Connection, _options);
+                _rpcs = new DeepStreamRemoteProcedureCalls(Connection, _options);
+                _presence = new DeepStreamPresence(Connection, _options);
             }
 
             return result;
 
-            void errorHandler(object sender, ErrorArgs e)
+            void ErrorHandler(object sender, ErrorArgs e)
             {
                 if (e.Action != Action.ERROR)
                     return;
 
-                Connection.Error -= errorHandler;
+                Connection.Error -= ErrorHandler;
                 Connection.State = ConnectionState.AWAITING_AUTHENTICATION;
 
                 tcs.TrySetException(new DeepStreamException(e.Error, e.Message));
@@ -173,11 +173,11 @@ namespace DeepStreamNet
         {
             var tcs = new TaskCompletionSource<bool?>();
 
-            Connection.ChallengeReceived += handler;
+            Connection.ChallengeReceived += ChallengeReceivedHandler;
 
             return tcs.Task;
 
-            async void handler(object sender, ChallengeEventArgs e)
+            async void ChallengeReceivedHandler(object sender, ChallengeEventArgs e)
             {
                 if (e.Action == Action.CHALLENGE)
                 {
@@ -185,12 +185,12 @@ namespace DeepStreamNet
                 }
                 else if (e.Action == Action.REDIRECT && e is RedirectionEventArgs redirectArgs)
                 {
-                    Connection.ChallengeReceived -= handler;
+                    Connection.ChallengeReceived -= ChallengeReceivedHandler;
                     tcs.SetResult(await RecreateClientAsync(redirectArgs.RedirectUrl, credentials).ConfigureAwait(false));
                 }
                 else if (e.Action == Action.ACK)
                 {
-                    Connection.ChallengeReceived -= handler;
+                    Connection.ChallengeReceived -= ChallengeReceivedHandler;
                     tcs.SetResult(null);
                 }
             }
@@ -201,7 +201,7 @@ namespace DeepStreamNet
         Task<bool> RecreateClientAsync(string endPointUrl, string credentials)
         {
             Connection.Dispose();
-            connection = new Connection(endPointUrl);
+            _connection = new Connection(endPointUrl);
             return LoginAsync(credentials);
         }
 
@@ -218,8 +218,8 @@ namespace DeepStreamNet
         {
             if (disposing)
             {
-                (rpcs as IDisposable)?.Dispose();
-                (records as IDisposable)?.Dispose();
+                (_rpcs as IDisposable)?.Dispose();
+                (_records as IDisposable)?.Dispose();
                 Connection.PingReceived -= Connection_PingReceived;
                 Connection.Dispose();
             }

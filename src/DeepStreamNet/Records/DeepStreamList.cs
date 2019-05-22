@@ -1,7 +1,5 @@
 ﻿using System.Collections.Generic;
-using DeepStreamNet.Contracts;
 using System.Collections.Specialized;
-using System;
 using System.Collections;
 using Newtonsoft.Json.Linq;
 using System.Linq;
@@ -98,14 +96,14 @@ namespace DeepStreamNet
             var newItems = newList.Except(innerList).ToList();
             var removedItems = innerList.Except(newList).ToList();
 
-            for (int i = 0; i < newItems.Count; i++)
+            foreach (var item in newItems)
             {
-                Add(newItems[i]);
+                Add(item);
             }
 
-            for (int i = 0; i < removedItems.Count; i++)
+            foreach (var item in removedItems)
             {
-                Remove(removedItems[i]);
+                Remove(item);
             }
         }
     }

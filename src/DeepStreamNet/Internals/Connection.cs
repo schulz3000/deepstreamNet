@@ -148,9 +148,9 @@ namespace DeepStreamNet
 
             var command = Utils.BuildCommand(topic, action, parameter.ToArray());
 
-            timer.Elapsed += timerHandler;
-            Acknoledged += ackHandler;
-            Error += errorHandler;
+            timer.Elapsed += TimerHandler;
+            Acknoledged += AckHandler;
+            Error += ErrorHandler;
 
             timer.Start();
 
@@ -158,7 +158,7 @@ namespace DeepStreamNet
 
             return tcs.Task;
 
-            void ackHandler(object sender, AcknoledgedArgs e)
+            void AckHandler(object sender, AcknoledgedArgs e)
             {
                 if (e.Topic == topic && e.Action == expectedReceivedAction && e.Identifier == identifier)
                     tcs.TrySetResult(true);
@@ -167,30 +167,30 @@ namespace DeepStreamNet
 
                 if (tcs.Task.IsCompleted)
                 {
-                    timer.Elapsed -= timerHandler;
+                    timer.Elapsed -= TimerHandler;
                     timer.Dispose();
-                    Acknoledged -= ackHandler;
-                    Error -= errorHandler;
+                    Acknoledged -= AckHandler;
+                    Error -= ErrorHandler;
                 }
             }
 
-            void errorHandler(object sender, ErrorArgs e)
+            void ErrorHandler(object sender, ErrorArgs e)
             {
-                timer.Elapsed -= timerHandler;
+                timer.Elapsed -= TimerHandler;
                 timer.Dispose();
-                Acknoledged -= ackHandler;
-                Error -= errorHandler;
+                Acknoledged -= AckHandler;
+                Error -= ErrorHandler;
 
                 if (e.Topic == topic && e.Action == Action.ERROR)
                     tcs.TrySetException(new DeepStreamException(e.Error, e.Message));
             }
 
-            void timerHandler(object sender, EventArgs e)
+            void TimerHandler(object sender, EventArgs e)
             {
-                timer.Elapsed -= timerHandler;
+                timer.Elapsed -= TimerHandler;
                 timer.Dispose();
-                Acknoledged -= ackHandler;
-                Error -= errorHandler;
+                Acknoledged -= AckHandler;
+                Error -= ErrorHandler;
 
                 tcs.TrySetException(new DeepStreamException(Constants.Errors.ACK_TIMEOUT));
             }

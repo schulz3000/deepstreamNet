@@ -21,11 +21,12 @@
     <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
     <Version>0.0.0.4-alpha</Version>
     <DebugType>Full</DebugType>
+    <LangVersion>7.3</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>    
     <PackageReference Include="Microsoft.CSharp" Version="4.5.0" />    
-    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
     <PackageReference Include="WebSocket4Net" Version="0.15.2" />
   </ItemGroup>  
   

@@ -93,7 +93,7 @@ namespace DeepStreamNet.Tests
 
                 using (var client2 = await TestHelper.GetClientAsync())
                 {
-                    await Assert.ThrowsAsync<DeepStreamException>(() => client2.Rpcs.MakeRequestAsync<string, string>("unittestrpc", "abc"));                    
+                    await Assert.ThrowsAsync<DeepStreamException>(() => client2.Rpcs.MakeRequestAsync<string, string>("unittestrpc", "abc"));
                 }
             }
         }

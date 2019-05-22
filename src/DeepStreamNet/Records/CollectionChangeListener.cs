@@ -46,8 +46,7 @@ namespace DeepStreamNet
             RemoveChildItem(item);
 
             // Add new
-            var trackableCollection = item as INotifyCollectionChanged;
-            var listener = trackableCollection != null
+            var listener = item is INotifyCollectionChanged trackableCollection
                 ? (ChangeListener)new CollectionChangeListener(trackableCollection, PropertyName)
                 : new ChildChangeListener(item);
 
@@ -63,8 +62,7 @@ namespace DeepStreamNet
             RemoveCollectionItem(item);
 
             // Add new
-            var trackableCollection = item as INotifyCollectionChanged;
-            var listener = new CollectionChangeListener(trackableCollection, PropertyName);
+            var listener = new CollectionChangeListener(item, PropertyName);
 
             listener.PropertyChanged += Listener_PropertyChanged;
             collectionListeners.Add(item, listener);

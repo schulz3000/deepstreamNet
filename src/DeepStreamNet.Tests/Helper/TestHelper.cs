@@ -14,15 +14,10 @@ namespace DeepStreamNet.Tests.Helper
 
         static IConfigurationRoot config;
 
-        public static IConfigurationRoot Config
-        {
-            get
-            {
-                return config ?? (config = new ConfigurationBuilder()
-                      .AddJsonFile("testsettings.json")
-                      .AddEnvironmentVariables("ds_")
-                      .Build());
-            }
-        }
+        public static IConfigurationRoot Config =>
+            config ?? (config = new ConfigurationBuilder()
+                .AddJsonFile("testsettings.json")
+                .AddEnvironmentVariables("ds_")
+                .Build());
     }
 }

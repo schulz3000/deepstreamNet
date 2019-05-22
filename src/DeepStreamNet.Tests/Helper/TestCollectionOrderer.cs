@@ -5,9 +5,9 @@ using Xunit.Sdk;
 
 namespace DeepStreamNet.Tests.Helper
 {
-    public class TestCollectionOrderer: ITestCaseOrderer
+    public class TestCollectionOrderer : ITestCaseOrderer
     {
-        public IEnumerable<TTestCase> OrderTestCases<TTestCase>(IEnumerable<TTestCase> testCases) 
+        public IEnumerable<TTestCase> OrderTestCases<TTestCase>(IEnumerable<TTestCase> testCases)
             where TTestCase : ITestCase
         {
             var sortedMethods = new SortedDictionary<int, TTestCase>();

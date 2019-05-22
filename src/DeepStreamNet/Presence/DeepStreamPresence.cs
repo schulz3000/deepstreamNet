@@ -1,15 +1,13 @@
 ﻿using DeepStreamNet.Contracts;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace DeepStreamNet
 {
     class DeepStreamPresence : DeepStreamBase, IDeepStreamPresence
     {
-        readonly Dictionary<string, Func<string, bool, Task>> listeners = new Dictionary<string, Func<string, bool, Task>>();
+        readonly Dictionary<string, Func<string, bool, Task>> _listeners = new Dictionary<string, Func<string, bool, Task>>();
 
         public DeepStreamPresence(Connection connection, DeepStreamOptions options)
             : base(connection, options)
@@ -19,7 +17,7 @@ namespace DeepStreamNet
 
         void Connection_PresenceListenerChanged(object sender, PresenceListenerChangedEventArgs e)
         {
-            foreach (var item in listeners.Values)
+            foreach (var item in _listeners.Values)
             {
                 item(e.Username, e.IsLoggedIn);
             }
@@ -29,15 +27,15 @@ namespace DeepStreamNet
         {
             var tcs = new TaskCompletionSource<IEnumerable<string>>();
 
-            Connection.PresenceGetAllReceived += handler;
+            Connection.PresenceGetAllReceived += PresenceGetAllReceivedHandler;
 
             Connection.Send(Utils.BuildCommand(Topic.PRESENCE, Action.QUERY, Action.QUERY));
 
             return tcs.Task;
 
-            void handler(object sender, PresenceGetAllReceivedArgs e)
+            void PresenceGetAllReceivedHandler(object sender, PresenceGetAllReceivedArgs e)
             {
-                Connection.PresenceGetAllReceived -= handler;
+                Connection.PresenceGetAllReceived -= PresenceGetAllReceivedHandler;
                 tcs.TrySetResult(e.Usernames);
             }
         }
@@ -82,14 +80,14 @@ namespace DeepStreamNet
 
             if (await Connection.SendWithAckAsync(Topic.PRESENCE, Action.SUBSCRIBE, Action.ACK, Action.SUBSCRIBE.ToString(), Options.SubscriptionTimeout).ConfigureAwait(false))
             {
-                listeners.Add(key, listener);
+                _listeners.Add(key, listener);
             }
 
             return new AsyncDisposableAction(async () =>
             {
                 if (await Connection.SendWithAckAsync(Topic.PRESENCE, Action.UNSUBSCRIBE, Action.ACK, Action.UNSUBSCRIBE.ToString(), Options.SubscriptionTimeout).ConfigureAwait(false))
                 {
-                    listeners.Remove(key);
+                    _listeners.Remove(key);
                 }
             });
         }

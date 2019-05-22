@@ -1,8 +1,6 @@
 ﻿using DeepStreamNet.Tests.Helper;
 using Newtonsoft.Json.Linq;
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -16,11 +14,11 @@ namespace DeepStreamNet.Tests
             fixture.StartServer();
         }
 
-        [Fact(Skip ="issue test")]
+        [Fact(Skip = "issue test")]
         public async Task TestDataProvider()
         {
-            var key = @"test/datap/blah";
-            var listenKey = @"test/datap/*";
+            var key = "test/datap/blah";
+            var listenKey = "test/datap/*";
             var val = Guid.NewGuid().ToString();
 
             // test a data provider
@@ -30,7 +28,7 @@ namespace DeepStreamNet.Tests
                 using (var server = await TestHelper.GetClientAsync())//GetConnection("admin", "test"))
                 {
                     // create a listener
-                    await server.Records.ListenAsync(listenKey, async (match, isSubscribed, resposne) =>
+                    await server.Records.ListenAsync(listenKey, async (match, _, resposne) =>
                     {
                         Assert.Equal(key, match);
                         // update the record
@@ -59,7 +57,6 @@ namespace DeepStreamNet.Tests
                     while (changes == 0)
                     {
                         await Task.Delay(500);// System.Threading.Thread.Sleep(300);
-
                     }
                     // never gets here
                     Assert.Equal(val, recsub["val"].ToString());
@@ -67,7 +64,7 @@ namespace DeepStreamNet.Tests
             }
         }
 
-        [Fact(Skip ="issue test")]
+        [Fact(Skip = "issue test")]
         public async Task TestPububOnOneConnectons()
         {
             var key = "test";
@@ -79,17 +76,15 @@ namespace DeepStreamNet.Tests
                 // never gets here
                 tcs.SetResult("done");
                 // assert it is the same object
-                
+
             });
 
             await Task.Delay(500);
-            
+
             c.Events.Publish(key, "Hello World");
 
             await tcs.Task;
             c.Dispose();
         }
-
-
     }
 }

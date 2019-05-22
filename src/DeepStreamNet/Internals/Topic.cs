@@ -2,9 +2,9 @@
 
 namespace DeepStreamNet
 {
-    struct Topic
+    readonly struct Topic : IEquatable<Topic>
     {
-        public static Topic Empty => new Topic(null);
+        public static Topic Empty => new Topic(string.Empty);
 
         public static Topic CONNECTION => new Topic("C");
 
@@ -31,15 +31,13 @@ namespace DeepStreamNet
         public static bool operator !=(Topic t1, Topic t2) => !t1.Equals(t2);
 
         public override bool Equals(object obj)
-        {
-            if (obj == null || !(obj is Topic other))
-                return false;
-
-            return string.Equals(Identifier, other.Identifier, StringComparison.Ordinal);
-        }
+            => obj is Topic other && Equals(other);
 
         public override int GetHashCode() => Identifier.GetHashCode();
 
         public override string ToString() => Identifier;
+
+        public bool Equals(Topic other)
+            => Identifier.Equals(other.Identifier, StringComparison.Ordinal);
     }
 }

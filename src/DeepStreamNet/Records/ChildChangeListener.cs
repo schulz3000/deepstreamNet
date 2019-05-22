@@ -40,7 +40,7 @@ namespace DeepStreamNet
             {
                 if (!IsPubliclyReadable(property))
                     continue;
-                if (!IsNotifier(property.GetValue(obj: this.value)))
+                if (!IsNotifier(property.GetValue(value)))
                     continue;
 
                 ResetChildListener(property.Name);
@@ -48,6 +48,7 @@ namespace DeepStreamNet
         }
 
         static bool IsPubliclyReadable(PropertyInfo prop) => (prop.GetMethod?.IsPublic ?? false) && !prop.GetMethod.IsStatic;
+
         static bool IsNotifier(object value) => (value is INotifyCollectionChanged) || (value is INotifyPropertyChanged);
 
         /// <summary>
@@ -81,15 +82,15 @@ namespace DeepStreamNet
             // Only recreate if there is a new value
             if (newValue != null)
             {
-                if (newValue is INotifyCollectionChanged)
+                if (newValue is INotifyCollectionChanged changed)
                 {
                     listener = childListeners[propertyName] =
-                        new CollectionChangeListener(newValue as INotifyCollectionChanged, propertyName);
+                        new CollectionChangeListener(changed, propertyName);
                 }
-                else if (newValue is INotifyPropertyChanged)
+                else if (newValue is INotifyPropertyChanged instance)
                 {
                     listener = childListeners[propertyName] =
-                        new ChildChangeListener(newValue as INotifyPropertyChanged, propertyName);
+                        new ChildChangeListener(instance, propertyName);
                 }
                 else
                 {

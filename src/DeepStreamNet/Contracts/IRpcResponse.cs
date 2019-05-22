@@ -4,17 +4,19 @@
     /// 
     /// </summary>
     /// <typeparam name="TResult"></typeparam>
-    public interface IRpcResponse<TResult> : IRpcResponse
+    public interface IRpcResponse<in TResult> : IRpcResponse
     {
         /// <summary>
         /// 
         /// </summary>
         /// <param name="result"></param>
         void Send(TResult result);
+
         /// <summary>
         /// 
         /// </summary>>
         void Reject();
+
         /// <summary>
         /// 
         /// </summary>
