@@ -5,7 +5,7 @@ using Xunit;
 
 namespace DeepStreamNet.Tests
 {
-    [Collection(TestConstants.ServerCommunication)]
+    [Collection(TestConstants.ServerCommunication)]    
     public class AnonymousRecordTests : IClassFixture<DeepStreamServerFixture>
     {
         public AnonymousRecordTests(DeepStreamServerFixture fixture)
@@ -13,7 +13,7 @@ namespace DeepStreamNet.Tests
             fixture.StartServer();
         }
 
-        [Fact]
+        [IgnoreOnCloudBuilds]
         public async Task SetNameNullTest()
         {
             using (var client = await TestHelper.GetClientAsync())
@@ -23,7 +23,7 @@ namespace DeepStreamNet.Tests
             }
         }
 
-        [Fact]
+        [IgnoreOnCloudBuilds]
         public async Task SetNameTest()
         {
             using (var client = await TestHelper.GetClientAsync())
@@ -34,7 +34,7 @@ namespace DeepStreamNet.Tests
             }
         }
 
-        [Fact]
+        [IgnoreOnCloudBuilds]
         public async Task SetNameRecordChangeTest()
         {
             using (var client = await TestHelper.GetClientAsync())

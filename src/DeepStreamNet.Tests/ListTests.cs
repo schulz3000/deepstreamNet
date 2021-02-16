@@ -17,7 +17,7 @@ namespace DeepStreamNet.Tests
             fixture.StartServer();
         }
 
-        [Fact]
+        [IgnoreOnCloudBuilds]
         public async Task NameNullTest()
         {
             using (var client = await TestHelper.GetClientAsync())
@@ -26,7 +26,7 @@ namespace DeepStreamNet.Tests
             }
         }
 
-        [Fact, TestPriority(1)]
+        [IgnoreOnCloudBuilds, TestPriority(1)]
         public async Task NameTest()
         {
             using (var client = await TestHelper.GetClientAsync())
@@ -36,7 +36,7 @@ namespace DeepStreamNet.Tests
             }
         }
 
-        [Fact, TestPriority(2)]
+        [IgnoreOnCloudBuilds, TestPriority(2)]
         public async Task AddTest()
         {
             using (var client = await TestHelper.GetClientAsync())
@@ -49,7 +49,7 @@ namespace DeepStreamNet.Tests
             }
         }
 
-        [Fact, TestPriority(3)]
+        [IgnoreOnCloudBuilds, TestPriority(3)]
         public async Task RemoveTest()
         {
             using (var client = await TestHelper.GetClientAsync())
@@ -61,7 +61,7 @@ namespace DeepStreamNet.Tests
             }
         }
 
-        [Fact, TestPriority(4)]
+        [IgnoreOnCloudBuilds, TestPriority(4)]
         public async Task ContainsTest()
         {
             using (var client = await TestHelper.GetClientAsync())
@@ -71,7 +71,7 @@ namespace DeepStreamNet.Tests
             }
         }
 
-        [Fact, TestPriority(5)]
+        [IgnoreOnCloudBuilds, TestPriority(5)]
         public async Task ClearTest()
         {
             using (var client = await TestHelper.GetClientAsync())
@@ -83,7 +83,7 @@ namespace DeepStreamNet.Tests
             }
         }
 
-        [Fact, TestPriority(6)]
+        [IgnoreOnCloudBuilds, TestPriority(6)]
         public async Task TestAddingARecordToListAndListenToChanges()
         {
             var name = Guid.NewGuid().ToString();

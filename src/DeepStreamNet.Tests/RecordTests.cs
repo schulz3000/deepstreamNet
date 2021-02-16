@@ -16,7 +16,7 @@ namespace DeepStreamNet.Tests
             fixture.StartServer();
         }
 
-        [Fact]
+        [IgnoreOnCloudBuilds]
         public async Task GetRecordNullTest()
         {
             using (var client = await TestHelper.GetClientAsync())
@@ -25,7 +25,7 @@ namespace DeepStreamNet.Tests
             }
         }
 
-        [Fact]
+        [IgnoreOnCloudBuilds]
         public async Task HasRecordRecordNameNullTest()
         {
             using (var client = await TestHelper.GetClientAsync())
@@ -34,7 +34,7 @@ namespace DeepStreamNet.Tests
             }
         }
 
-        [Fact]
+        [IgnoreOnCloudBuilds]
         public async Task SetRecordRecordNullTest()
         {
             using (var client = await TestHelper.GetClientAsync())
@@ -43,7 +43,7 @@ namespace DeepStreamNet.Tests
             }
         }
 
-        [Fact]
+        [IgnoreOnCloudBuilds]
         public async Task SetRecordWithPathRecordNullTest()
         {
             using (var client = await TestHelper.GetClientAsync())
@@ -52,7 +52,7 @@ namespace DeepStreamNet.Tests
             }
         }
 
-        [Fact]
+        [IgnoreOnCloudBuilds]
         public async Task SetRecordWithAckRecordNullTest()
         {
             using (var client = await TestHelper.GetClientAsync())
@@ -61,7 +61,7 @@ namespace DeepStreamNet.Tests
             }
         }
 
-        [Fact]
+        [IgnoreOnCloudBuilds]
         public async Task GetSnapshotRecordNameNulllTest()
         {
             using (var client = await TestHelper.GetClientAsync())
@@ -70,7 +70,7 @@ namespace DeepStreamNet.Tests
             }
         }
 
-        [Fact]
+        [IgnoreOnCloudBuilds]
         public async Task RecordDiscardNullTest()
         {
             using (var client = await TestHelper.GetClientAsync())
@@ -79,7 +79,7 @@ namespace DeepStreamNet.Tests
             }
         }
 
-        [Fact]
+        [IgnoreOnCloudBuilds]
         public async Task RecordDeleteNullTest()
         {
             using (var client = await TestHelper.GetClientAsync())
@@ -88,7 +88,7 @@ namespace DeepStreamNet.Tests
             }
         }
 
-        [Fact, TestPriority(1)]
+        [IgnoreOnCloudBuilds, TestPriority(1)]
         public async Task HasRecordFalseTest()
         {
             using (var client = await TestHelper.GetClientAsync())
@@ -99,7 +99,7 @@ namespace DeepStreamNet.Tests
             }
         }
 
-        [Fact, TestPriority(2)]
+        [IgnoreOnCloudBuilds, TestPriority(2)]
         public async Task RecordNameTest()
         {
             using (var client = await TestHelper.GetClientAsync())
@@ -110,7 +110,7 @@ namespace DeepStreamNet.Tests
             }
         }
 
-        [Fact, TestPriority(3)]
+        [IgnoreOnCloudBuilds, TestPriority(3)]
         public async Task HasRecordTrueTest()
         {
             using (var client = await TestHelper.GetClientAsync())
@@ -121,7 +121,7 @@ namespace DeepStreamNet.Tests
             }
         }
 
-        [Fact, TestPriority(4)]
+        [IgnoreOnCloudBuilds, TestPriority(4)]
         public async Task SetRecordWithAckContentNullTest()
         {
             using (var client = await TestHelper.GetClientAsync())
@@ -131,7 +131,7 @@ namespace DeepStreamNet.Tests
             }
         }
 
-        [Fact, TestPriority(5)]
+        [IgnoreOnCloudBuilds, TestPriority(5)]
         public async Task SetRecordContentNullTest()
         {
             using (var client = await TestHelper.GetClientAsync())
@@ -141,7 +141,7 @@ namespace DeepStreamNet.Tests
             }
         }
 
-        [Fact, TestPriority(6)]
+        [IgnoreOnCloudBuilds, TestPriority(6)]
         public async Task SetRecordWithPathContentNullTest()
         {
             using (var client = await TestHelper.GetClientAsync())
@@ -151,7 +151,7 @@ namespace DeepStreamNet.Tests
             }
         }
 
-        [Fact, TestPriority(7)]
+        [IgnoreOnCloudBuilds, TestPriority(7)]
         public async Task SetRecordPathNullTest()
         {
             using (var client = await TestHelper.GetClientAsync())
@@ -172,7 +172,7 @@ namespace DeepStreamNet.Tests
         //    }
         //}
 
-        [Fact, TestPriority(8)]
+        [IgnoreOnCloudBuilds, TestPriority(8)]
         public async Task RecordSetLocalTest()
         {
             using (var client = await TestHelper.GetClientAsync())
@@ -183,7 +183,7 @@ namespace DeepStreamNet.Tests
             }
         }
 
-        [Fact, TestPriority(9)]
+        [IgnoreOnCloudBuilds, TestPriority(9)]
         public async Task RecordSetRemoteTest()
         {
             using (var client1 = await TestHelper.GetClientAsync())
@@ -199,7 +199,7 @@ namespace DeepStreamNet.Tests
             }
         }
 
-        [Fact, TestPriority(10)]
+        [IgnoreOnCloudBuilds, TestPriority(10)]
         public async Task GetSnapshotTest()
         {
             using (var client = await TestHelper.GetClientAsync())
@@ -209,7 +209,7 @@ namespace DeepStreamNet.Tests
             }
         }
 
-        [Fact, TestPriority(11)]
+        [IgnoreOnCloudBuilds, TestPriority(11)]
         public async Task RecordSetWithAckTest()
         {
             using (var client = await TestHelper.GetClientAsync())
@@ -221,7 +221,7 @@ namespace DeepStreamNet.Tests
             }
         }
 
-        [Fact, TestPriority(12)]
+        [IgnoreOnCloudBuilds, TestPriority(12)]
         public async Task RecordSetWithAckPathTest()
         {
             using (var client = await TestHelper.GetClientAsync())
@@ -235,7 +235,7 @@ namespace DeepStreamNet.Tests
             }
         }
 
-        [Fact, TestPriority(13)]
+        [IgnoreOnCloudBuilds, TestPriority(13)]
         public async Task RecordDiscardTest()
         {
             using (var client = await TestHelper.GetClientAsync())
@@ -247,7 +247,7 @@ namespace DeepStreamNet.Tests
             }
         }
 
-        [Fact, TestPriority(14)]
+        [IgnoreOnCloudBuilds, TestPriority(14)]
         public async Task RecordRemoteChangeEventTest()
         {
             using (var client1 = await TestHelper.GetClientAsync())
@@ -268,7 +268,7 @@ namespace DeepStreamNet.Tests
             }
         }
 
-        [Fact, TestPriority(15)]
+        [IgnoreOnCloudBuilds, TestPriority(15)]
         public async Task RecordDeleteTest()
         {
             using (var client = await TestHelper.GetClientAsync())
