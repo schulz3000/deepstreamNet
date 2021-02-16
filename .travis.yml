@@ -1,11 +1,9 @@
-language: csharp  
-sudo: required  
-dist: trusty  
-dotnet: 2.1.4
+language: csharp
+solution: src/DeepStreamNet.sln
+dotnet: 5.0.3
 env:  
   - DOTNETCORE=1 DOTNET_CLI_TELEMETRY_OPTOUT=1
-mono:  
-  - none
+mono: none
 os:  
   - linux
   - osx
@@ -13,3 +11,5 @@ os:
 script:
   - dotnet restore src/DeepStreamNet
   - dotnet build src/DeepStreamNet -f netstandard1.5 -c Release
+  - dotnet build src/DeepStreamNet -f netstandard2.0 -c Release
+  - dotnet test src/DeepStreamNet.Tests -c Release
