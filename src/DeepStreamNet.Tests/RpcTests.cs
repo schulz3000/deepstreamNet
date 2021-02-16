@@ -12,7 +12,7 @@ namespace DeepStreamNet.Tests
             fixture.StartServer();
         }
 
-        [Fact]
+        [FactWithSkipOnCloudBuilds]
         public async Task RequestTest()
         {
             using (var client1 = await TestHelper.GetClientAsync())
@@ -28,7 +28,7 @@ namespace DeepStreamNet.Tests
             }
         }
 
-        [Fact]
+        [FactWithSkipOnCloudBuilds]
         public async Task SubscribeTest()
         {
             using (var client1 = await TestHelper.GetClientAsync())
@@ -47,7 +47,7 @@ namespace DeepStreamNet.Tests
             }
         }
 
-        [Fact]
+        [FactWithSkipOnCloudBuilds]
         public async Task ErrorTest()
         {
             using (var client1 = await TestHelper.GetClientAsync())
@@ -61,7 +61,7 @@ namespace DeepStreamNet.Tests
             }
         }
 
-        [Fact]
+        [FactWithSkipOnCloudBuilds]
         public async Task RejectTest()
         {
             using (var client1 = await TestHelper.GetClientAsync())
@@ -75,7 +75,7 @@ namespace DeepStreamNet.Tests
             }
         }
 
-        [Fact]
+        [FactWithSkipOnCloudBuilds]
         public async Task NoProviderTest()
         {
             using (var client2 = await TestHelper.GetClientAsync())
@@ -84,7 +84,7 @@ namespace DeepStreamNet.Tests
             }
         }
 
-        [Fact]
+        [FactWithSkipOnCloudBuilds]
         public async Task WrongInputTypeTest()
         {
             using (var client1 = await TestHelper.GetClientAsync())
@@ -98,7 +98,7 @@ namespace DeepStreamNet.Tests
             }
         }
 
-        [Fact]
+        [FactWithSkipOnCloudBuilds]
         public async Task WrongResultTypeTest()
         {
             using (var client1 = await TestHelper.GetClientAsync())
