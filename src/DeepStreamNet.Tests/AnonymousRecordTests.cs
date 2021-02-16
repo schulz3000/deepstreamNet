@@ -13,7 +13,7 @@ namespace DeepStreamNet.Tests
             fixture.StartServer();
         }
 
-        [IgnoreOnCloudBuilds]
+        [FactWithSkipOnCloudBuilds]
         public async Task SetNameNullTest()
         {
             using (var client = await TestHelper.GetClientAsync())
@@ -23,7 +23,7 @@ namespace DeepStreamNet.Tests
             }
         }
 
-        [IgnoreOnCloudBuilds]
+        [FactWithSkipOnCloudBuilds]
         public async Task SetNameTest()
         {
             using (var client = await TestHelper.GetClientAsync())
@@ -34,7 +34,7 @@ namespace DeepStreamNet.Tests
             }
         }
 
-        [IgnoreOnCloudBuilds]
+        [FactWithSkipOnCloudBuilds]
         public async Task SetNameRecordChangeTest()
         {
             using (var client = await TestHelper.GetClientAsync())

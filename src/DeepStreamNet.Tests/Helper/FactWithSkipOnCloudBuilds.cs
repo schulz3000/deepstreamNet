@@ -3,9 +3,9 @@ using Xunit;
 
 namespace DeepStreamNet.Tests.Helper
 {
-    public sealed class IgnoreOnCloudBuilds : FactAttribute
+    public sealed class FactWithSkipOnCloudBuilds : FactAttribute
     {
-        public IgnoreOnCloudBuilds()
+        public FactWithSkipOnCloudBuilds()
         {
             if(IsAppVeyor() || IsTravis() || IsGithubAction())
             {
@@ -14,12 +14,12 @@ namespace DeepStreamNet.Tests.Helper
         }
 
         private static bool IsAppVeyor()
-        => Environment.GetEnvironmentVariable("APPVEYOR") != null;
+           => Environment.GetEnvironmentVariable("APPVEYOR") != null;
 
         private static bool IsTravis()
-        => Environment.GetEnvironmentVariable("TRAVIS") != null;
+          => Environment.GetEnvironmentVariable("TRAVIS") != null;
 
         private static bool IsGithubAction()
-        => Environment.GetEnvironmentVariable("GITHUB_WORKFLOW") != null;
+          => Environment.GetEnvironmentVariable("GITHUB_WORKFLOW") != null;
     }
 }

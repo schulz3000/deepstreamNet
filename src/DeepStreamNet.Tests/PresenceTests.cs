@@ -12,7 +12,7 @@ namespace DeepStreamNet.Tests
             fixture.StartServer();
         }
 
-        [IgnoreOnCloudBuilds]
+        [FactWithSkipOnCloudBuilds]
         public async Task GetAllEmptyTest()
         {
             using (var client = await TestHelper.GetClientAsync())

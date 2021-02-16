@@ -13,7 +13,7 @@ namespace DeepStreamNet.Tests
             fixture.StartServer();
         }
 
-        [IgnoreOnCloudBuilds]
+        [FactWithSkipOnCloudBuilds]
         public async Task PublishSubscribeTest()
         {
             using (var client1 = await TestHelper.GetClientAsync())
@@ -31,7 +31,7 @@ namespace DeepStreamNet.Tests
             }
         }
 
-        [IgnoreOnCloudBuilds]
+        [FactWithSkipOnCloudBuilds]
         public async Task PublishSubscribeOnSameConnectionTest()
         {
             using (var client = await TestHelper.GetClientAsync())
@@ -48,7 +48,7 @@ namespace DeepStreamNet.Tests
             }
         }
 
-        [IgnoreOnCloudBuilds]
+        [FactWithSkipOnCloudBuilds]
         public async Task EventNameNullTest()
         {
             using (var client = await TestHelper.GetClientAsync())
@@ -57,7 +57,7 @@ namespace DeepStreamNet.Tests
             }
         }
 
-        [IgnoreOnCloudBuilds]
+        [FactWithSkipOnCloudBuilds]
         public async Task ListenSubscribeUnsubscribeTest()
         {
             using (var client1 = await TestHelper.GetClientAsync())
