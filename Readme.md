@@ -4,7 +4,7 @@ DeepStreamNet
 dotnet Client for [deepstream.io](https://deepstream.io)
 
 ## Builds
-![Build status](https://github.com/schulz3000/deepstreamNet/workflows/.NET/badge.svg) [![Build status](https://ci.appveyor.com/api/projects/status/aj8op4emvlivn7jx/branch/develop?svg=true)](https://ci.appveyor.com/project/schulz3000/deepstreamnet/branch/develop) [![Build Status](https://travis-ci.org/schulz3000/deepstreamNet.svg?branch=develop)](https://travis-ci.org/schulz3000/deepstreamNet)
+![Build status](https://github.com/schulz3000/deepstreamNet/workflows/.NET/badge.svg) [![Build status](https://ci.appveyor.com/api/projects/status/aj8op4emvlivn7jx/branch/develop?svg=true)](https://ci.appveyor.com/project/schulz3000/deepstreamnet/branch/develop)
 
 ## NuGet
 [![deepstreamNet](https://img.shields.io/nuget/v/deepstreamNet.svg?style=flat)](https://www.nuget.org/packages/deepstreamNet)
