@@ -2,46 +2,46 @@
 
 namespace DeepStreamNet
 {
-    readonly struct Action : IEquatable<Action>
+    internal readonly struct Action : IEquatable<Action>
     {
-        public static Action Empty => new Action(string.Empty);
-        public static Action PING => new Action("PI");
-        public static Action PONG => new Action("PO");
-        public static Action ACK => new Action("A");
-        public static Action REDIRECT => new Action("RED");
-        public static Action CHALLENGE => new Action("CH");
-        public static Action CHALLENGE_RESPONSE => new Action("CHR");
-        public static Action READ => new Action("R");
-        public static Action CREATE => new Action("C");
-        public static Action UPDATE => new Action("U");
-        public static Action PATCH => new Action("P");
-        public static Action DELETE => new Action("D");
-        public static Action SUBSCRIBE => new Action("S");
-        public static Action UNSUBSCRIBE => new Action("US");
-        public static Action HAS => new Action("H");
-        public static Action SNAPSHOT => new Action("SN");
-        public static Action INVOKE => new Action("I");
-        public static Action SUBSCRIPTION_FOR_PATTERN_FOUND => new Action("SP");
-        public static Action SUBSCRIPTION_FOR_PATTERN_REMOVED => new Action("SR");
-        public static Action SUBSCRIPTION_HAS_PROVIDER => new Action("SH");
-        public static Action LISTEN => new Action("L");
-        public static Action UNLISTEN => new Action("UL");
-        public static Action LISTEN_ACCEPT => new Action("LA");
-        public static Action LISTEN_REJECT => new Action("LR");
-        public static Action PROVIDER_UPDATE => new Action("PU");
-        public static Action QUERY => new Action("Q");
-        public static Action CREATEORREAD => new Action("CR");
-        public static Action CREATEANDUPDATE => new Action("CU");
-        public static Action EVENT => new Action("EVT");
-        public static Action ERROR => new Action("E");
-        public static Action REQUEST => new Action("REQ");
-        public static Action RESPONSE => new Action("RES");
-        public static Action REJECTION => new Action("REJ");
-        public static Action PRESENCE_JOIN => new Action("PNJ");
-        public static Action PRESENCE_LEAVE => new Action("PNL");
-        public static Action WRITE_ACKNOWLEDGEMENT => new Action("WA");
+        public static Action Empty => new(string.Empty);
+        public static Action PING => new("PI");
+        public static Action PONG => new("PO");
+        public static Action ACK => new("A");
+        public static Action REDIRECT => new("RED");
+        public static Action CHALLENGE => new("CH");
+        public static Action CHALLENGE_RESPONSE => new("CHR");
+        public static Action READ => new("R");
+        public static Action CREATE => new("C");
+        public static Action UPDATE => new("U");
+        public static Action PATCH => new("P");
+        public static Action DELETE => new("D");
+        public static Action SUBSCRIBE => new("S");
+        public static Action UNSUBSCRIBE => new("US");
+        public static Action HAS => new("H");
+        public static Action SNAPSHOT => new("SN");
+        public static Action INVOKE => new("I");
+        public static Action SUBSCRIPTION_FOR_PATTERN_FOUND => new("SP");
+        public static Action SUBSCRIPTION_FOR_PATTERN_REMOVED => new("SR");
+        public static Action SUBSCRIPTION_HAS_PROVIDER => new("SH");
+        public static Action LISTEN => new("L");
+        public static Action UNLISTEN => new("UL");
+        public static Action LISTEN_ACCEPT => new("LA");
+        public static Action LISTEN_REJECT => new("LR");
+        public static Action PROVIDER_UPDATE => new("PU");
+        public static Action QUERY => new("Q");
+        public static Action CREATEORREAD => new("CR");
+        public static Action CREATEANDUPDATE => new("CU");
+        public static Action EVENT => new("EVT");
+        public static Action ERROR => new("E");
+        public static Action REQUEST => new("REQ");
+        public static Action RESPONSE => new("RES");
+        public static Action REJECTION => new("REJ");
+        public static Action PRESENCE_JOIN => new("PNJ");
+        public static Action PRESENCE_LEAVE => new("PNL");
+        public static Action WRITE_ACKNOWLEDGEMENT => new("WA");
 
-        readonly string Identifier;
+        private readonly string Identifier;
 
         public Action(string identifier) => Identifier = identifier;
 

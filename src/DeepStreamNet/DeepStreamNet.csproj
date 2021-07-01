@@ -21,7 +21,7 @@
     <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
     <Version>0.0.0.4-alpha</Version>
     <DebugType>Full</DebugType>
-    <LangVersion>7.3</LangVersion>
+    <LangVersion>9.0</LangVersion>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
   </PropertyGroup>
 

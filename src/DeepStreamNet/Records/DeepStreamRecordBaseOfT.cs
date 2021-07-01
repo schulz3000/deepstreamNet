@@ -4,16 +4,16 @@ using System;
 
 namespace DeepStreamNet
 {
-    class DeepStreamRecordBase<T> : DeepStreamRecordBase, IDeepStreamRecordWrapper, IDisposable
+    internal class DeepStreamRecordBase<T> : DeepStreamRecordBase, IDeepStreamRecordWrapper, IDisposable
         where T : JContainer
     {
-        static readonly JsonMergeSettings JsonMergeSettings = new JsonMergeSettings
+        private static readonly JsonMergeSettings JsonMergeSettings = new()
         {
             MergeArrayHandling = MergeArrayHandling.Replace,
             MergeNullValueHandling = MergeNullValueHandling.Merge
         };
 
-        readonly JsonNetChangeListener _listener;
+        private readonly JsonNetChangeListener _listener;
 
         public override dynamic this[object key]
         {
@@ -50,7 +50,7 @@ namespace DeepStreamNet
                 var arrayParentPath = path.Substring(0, path.Length - (path.LastIndexOf("[", StringComparison.Ordinal) + 1));
                 if (path.StartsWith("[", StringComparison.Ordinal) && path.EndsWith("]", StringComparison.Ordinal))
                 {
-                    arrayParentPath = String.Empty;
+                    arrayParentPath = string.Empty;
                 }
                 var token = Data.SelectToken(arrayParentPath);
                 ((JArray)token).Add(item);
@@ -84,7 +84,7 @@ namespace DeepStreamNet
             GC.SuppressFinalize(this);
         }
 
-        void Dispose(bool disposing)
+        protected virtual void Dispose(bool disposing)
         {
             if (disposing)
             {

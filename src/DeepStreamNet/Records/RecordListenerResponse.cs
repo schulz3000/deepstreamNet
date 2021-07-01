@@ -1,6 +1,6 @@
 ﻿namespace DeepStreamNet
 {
-    class RecordListenerResponse : ListenerResponseBase
+    internal class RecordListenerResponse : ListenerResponseBase
     {
         public RecordListenerResponse(string pattern, string name, Connection connection)
             : base(pattern, name, connection)

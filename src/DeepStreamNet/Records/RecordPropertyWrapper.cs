@@ -1,8 +1,8 @@
 ﻿namespace DeepStreamNet
 {
-    class RecordPropertyWrapper : IRecordPropertyWrapper
+    internal class RecordPropertyWrapper : IRecordPropertyWrapper
     {
-        readonly object _initialValue;
+        private readonly object _initialValue;
 
         public RecordPropertyWrapper(string name, object value)
         {
@@ -13,7 +13,7 @@
 
         public string Name { get; }
 
-        object _currentValue;
+        private object _currentValue;
 
         public object Value
         {

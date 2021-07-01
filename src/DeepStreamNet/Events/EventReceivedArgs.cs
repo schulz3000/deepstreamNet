@@ -2,7 +2,7 @@
 
 namespace DeepStreamNet
 {
-    class EventReceivedArgs : EventArgs
+    internal class EventReceivedArgs : EventArgs
     {
         public string EventName { get; }
 

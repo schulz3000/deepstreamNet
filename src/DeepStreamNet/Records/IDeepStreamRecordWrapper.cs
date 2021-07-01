@@ -3,7 +3,7 @@ using Newtonsoft.Json.Linq;
 
 namespace DeepStreamNet
 {
-    interface IDeepStreamRecordWrapper:IDeepStreamRecord
+    internal interface IDeepStreamRecordWrapper:IDeepStreamRecord
     {
         int RecordVersion { get; }
 

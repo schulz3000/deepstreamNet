@@ -10,69 +10,85 @@ namespace DeepStreamNet
     /// </summary>
     public sealed class DeepStreamClient : IDisposable
     {
-        Connection _connection;
+        private Connection _connection;
         /// <summary>
         /// inner Connection
         /// </summary>
-        Connection Connection => _connection;
+        private Connection Connection => _connection;
 
-        IDeepStreamEvents _events;
+        private IDeepStreamEvents _events;
         /// <summary>
         /// DeepStreamEvents
         /// </summary>
+        /// <exception cref="DeepStreamException"></exception>
         public IDeepStreamEvents Events
         {
             get
             {
                 if (_events == null)
+                {
                     throw new DeepStreamException("not initialized", "please login first");
+                }
+
                 return _events;
             }
         }
 
-        IDeepStreamRecords _records;
+        private IDeepStreamRecords _records;
         /// <summary>
         /// DeepStreamRecords
         /// </summary>
+        /// <exception cref="DeepStreamException"></exception>
         public IDeepStreamRecords Records
         {
             get
             {
                 if (_records == null)
+                {
                     throw new DeepStreamException("not initialized", "please login first");
+                }
+
                 return _records;
             }
         }
 
-        IDeepStreamRemoteProcedureCalls _rpcs;
+        private IDeepStreamRemoteProcedureCalls _rpcs;
         /// <summary>
         /// DeepStreamRemoteProcedures
         /// </summary>
+        /// <exception cref="DeepStreamException"></exception>
         public IDeepStreamRemoteProcedureCalls Rpcs
         {
             get
             {
                 if (_rpcs == null)
+                {
                     throw new DeepStreamException("not initialized", "please login first");
+                }
+
                 return _rpcs;
             }
         }
 
-        IDeepStreamPresence _presence;
+        private IDeepStreamPresence _presence;
         /// <summary>
         /// DeepStreamPresence
         /// </summary>
+        /// <exception cref="DeepStreamException"></exception>
         public IDeepStreamPresence Presence
         {
             get
             {
                 if (_presence == null)
+                {
                     throw new DeepStreamException("not initialized", "please login first");
+                }
+
                 return _presence;
             }
         }
 
-        readonly DeepStreamOptions _options;
+        private readonly DeepStreamOptions _options;
 
         /// <summary>
         /// DeepStreamClient for connecting to deepstream.io server
@@ -104,10 +120,7 @@ namespace DeepStreamNet
         /// Anonymous Login to deepstream.io server
         /// </summary>
         /// <returns>true if login was successful otherwise false</returns>
-        public Task<bool> LoginAsync()
-        {
-            return LoginAsync(Constants.EmptyCredentials);
-        }
+        public Task<bool> LoginAsync() => LoginAsync(Constants.EmptyCredentials);
 
         /// <summary>
         /// Login to deepstream.io server
@@ -119,12 +132,14 @@ namespace DeepStreamNet
         {
             string credentials = Constants.EmptyCredentials;
             if (!string.IsNullOrWhiteSpace(userName) && !string.IsNullOrWhiteSpace(password))
+            {
                 credentials = JsonConvert.SerializeObject(new { username = userName, password });
+            }
 
             return LoginAsync(credentials);
         }
 
-        async Task<bool> LoginAsync(string credentials)
+        private async Task<bool> LoginAsync(string credentials)
         {
             var tcs = new TaskCompletionSource<bool>();
 
@@ -160,7 +175,9 @@ namespace DeepStreamNet
             void ErrorHandler(object sender, ErrorArgs e)
             {
                 if (e.Action != Action.ERROR)
+                {
                     return;
+                }
 
                 Connection.Error -= ErrorHandler;
                 Connection.State = ConnectionState.AWAITING_AUTHENTICATION;
@@ -169,7 +186,7 @@ namespace DeepStreamNet
             }
         }
 
-        Task<bool?> RegisterAuthChallenge(string credentials)
+        private Task<bool?> RegisterAuthChallenge(string credentials)
         {
             var tcs = new TaskCompletionSource<bool?>();
 
@@ -196,9 +213,9 @@ namespace DeepStreamNet
             }
         }
 
-        void Connection_PingReceived(object sender, EventArgs e) => Connection.Send(Utils.BuildCommand(Topic.CONNECTION, Action.PONG));
+        private void Connection_PingReceived(object sender, EventArgs e) => Connection.Send(Utils.BuildCommand(Topic.CONNECTION, Action.PONG));
 
-        Task<bool> RecreateClientAsync(string endPointUrl, string credentials)
+        private Task<bool> RecreateClientAsync(string endPointUrl, string credentials)
         {
             Connection.Dispose();
             _connection = new Connection(endPointUrl);
@@ -214,7 +231,7 @@ namespace DeepStreamNet
             GC.SuppressFinalize(this);
         }
 
-        void Dispose(bool disposing)
+        private void Dispose(bool disposing)
         {
             if (disposing)
             {

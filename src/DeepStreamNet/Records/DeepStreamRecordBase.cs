@@ -4,7 +4,7 @@ using System.Dynamic;
 
 namespace DeepStreamNet
 {
-    abstract class DeepStreamRecordBase : DynamicObject, IDeepStreamRecord
+    internal abstract class DeepStreamRecordBase : DynamicObject, IDeepStreamRecord
     {
         public int RecordVersion { get; private set; }
 

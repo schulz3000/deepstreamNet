@@ -20,67 +20,53 @@ namespace DeepStreamNet.Tests
         [FactWithSkipOnCloudBuilds]
         public async Task NameNullTest()
         {
-            using (var client = await TestHelper.GetClientAsync())
-            {
-                await Assert.ThrowsAsync<ArgumentNullException>("name", () => client.Records.GetListAsync(null));
-            }
+            using var client = await TestHelper.GetClientAsync();
+            await Assert.ThrowsAsync<ArgumentNullException>("name", () => client.Records.GetListAsync(null));
         }
 
         [FactWithSkipOnCloudBuilds, TestPriority(1)]
         public async Task NameTest()
         {
-            using (var client = await TestHelper.GetClientAsync())
-            {
-                var list = await client.Records.GetListAsync("list1");
-                Assert.Equal("list1", list.ListName);
-            }
+            using var client = await TestHelper.GetClientAsync();
+            var list = await client.Records.GetListAsync("list1");
+            Assert.Equal("list1", list.ListName);
         }
 
         [FactWithSkipOnCloudBuilds, TestPriority(2)]
         public async Task AddTest()
-        {
-            using (var client = await TestHelper.GetClientAsync())
-            {
-                var list = await client.Records.GetListAsync("list1");
-                list.Add("item1");
-                list.Add("item2");
-
-                Assert.Equal(2, list.Count);
-            }
+        {using var client = await TestHelper.GetClientAsync();
+            var list = await client.Records.GetListAsync("list1");
+            list.Add("item1");
+            list.Add("item2");
+            Assert.Equal(2, list.Count);
         }
 
         [FactWithSkipOnCloudBuilds, TestPriority(3)]
         public async Task RemoveTest()
         {
-            using (var client = await TestHelper.GetClientAsync())
-            {
-                var list = await client.Records.GetListAsync("list1");
-                list.Remove("item1");
+            using var client = await TestHelper.GetClientAsync();
+            var list = await client.Records.GetListAsync("list1");
+            list.Remove("item1");
 
-                Assert.Equal(1, list.Count);
-            }
+            Assert.Equal(1, list.Count);
         }
 
         [FactWithSkipOnCloudBuilds, TestPriority(4)]
         public async Task ContainsTest()
         {
-            using (var client = await TestHelper.GetClientAsync())
-            {
-                var list = await client.Records.GetListAsync("list1");
-                Assert.True(list.Contains("item2"));
-            }
+            using var client = await TestHelper.GetClientAsync();
+            var list = await client.Records.GetListAsync("list1");
+            Assert.True(list.Contains("item2"));
         }
 
         [FactWithSkipOnCloudBuilds, TestPriority(5)]
         public async Task ClearTest()
         {
-            using (var client = await TestHelper.GetClientAsync())
-            {
-                var list = await client.Records.GetListAsync("list1");
-                list.Clear();
+            using var client = await TestHelper.GetClientAsync();
+            var list = await client.Records.GetListAsync("list1");
+            list.Clear();
 
-                Assert.Equal(0, list.Count);
-            }
+            Assert.Equal(0, list.Count);
         }
 
         [FactWithSkipOnCloudBuilds, TestPriority(6)]
@@ -89,32 +75,29 @@ namespace DeepStreamNet.Tests
             var name = Guid.NewGuid().ToString();
             var key = Guid.NewGuid().ToString();
             var listKey = Guid.NewGuid().ToString();
-            using (var updateClient = await TestHelper.GetClientAsync())
-            {
-                var list = await updateClient.Records.GetListAsync(listKey);
+            using var updateClient = await TestHelper.GetClientAsync();
+            var list = await updateClient.Records.GetListAsync(listKey);
 
-                var rec = await updateClient.Records.GetRecordAsync(key);
-                var res = await updateClient.Records.SetWithAckAsync(rec, "name", name);
-                Assert.True(res);
-                using (var readClient = await TestHelper.GetClientAsync())
+            var rec = await updateClient.Records.GetRecordAsync(key);
+            var res = await updateClient.Records.SetWithAckAsync(rec, "name", name);
+            Assert.True(res);
+
+            using var readClient = await TestHelper.GetClientAsync();
+            var listRead = await readClient.Records.GetListAsync(listKey);
+            var changes = new List<NotifyCollectionChangedEventArgs>();
+            listRead.CollectionChanged += (sender, args) => changes.Add(args);
+            list.Add(rec.RecordName);
+            int time = 0;
+            while (changes.Count == 0)
+            {
+                await Task.Delay(200);
+                time += 200;
+                if (time > 4000)
                 {
-                    var listRead = await readClient.Records.GetListAsync(listKey);
-                    var changes = new List<NotifyCollectionChangedEventArgs>();
-                    listRead.CollectionChanged += (sender, args) => changes.Add(args);
-                    list.Add(rec.RecordName);
-                    int time = 0;
-                    while (changes.Count == 0)
-                    {
-                        await Task.Delay(200);
-                        time += 200;
-                        if (time > 4000)
-                        {
-                            Assert.True(false, "Time out should have got changes");
-                        }
-                    }
-                    Assert.True(changes.Count(e => e.Action == NotifyCollectionChangedAction.Add) == 1);
+                    Assert.True(false, "Time out should have got changes");
                 }
             }
+            Assert.True(changes.Count(e => e.Action == NotifyCollectionChangedAction.Add) == 1);
         }
     }
 }

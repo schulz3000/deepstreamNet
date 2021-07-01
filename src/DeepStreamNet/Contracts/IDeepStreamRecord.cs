@@ -4,7 +4,7 @@ using System.Dynamic;
 namespace DeepStreamNet.Contracts
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public interface IDeepStreamRecord : IDynamicMetaObjectProvider, INotifyPropertyChanging, INotifyPropertyChanged
     {
@@ -14,7 +14,7 @@ namespace DeepStreamNet.Contracts
         string RecordName { get; }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>

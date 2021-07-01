@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace DeepStreamNet
 {
-    class DeepStreamList : IDeepStreamListWrapper
+    internal class DeepStreamList : IDeepStreamListWrapper
     {
         public string ListName { get; }
 
@@ -25,7 +25,7 @@ namespace DeepStreamNet
             }
         }
 
-        readonly List<string> innerList = new List<string>();
+        private readonly List<string> innerList = new();
 
         public event NotifyCollectionChangedEventHandler CollectionChanged;
 
@@ -58,7 +58,6 @@ namespace DeepStreamNet
 
         public void Clear()
         {
-            var tmp = innerList;
             innerList.Clear();
             CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
         }

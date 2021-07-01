@@ -1,6 +1,6 @@
 ﻿namespace DeepStreamNet
 {
-    class HasRecordArgs : DeepStreamBaseEventArgs
+    internal class HasRecordArgs : DeepStreamBaseEventArgs
     {
         public string Name { get; }
         public bool Result { get; }

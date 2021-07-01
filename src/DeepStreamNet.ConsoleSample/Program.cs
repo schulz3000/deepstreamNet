@@ -6,11 +6,13 @@ namespace DeepStreamNet.Core.ConsoleSample
     public static class Program
     {
         public static async Task Main(string[] args)
-        {            
-            var client = new DeepStreamClient("localhost", 6020);
+        {
+            using var client = new DeepStreamClient("localhost", 6020);
 
             if (await client.LoginAsync())
             {
+                Console.WriteLine("Login successful");
+
                 var disp = await client.Events.SubscribeAsync("test", Console.WriteLine);
 
                 await Task.Delay(2000);
@@ -23,9 +25,12 @@ namespace DeepStreamNet.Core.ConsoleSample
 
                 await disp.DisposeAsync();
             }
+            else
+            {
+                Console.WriteLine("Login was not successful");
+            }
 
-            client.Dispose();
-
+            Console.WriteLine("Finish. Press any key to for exit");
             Console.Read();
         }
     }

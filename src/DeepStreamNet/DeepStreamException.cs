@@ -12,14 +12,14 @@ namespace DeepStreamNet
     public class DeepStreamException : Exception
     {
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public DeepStreamException()
         {
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="message">Exceptionmessage</param>
         public DeepStreamException(string message)
@@ -28,7 +28,7 @@ namespace DeepStreamNet
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="message"></param>
         /// <param name="innerException"></param>
@@ -38,7 +38,7 @@ namespace DeepStreamNet
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="error"></param>
         /// <param name="message"></param>
@@ -49,7 +49,7 @@ namespace DeepStreamNet
 
 #if !COREFX
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="info"></param>
         /// <param name="context"></param>

@@ -3,12 +3,14 @@ using System.Reflection;
 
 namespace DeepStreamNet
 {
-    class RemoteProcedure
+    internal class RemoteProcedure
     {
         public RemoteProcedure(string name, Delegate procedure)
         {
             if (string.IsNullOrWhiteSpace(name))
+            {
                 throw new ArgumentNullException(nameof(name));
+            }
 
             Name = name;
 
@@ -21,16 +23,22 @@ namespace DeepStreamNet
             ReturnType = methodParameters[1].ParameterType.GetGenericArguments()[0];
         }
 
-        static Type DetectDeepstreamParameterType(Type type)
+        private static Type DetectDeepstreamParameterType(Type type)
         {
             if (Utils.IsNumeric(type))
+            {
                 return typeof(double);
+            }
 
             if (type == typeof(string))
+            {
                 return type;
+            }
 
             if (type == typeof(bool))
+            {
                 return type;
+            }
 
             return typeof(object);
         }

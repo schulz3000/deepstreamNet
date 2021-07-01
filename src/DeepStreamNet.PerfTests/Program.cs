@@ -4,9 +4,9 @@ using System.Reflection;
 
 namespace DeepStreamNet.PerfTests
 {
-    class Program
+    internal class Program
     {
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
             BenchmarkSwitcher.FromAssembly(typeof(Program).GetTypeInfo().Assembly).RunAll();
 

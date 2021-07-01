@@ -2,27 +2,27 @@
 
 namespace DeepStreamNet
 {
-    readonly struct Topic : IEquatable<Topic>
+    internal readonly struct Topic : IEquatable<Topic>
     {
-        public static Topic Empty => new Topic(string.Empty);
+        public static Topic Empty => new(string.Empty);
 
-        public static Topic CONNECTION => new Topic("C");
+        public static Topic CONNECTION => new("C");
 
-        public static Topic AUTH => new Topic("A");
+        public static Topic AUTH => new("A");
 
-        public static Topic ERROR => new Topic("X");
+        public static Topic ERROR => new("X");
 
-        public static Topic EVENT => new Topic("E");
+        public static Topic EVENT => new("E");
 
-        public static Topic RECORD => new Topic("R");
+        public static Topic RECORD => new("R");
 
-        public static Topic RPC => new Topic("P");
+        public static Topic RPC => new("P");
 
-        public static Topic PRESENCE => new Topic("U");
+        public static Topic PRESENCE => new("U");
 
-        public static Topic PRIVATE => new Topic("PRIVATE/");
+        public static Topic PRIVATE => new("PRIVATE/");
 
-        readonly string Identifier;
+        private readonly string Identifier;
 
         public Topic(string identifier) => Identifier = identifier;
 

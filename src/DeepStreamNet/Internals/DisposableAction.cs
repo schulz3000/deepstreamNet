@@ -2,21 +2,27 @@
 
 namespace DeepStreamNet
 {
-    class DisposableAction : IDisposable
+    internal class DisposableAction : IDisposable
     {
-        readonly System.Action _action;
+        private readonly System.Action _action;
 
         public DisposableAction(System.Action action)
         {
             _action = action;
         }
 
-        public void Dispose() => Dispose(true);
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
 
-        void Dispose(bool disposing)
+        protected virtual void Dispose(bool disposing)
         {
             if (disposing)
+            {
                 _action();
+            }
         }
     }
 }

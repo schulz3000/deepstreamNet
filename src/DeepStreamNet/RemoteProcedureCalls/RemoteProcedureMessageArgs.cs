@@ -3,7 +3,7 @@ using System;
 
 namespace DeepStreamNet
 {
-    class RemoteProcedureMessageArgs : DeepStreamBaseEventArgs
+    internal class RemoteProcedureMessageArgs : DeepStreamBaseEventArgs
     {
         public string Uid { get; }
         public string Identifier { get; }

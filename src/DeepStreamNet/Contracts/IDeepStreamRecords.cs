@@ -4,12 +4,12 @@ using System.Threading.Tasks;
 namespace DeepStreamNet.Contracts
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public interface IDeepStreamRecords
     {
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>
@@ -17,7 +17,7 @@ namespace DeepStreamNet.Contracts
         Task<IDeepStreamRecord> GetRecordAsync(string name);
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="record"></param>
         /// <param name="item"></param>
@@ -26,7 +26,7 @@ namespace DeepStreamNet.Contracts
         void Set(IDeepStreamRecord record, object item);
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="record"></param>
         /// <param name="item"></param>
@@ -36,7 +36,7 @@ namespace DeepStreamNet.Contracts
         Task<bool> SetWithAckAsync(IDeepStreamRecord record, object item);
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="record"></param>
         /// <param name="path"></param>
@@ -48,7 +48,7 @@ namespace DeepStreamNet.Contracts
         void Set(IDeepStreamRecord record, string path, object item);
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="record"></param>
         /// <param name="path"></param>
@@ -57,28 +57,28 @@ namespace DeepStreamNet.Contracts
         Task<bool> SetWithAckAsync(IDeepStreamRecord record, string path, object item);
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="record"></param>
         /// <returns></returns>
         Task DiscardAsync(IDeepStreamRecord record);
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="record"></param>
         /// <returns></returns>
         Task DeleteAsync(IDeepStreamRecord record);
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>
         Task<IDeepStreamList> GetListAsync(string name);
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="recordName"></param>
         /// <exception cref="ArgumentNullException">Throws when param name is null or empty</exception>
@@ -86,7 +86,7 @@ namespace DeepStreamNet.Contracts
         Task<bool> HasAsync(string recordName);
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="recordName"></param>
         /// <exception cref="ArgumentNullException">Throws when param name is null or empty</exception>
@@ -94,13 +94,13 @@ namespace DeepStreamNet.Contracts
         Task<IDeepStreamRecord> SnapshotAsync(string recordName);
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <returns></returns>
         IDeepStreamAnonymousRecord GetAnonymousRecord();
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="pattern"></param>
         /// <param name="listener"></param>
@@ -108,7 +108,7 @@ namespace DeepStreamNet.Contracts
         Task<IAsyncDisposable> ListenAsync(string pattern, Action<string, bool, IListenerResponse> listener);
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="pattern"></param>
         /// <param name="listener"></param>

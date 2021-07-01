@@ -5,10 +5,10 @@ using System.Threading.Tasks;
 
 namespace DeepStreamNet
 {
-    class DeepStreamEvents : DeepStreamBase, IDeepStreamEvents
+    internal class DeepStreamEvents : DeepStreamBase, IDeepStreamEvents
     {
-        readonly Dictionary<string, int> eventsDict = new Dictionary<string, int>();
-        readonly Dictionary<string, Func<string, bool, IListenerResponse, Task>> listenerDict = new Dictionary<string, Func<string, bool, IListenerResponse, Task>>();
+        private readonly Dictionary<string, int> eventsDict = new();
+        private readonly Dictionary<string, Func<string, bool, IListenerResponse, Task>> listenerDict = new();
 
         public DeepStreamEvents(Connection connection, DeepStreamOptions options)
             : base(connection, options)
@@ -16,10 +16,12 @@ namespace DeepStreamNet
             Connection.EventListenerChanged += Connection_EventListenerChanged;
         }
 
-        async void Connection_EventListenerChanged(object sender, EventListenerChangedEventArgs e)
+        private async void Connection_EventListenerChanged(object sender, EventListenerChangedEventArgs e)
         {
             if (!listenerDict.ContainsKey(e.Pattern))
+            {
                 return;
+            }
 
             var listener = listenerDict[e.Pattern];
 
@@ -31,7 +33,9 @@ namespace DeepStreamNet
             ThrowIfConnectionNotOpened();
 
             if (string.IsNullOrWhiteSpace(eventName))
+            {
                 throw new ArgumentNullException(nameof(eventName));
+            }
 
             var sendData = Utils.ConvertAndPrefixData(data);
 
@@ -71,30 +75,34 @@ namespace DeepStreamNet
             void handler(object sender, EventReceivedArgs e)
             {
                 if (string.Equals(e.EventName, eventName, StringComparison.Ordinal))
+                {
                     data(e.Data);
+                }
             }
         }
 
         public Task<IAsyncDisposable> ListenAsync(string pattern, Action<string, bool, IListenerResponse> listener)
-        {
-            return InnerListenAsync(pattern, (name, state, response) =>
+            => InnerListenAsync(pattern, (name, state, response) =>
             {
                 listener(name, state, response);
                 return Task.FromResult(0);
             });
-        }
 
         public Task<IAsyncDisposable> ListenAsync(string pattern, Func<string, bool, IListenerResponse, Task> listener) => InnerListenAsync(pattern, listener);
 
-        async Task<IAsyncDisposable> InnerListenAsync(string pattern, Func<string, bool, IListenerResponse, Task> listener)
+        private async Task<IAsyncDisposable> InnerListenAsync(string pattern, Func<string, bool, IListenerResponse, Task> listener)
         {
             if (string.IsNullOrWhiteSpace(pattern))
+            {
                 throw new ArgumentNullException(nameof(pattern));
+            }
 
             ThrowIfConnectionNotOpened();
 
             if (listenerDict.ContainsKey(pattern))
+            {
                 throw new DeepStreamException("we already listen for " + pattern);
+            }
 
             if (!listenerDict.ContainsKey(pattern) && await Connection.SendWithAckAsync(Topic.EVENT, Action.LISTEN, Action.LISTEN, pattern, Options.SubscriptionTimeout).ConfigureAwait(false))
             {
@@ -110,26 +118,34 @@ namespace DeepStreamNet
             });
         }
 
-        async Task SubscribeAsync(string eventName)
+        private async Task SubscribeAsync(string eventName)
         {
             if (string.IsNullOrWhiteSpace(eventName))
+            {
                 throw new ArgumentNullException(nameof(eventName));
+            }
 
             var result = await Connection.SendWithAckAsync(Topic.EVENT, Action.SUBSCRIBE, Action.SUBSCRIBE, eventName, Options.SubscriptionTimeout).ConfigureAwait(false);
 
             if (!result)
+            {
                 throw new DeepStreamException(Constants.Errors.ACK_TIMEOUT);
+            }
         }
 
-        async Task UnSubscribeAsync(string eventName)
+        private async Task UnSubscribeAsync(string eventName)
         {
             if (string.IsNullOrWhiteSpace(eventName))
+            {
                 throw new ArgumentNullException(nameof(eventName));
+            }
 
             var result = await Connection.SendWithAckAsync(Topic.EVENT, Action.UNSUBSCRIBE, Action.UNSUBSCRIBE, eventName, Options.SubscriptionTimeout).ConfigureAwait(false);
 
             if (!result)
+            {
                 throw new DeepStreamException(Constants.Errors.ACK_TIMEOUT);
+            }
         }
     }
 }

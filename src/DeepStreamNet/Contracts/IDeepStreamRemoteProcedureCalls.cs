@@ -4,12 +4,12 @@ using System.Threading.Tasks;
 namespace DeepStreamNet.Contracts
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public interface IDeepStreamRemoteProcedureCalls
     {
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <typeparam name="TInput"></typeparam>
         /// <typeparam name="TResult"></typeparam>
@@ -19,7 +19,7 @@ namespace DeepStreamNet.Contracts
         Task<IAsyncDisposable> RegisterProviderAsync<TInput, TResult>(string procedureName, Func<TInput, IRpcResponse<TResult>, Task> procedure);
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <typeparam name="TInput"></typeparam>
         /// <typeparam name="TResult"></typeparam>
@@ -29,7 +29,7 @@ namespace DeepStreamNet.Contracts
         Task<IAsyncDisposable> RegisterProviderAsync<TInput, TResult>(string procedureName, Action<TInput, IRpcResponse<TResult>> procedure);
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <typeparam name="TInput"></typeparam>
         /// <typeparam name="TResult"></typeparam>

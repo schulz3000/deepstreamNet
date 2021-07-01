@@ -2,7 +2,7 @@
 
 namespace DeepStreamNet
 {
-    class PresenceListenerChangedEventArgs: EventArgs
+    internal class PresenceListenerChangedEventArgs: EventArgs
     {
         public string Username { get; }
         public bool IsLoggedIn { get; }

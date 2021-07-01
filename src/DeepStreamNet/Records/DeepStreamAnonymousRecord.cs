@@ -7,10 +7,10 @@ using System.Threading.Tasks;
 
 namespace DeepStreamNet
 {
-    class DeepStreamAnonymousRecord : IDeepStreamAnonymousRecord
+    internal class DeepStreamAnonymousRecord : IDeepStreamAnonymousRecord
     {
-        readonly DeepStreamRecords _context;
-        IDeepStreamRecord _innerRecord;
+        private readonly DeepStreamRecords _context;
+        private IDeepStreamRecord _innerRecord;
 
         public DeepStreamAnonymousRecord(DeepStreamRecords context)
         {
@@ -20,7 +20,9 @@ namespace DeepStreamNet
         public async Task SetNameAsync(string name)
         {
             if (string.IsNullOrWhiteSpace(name))
+            {
                 throw new ArgumentNullException(nameof(name));
+            }
 
             _innerRecord = await _context.GetRecordAsync(name).ConfigureAwait(false);
         }

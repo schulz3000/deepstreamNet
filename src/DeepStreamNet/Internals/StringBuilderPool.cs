@@ -3,16 +3,18 @@ using System.Text;
 
 namespace DeepStreamNet
 {
-    static class StringBuilderPool
+    internal static class StringBuilderPool
     {
         [ThreadStatic]
-        static StringBuilder pool;
+        private static StringBuilder pool;
 
         public static StringBuilder Aquire()
         {
             var ret = pool;
             if (ret == null)
+            {
                 return new StringBuilder();
+            }
 
             ret.Length = 0;
             pool = null;

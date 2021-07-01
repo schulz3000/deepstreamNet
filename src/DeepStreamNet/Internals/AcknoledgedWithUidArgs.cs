@@ -1,6 +1,6 @@
 ﻿namespace DeepStreamNet
 {
-    class AcknoledgedWithUidArgs : AcknoledgedArgs
+    internal class AcknoledgedWithUidArgs : AcknoledgedArgs
     {
         public string Uid { get; }
 

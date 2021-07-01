@@ -1,6 +1,6 @@
 ﻿namespace DeepStreamNet
 {
-    class RedirectionEventArgs : ChallengeEventArgs
+    internal class RedirectionEventArgs : ChallengeEventArgs
     {
         public string RedirectUrl { get; }
 

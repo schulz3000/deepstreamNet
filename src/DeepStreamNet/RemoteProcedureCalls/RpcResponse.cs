@@ -2,11 +2,11 @@
 
 namespace DeepStreamNet
 {
-    class RpcResponse<TResult> : IRpcResponse<TResult>
+    internal class RpcResponse<TResult> : IRpcResponse<TResult>
     {
-        readonly Connection Connection;
-        readonly string ProcedureName;
-        readonly string Uid;
+        private readonly Connection Connection;
+        private readonly string ProcedureName;
+        private readonly string Uid;
 
         public RpcResponse(string procedureName, string uid, Connection connection)
         {

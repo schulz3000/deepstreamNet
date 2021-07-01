@@ -10,9 +10,9 @@ using WebSocket4Net;
 
 namespace DeepStreamNet
 {
-    class Connection : IDisposable
+    internal class Connection : IDisposable
     {
-        WebSocket client;
+        private WebSocket client;
 
         public ConnectionState State { get; internal set; }
         public string Endpoint { get; private set; }
@@ -52,28 +52,36 @@ namespace DeepStreamNet
         public Connection(string host, short port, string path, bool useSecureConnection)
         {
             if (port < 1)
+            {
                 throw new ArgumentOutOfRangeException(nameof(port));
+            }
 
             if (string.IsNullOrWhiteSpace(host))
+            {
                 throw new ArgumentNullException(nameof(host));
+            }
 
             if (string.IsNullOrWhiteSpace(path))
+            {
                 throw new ArgumentNullException(nameof(path));
+            }
 
             var protocol = useSecureConnection ? "wss" : "ws";
 
-            Connect($"{protocol}://{host}:{port.ToString()}/{path}");
+            Connect($"{protocol}://{host}:{port}/{path}");
         }
 
         internal Connection(string url)
         {
             if (string.IsNullOrWhiteSpace(url))
+            {
                 throw new ArgumentNullException(nameof(url));
+            }
 
             Connect(url);
         }
 
-        void Connect(string url)
+        private void Connect(string url)
         {
             State = ConnectionState.NONE;
 
@@ -115,7 +123,9 @@ namespace DeepStreamNet
         public void SendLocal(string command)
         {
             if (command == null)
+            {
                 throw new ArgumentNullException(nameof(command));
+            }
 
             Notify(command.Trim(Constants.GroupSeperator));
         }
@@ -123,7 +133,9 @@ namespace DeepStreamNet
         public void Send(string command)
         {
             if (command == null)
+            {
                 throw new ArgumentNullException(nameof(command));
+            }
 
             client.Send(command);
         }
@@ -161,9 +173,13 @@ namespace DeepStreamNet
             void AckHandler(object sender, AcknoledgedArgs e)
             {
                 if (e.Topic == topic && e.Action == expectedReceivedAction && e.Identifier == identifier)
+                {
                     tcs.TrySetResult(true);
+                }
                 else if (e.Topic == Topic.AUTH)
+                {
                     tcs.TrySetResult(true);
+                }
 
                 if (tcs.Task.IsCompleted)
                 {
@@ -182,7 +198,9 @@ namespace DeepStreamNet
                 Error -= ErrorHandler;
 
                 if (e.Topic == topic && e.Action == Action.ERROR)
+                {
                     tcs.TrySetException(new DeepStreamException(e.Error, e.Message));
+                }
             }
 
             void TimerHandler(object sender, EventArgs e)
@@ -202,7 +220,7 @@ namespace DeepStreamNet
             client.MessageReceived += Client_MessageReceived;
         }
 
-        void Client_MessageReceived(object sender, MessageReceivedEventArgs e)
+        private void Client_MessageReceived(object sender, MessageReceivedEventArgs e)
         {
             var groups = e.Message.Split(Constants.GroupSeperator);
 
@@ -212,7 +230,7 @@ namespace DeepStreamNet
             }
         }
 
-        void Notify(string value)
+        private void Notify(string value)
         {
             var split = value.Split(Constants.RecordSeperator);
 
@@ -229,15 +247,25 @@ namespace DeepStreamNet
             if (topic == Topic.CONNECTION)
             {
                 if (responseAction == Action.CHALLENGE)
+                {
                     ChallengeReceived?.Invoke(this, new ChallengeEventArgs(topic, responseAction));
+                }
                 else if (responseAction == Action.PING)
+                {
                     PingReceived?.Invoke(this, EventArgs.Empty);
+                }
                 else if (responseAction == Action.REDIRECT)
+                {
                     ChallengeReceived?.Invoke(this, new RedirectionEventArgs(topic, responseAction, split[2]));
+                }
                 else if (responseAction == Action.ACK)
+                {
                     ChallengeReceived?.Invoke(this, new ChallengeEventArgs(topic, responseAction));
+                }
                 else if (responseAction == Action.REJECTION)
+                {
                     OnError(topic, action, "Connection rejected", "Connection rejected");
+                }
             }
             else if (topic == Topic.AUTH)
             {
@@ -251,7 +279,7 @@ namespace DeepStreamNet
                 }
                 else
                 {
-                    OnError(topic, action, Constants.Errors.MESSAGE_PARSE_ERROR, "Unknown action " + action.ToString());
+                    OnError(topic, action, Constants.Errors.MESSAGE_PARSE_ERROR, $"Unknown action {action}");
                 }
             }
             else if (topic == Topic.EVENT)
@@ -321,7 +349,7 @@ namespace DeepStreamNet
                 }
                 else
                 {
-                    OnError(topic, action, Constants.Errors.MESSAGE_PARSE_ERROR, "Unknown action " + action.ToString());
+                    OnError(topic, action, Constants.Errors.MESSAGE_PARSE_ERROR, $"Unknown action {action}");
                 }
             }
             else if (topic == Topic.RPC)
@@ -331,9 +359,13 @@ namespace DeepStreamNet
                     var subAction = new Action(split[2]);
 
                     if (subAction == Action.SUBSCRIBE || subAction == Action.UNSUBSCRIBE)
+                    {
                         Acknoledged?.Invoke(this, new RpcAcknoledgedArgs(topic, responseAction, subAction, split[3]));
+                    }
                     else if (subAction == Action.REQUEST)
+                    {
                         Acknoledged?.Invoke(this, new AcknoledgedWithUidArgs(topic, responseAction, split[3], split[4]));
+                    }
                 }
                 //subscriber
                 else if (responseAction == Action.RESPONSE)
@@ -353,7 +385,7 @@ namespace DeepStreamNet
                 }
                 else
                 {
-                    OnError(topic, action, Constants.Errors.MESSAGE_PARSE_ERROR, "Unknown action " + action.ToString());
+                    OnError(topic, action, Constants.Errors.MESSAGE_PARSE_ERROR, $"Unknown action {action}");
                 }
             }
             else if (topic == Topic.PRESENCE)
@@ -394,13 +426,15 @@ namespace DeepStreamNet
             }
             else
             {
-                OnError(topic, action, Constants.Errors.MESSAGE_PARSE_ERROR, "Received message for unknown topic " + topic.ToString());
+                OnError(topic, action, Constants.Errors.MESSAGE_PARSE_ERROR, $"Received message for unknown topic {topic}");
             }
         }
 
-        void OnAcknoledged(Topic topic, Action action, string identifier) => Acknoledged?.Invoke(this, new AcknoledgedArgs(topic, action, identifier));
+        private void OnAcknoledged(Topic topic, Action action, string identifier)
+            => Acknoledged?.Invoke(this, new AcknoledgedArgs(topic, action, identifier));
 
-        void OnError(Topic topic, Action action, string error, string message) => Error?.Invoke(this, new ErrorArgs(topic, action, error, message));
+        private void OnError(Topic topic, Action action, string error, string message)
+            => Error?.Invoke(this, new ErrorArgs(topic, action, error, message));
 
         public void Dispose()
         {
@@ -408,7 +442,7 @@ namespace DeepStreamNet
             GC.SuppressFinalize(this);
         }
 
-        void Dispose(bool disposing)
+        protected virtual void Dispose(bool disposing)
         {
             if (disposing)
             {
@@ -416,7 +450,7 @@ namespace DeepStreamNet
 
 #if NET40 || NET45 || NET451
                 client.Close();
-                (client as IDisposable)?.Dispose();
+                client.Dispose();
 #else
                 client.Dispose();
 #endif

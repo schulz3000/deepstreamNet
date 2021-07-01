@@ -3,10 +3,10 @@ using System.Threading;
 
 namespace DeepStreamNet
 {
-    class AckTimer : IDisposable
+    internal class AckTimer : IDisposable
     {
-        readonly Timer timer;
-        readonly int timeout;
+        private readonly Timer timer;
+        private readonly int timeout;
 
         public event EventHandler Elapsed;
 
@@ -18,7 +18,7 @@ namespace DeepStreamNet
 
         public void Start() => timer.Change(timeout, Timeout.Infinite);
 
-        void OnElapsed(object state) => Elapsed?.Invoke(this, EventArgs.Empty);
+        private void OnElapsed(object state) => Elapsed?.Invoke(this, EventArgs.Empty);
 
         public void Dispose()
         {
@@ -26,7 +26,7 @@ namespace DeepStreamNet
             GC.SuppressFinalize(this);
         }
 
-        void Dispose(bool disposing)
+        protected virtual void Dispose(bool disposing)
         {
             if (disposing)
             {

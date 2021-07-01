@@ -15,13 +15,11 @@ namespace DeepStreamNet.Tests
         [Fact]
         public void NotLoggedInTest()
         {
-            using (var client = new DeepStreamClient("localhost"))
-            {
-                Assert.Throws<DeepStreamException>(() => client.Events);
-                Assert.Throws<DeepStreamException>(() => client.Records);
-                Assert.Throws<DeepStreamException>(() => client.Rpcs);
-                Assert.Throws<DeepStreamException>(() => client.Presence);
-            }
+            using var client = new DeepStreamClient("localhost");
+            Assert.Throws<DeepStreamException>(() => client.Events);
+            Assert.Throws<DeepStreamException>(() => client.Records);
+            Assert.Throws<DeepStreamException>(() => client.Rpcs);
+            Assert.Throws<DeepStreamException>(() => client.Presence);
         }
 
         [Fact]

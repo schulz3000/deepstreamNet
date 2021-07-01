@@ -5,9 +5,9 @@ using System.Threading.Tasks;
 
 namespace DeepStreamNet
 {
-    class DeepStreamPresence : DeepStreamBase, IDeepStreamPresence
+    internal class DeepStreamPresence : DeepStreamBase, IDeepStreamPresence
     {
-        readonly Dictionary<string, Func<string, bool, Task>> _listeners = new Dictionary<string, Func<string, bool, Task>>();
+        private readonly Dictionary<string, Func<string, bool, Task>> _listeners = new();
 
         public DeepStreamPresence(Connection connection, DeepStreamOptions options)
             : base(connection, options)
@@ -15,7 +15,7 @@ namespace DeepStreamNet
             Connection.PresenceListenerChanged += Connection_PresenceListenerChanged;
         }
 
-        void Connection_PresenceListenerChanged(object sender, PresenceListenerChangedEventArgs e)
+        private void Connection_PresenceListenerChanged(object sender, PresenceListenerChangedEventArgs e)
         {
             foreach (var item in _listeners.Values)
             {
@@ -43,7 +43,9 @@ namespace DeepStreamNet
         public Task<IDictionary<string, bool>> GetAllAsync(string[] users)
         {
             if (users == null || users.Length < 1)
+            {
                 throw new ArgumentNullException(nameof(users));
+            }
 
             var tcs = new TaskCompletionSource<IDictionary<string, bool>>();
 
@@ -61,20 +63,20 @@ namespace DeepStreamNet
         }
 
         public Task<IAsyncDisposable> SubscribeAsync(Action<string, bool> listener)
-        {
-            return InnerSubscribeAsync((username, isLoggedIn) =>
-            {
-                listener(username, isLoggedIn);
-                return Task.FromResult(0);
-            });
-        }
+            => InnerSubscribeAsync((username, isLoggedIn) =>
+               {
+                   listener(username, isLoggedIn);
+                   return Task.FromResult(0);
+               });
 
         public Task<IAsyncDisposable> SubscribeAsync(Func<string, bool, Task> listener) => InnerSubscribeAsync(listener);
 
-        async Task<IAsyncDisposable> InnerSubscribeAsync(Func<string, bool, Task> listener)
+        private async Task<IAsyncDisposable> InnerSubscribeAsync(Func<string, bool, Task> listener)
         {
             if (listener == null)
+            {
                 throw new ArgumentNullException(nameof(listener));
+            }
 
             var key = Utils.CreateUid();
 

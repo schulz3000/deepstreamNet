@@ -2,7 +2,7 @@
 
 namespace DeepStreamNet
 {
-    static class Constants
+    internal static class Constants
     {
         internal const char RecordSeperator = (char)31;
         internal const char GroupSeperator = (char)30;

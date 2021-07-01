@@ -4,9 +4,9 @@ using System.Threading.Tasks;
 
 namespace DeepStreamNet
 {
-    class AsyncDisposableAction : IAsyncDisposable
+    internal class AsyncDisposableAction : IAsyncDisposable
     {
-        readonly Func<Task> _asyncAction;
+        private readonly Func<Task> _asyncAction;
 
         public AsyncDisposableAction(Func<Task> asyncAction)
         {
@@ -15,10 +15,12 @@ namespace DeepStreamNet
 
         public Task DisposeAsync() => DisposeAsync(true);
 
-        Task DisposeAsync(bool disposing)
+        private Task DisposeAsync(bool disposing)
         {
             if (disposing)
+            {
                 return _asyncAction();
+            }
 
             return Task.FromResult(0);
         }

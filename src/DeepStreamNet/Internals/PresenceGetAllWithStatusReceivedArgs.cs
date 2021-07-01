@@ -3,9 +3,9 @@ using System.Collections.Generic;
 
 namespace DeepStreamNet
 {
-    class PresenceGetAllWithStatusReceivedArgs : EventArgs
+    internal class PresenceGetAllWithStatusReceivedArgs : EventArgs
     {
-        static readonly Dictionary<string, bool> EmptyUserNamesWithStatus = new Dictionary<string, bool>();
+        private static readonly Dictionary<string, bool> EmptyUserNamesWithStatus = new();
 
         public Dictionary<string, bool> UsernamesWithStatus { get; }
 
