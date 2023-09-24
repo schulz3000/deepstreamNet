@@ -2,7 +2,7 @@
 
 namespace DeepStreamNet
 {
-    abstract class DeepStreamBaseEventArgs : EventArgs
+    internal abstract class DeepStreamBaseEventArgs : EventArgs
     {
         public Topic Topic { get; }
 

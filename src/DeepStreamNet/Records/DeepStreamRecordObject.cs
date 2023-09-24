@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace DeepStreamNet
 {
-    class DeepStreamRecordObject : DeepStreamRecordBase<JObject>
+    internal class DeepStreamRecordObject : DeepStreamRecordBase<JObject>
     {
         public DeepStreamRecordObject(string name, int version, JObject data)
             : base(name, version, data)
@@ -21,10 +21,7 @@ namespace DeepStreamNet
         public override bool TryGetMember(GetMemberBinder binder, out object result)
         {
             result = GetPropertyValue(binder.Name);
-            if (result != null)
-                return true;
-
-            return false;
+            return result != null;
         }
 
         public override bool TrySetMember(SetMemberBinder binder, object value)

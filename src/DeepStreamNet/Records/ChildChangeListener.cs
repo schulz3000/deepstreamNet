@@ -3,24 +3,20 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Linq;
 using System.Reflection;
 
 namespace DeepStreamNet
 {
-    class ChildChangeListener : ChangeListener
+    internal class ChildChangeListener : ChangeListener
     {
-        readonly INotifyPropertyChanged value;
-        readonly Type type;
-        readonly Dictionary<string, ChangeListener> childListeners = new Dictionary<string, ChangeListener>();
+        private readonly INotifyPropertyChanged value;
+        private readonly Type type;
+        private readonly Dictionary<string, ChangeListener> childListeners = new();
 
         public ChildChangeListener(INotifyPropertyChanged instance)
         {
-            if (instance == null)
-                throw new ArgumentNullException(nameof(instance));
-
-            Debug.WriteLine($"creating {nameof(ChildChangeListener)} for {instance}");
-
-            value = instance;
+            value = instance ?? throw new ArgumentNullException(nameof(instance));
             type = value.GetType();
 
             Subscribe();
@@ -32,33 +28,31 @@ namespace DeepStreamNet
             PropertyName = propertyName;
         }
 
-        void Subscribe()
+        private void Subscribe()
         {
             value.PropertyChanged += Value_PropertyChanged;
 
-            foreach (var property in type.GetTypeInfo().DeclaredProperties)
+            foreach (var name in type.GetTypeInfo().DeclaredProperties
+                .Where(property => IsPubliclyReadable(property) && IsNotifier(property.GetValue(value)))
+                .Select(property => property.Name))
             {
-                if (!IsPubliclyReadable(property))
-                    continue;
-                if (!IsNotifier(property.GetValue(obj: this.value)))
-                    continue;
-
-                ResetChildListener(property.Name);
+                ResetChildListener(name);
             }
         }
 
-        static bool IsPubliclyReadable(PropertyInfo prop) => (prop.GetMethod?.IsPublic ?? false) && !prop.GetMethod.IsStatic;
-        static bool IsNotifier(object value) => (value is INotifyCollectionChanged) || (value is INotifyPropertyChanged);
+        private static bool IsPubliclyReadable(PropertyInfo prop) => prop.GetMethod?.IsPublic ?? false && !prop.GetMethod.IsStatic;
+
+        private static bool IsNotifier(object value) => value is INotifyCollectionChanged or INotifyPropertyChanged;
 
         /// <summary>
         /// Resets known (must exist in children collection) child event handlers
         /// </summary>
         /// <param name="propertyName">Name of known child property</param>
         /// <exception cref="InvalidOperationException"></exception>
-        void ResetChildListener(string propertyName)
+        private void ResetChildListener(string propertyName)
         {
             // Unsubscribe if existing
-            if (childListeners.TryGetValue(propertyName, out ChangeListener listener)
+            if (childListeners.TryGetValue(propertyName, out var listener)
                 && listener != null)
             {
                 listener.PropertyChanged -= Child_PropertyChanged;
@@ -72,8 +66,7 @@ namespace DeepStreamNet
             var property = type.GetTypeInfo().GetDeclaredProperty(propertyName);
             if (property == null)
             {
-                throw new InvalidOperationException(
-                   $"Was unable to get '{propertyName}' property information from Type '{type.Name}'");
+                throw new InvalidOperationException($"Was unable to get '{propertyName}' property information from Type '{type.Name}'");
             }
 
             object newValue = property.GetValue(value, null);
@@ -81,15 +74,13 @@ namespace DeepStreamNet
             // Only recreate if there is a new value
             if (newValue != null)
             {
-                if (newValue is INotifyCollectionChanged)
+                if (newValue is INotifyCollectionChanged changed)
                 {
-                    listener = childListeners[propertyName] =
-                        new CollectionChangeListener(newValue as INotifyCollectionChanged, propertyName);
+                    listener = childListeners[propertyName] = new CollectionChangeListener(changed, propertyName);
                 }
-                else if (newValue is INotifyPropertyChanged)
+                else if (newValue is INotifyPropertyChanged instance)
                 {
-                    listener = childListeners[propertyName] =
-                        new ChildChangeListener(newValue as INotifyPropertyChanged, propertyName);
+                    listener = childListeners[propertyName] = new ChildChangeListener(instance, propertyName);
                 }
                 else
                 {
@@ -97,16 +88,16 @@ namespace DeepStreamNet
                 }
 
                 if (listener != null)
+                {
                     listener.PropertyChanged += Child_PropertyChanged;
+                }
             }
         }
 
-        void Child_PropertyChanged(object sender, PropertyChangedEventArgs e)
-        {
-            RaisePropertyChanged(propertyName: e.PropertyName);
-        }
+        private void Child_PropertyChanged(object sender, PropertyChangedEventArgs e)
+            => RaisePropertyChanged(propertyName: e.PropertyName);
 
-        void Value_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        private void Value_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             // First, reset child on change, if required...
             ResetChildListener(e.PropertyName);
@@ -115,11 +106,9 @@ namespace DeepStreamNet
             RaisePropertyChanged(propertyName: e.PropertyName);
         }
 
-        protected override void RaisePropertyChanged(string propertyName)
-        {
+        protected override void RaisePropertyChanged(string propertyName) =>
             // Special Formatting
-            base.RaisePropertyChanged($"{PropertyName}{(PropertyName != null ? "." : null)}{propertyName}");
-        }
+            base.RaisePropertyChanged(PropertyName + (PropertyName != null ? "." : null) + propertyName);
 
         /// <summary>
         /// Release all child handlers and self handler
@@ -134,8 +123,6 @@ namespace DeepStreamNet
             }
 
             childListeners.Clear();
-
-            Debug.WriteLine("ChildChangeListener '{0}' unsubscribed", PropertyName);
         }
     }
 }

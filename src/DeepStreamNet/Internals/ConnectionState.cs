@@ -1,6 +1,6 @@
 ﻿namespace DeepStreamNet
 {
-    enum ConnectionState
+    internal enum ConnectionState
     {
         NONE = 0,
         CLOSED = 1,

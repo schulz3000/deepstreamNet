@@ -8,10 +8,10 @@ using System.Linq;
 
 namespace DeepStreamNet
 {
-    class JsonNetChangeListener : INotifyPropertyChanged, INotifyPropertyChanging, IDisposable
+    internal class JsonNetChangeListener : INotifyPropertyChanged, INotifyPropertyChanging, IDisposable
     {
-        readonly INotifyCollectionChanged Collection;
-        readonly HashSet<JsonNetChangeListener> subListener = new HashSet<JsonNetChangeListener>();
+        private readonly INotifyCollectionChanged Collection;
+        private readonly HashSet<JsonNetChangeListener> subListener = new();
 
         public event PropertyChangedEventHandler PropertyChanged;
         public event PropertyChangingEventHandler PropertyChanging;
@@ -31,13 +31,13 @@ namespace DeepStreamNet
             Collection.CollectionChanged += Collection_CollectionChanged;
         }
 
-        void OnPropertyChanging(object sender, PropertyChangingEventArgs args)
+        private void OnPropertyChanging(object sender, PropertyChangingEventArgs args)
             => PropertyChanging?.Invoke(Collection, args);
 
-        void OnPropertyChanged(object sender, PropertyChangedEventArgs args)
+        private void OnPropertyChanged(object sender, PropertyChangedEventArgs args)
             => PropertyChanged?.Invoke(Collection, args);
 
-        void Collection_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        private void Collection_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
             if ((e.Action == NotifyCollectionChangedAction.Replace || e.Action == NotifyCollectionChangedAction.Remove || e.Action == NotifyCollectionChangedAction.Reset) && e.OldItems != null)
             {
@@ -46,10 +46,13 @@ namespace DeepStreamNet
                     if (subListener.Contains(item))
                     {
                         var notify = subListener.FirstOrDefault(f => f == item);
-                        notify.PropertyChanging -= OnPropertyChanging;
-                        notify.PropertyChanged -= OnPropertyChanged;
-                        subListener.Remove(notify);
-                        notify.Dispose();
+                        if (notify != null)
+                        {
+                            notify.PropertyChanging -= OnPropertyChanging;
+                            notify.PropertyChanged -= OnPropertyChanged;
+                            subListener.Remove(notify);
+                            notify.Dispose();
+                        }
                     }
                 }
             }
@@ -58,7 +61,7 @@ namespace DeepStreamNet
             {
                 foreach (var item in e.NewItems.OfType<JContainer>().Where(w => w.Type == JTokenType.Array || w.Type == JTokenType.Object))
                 {
-                    var nlistener = Create((INotifyCollectionChanged)item);
+                    var nlistener = Create(item);
                     subListener.Add(nlistener);
                     nlistener.PropertyChanging += OnPropertyChanging;
                     nlistener.PropertyChanged += OnPropertyChanged;
@@ -66,7 +69,9 @@ namespace DeepStreamNet
             }
 
             if ((e.Action != NotifyCollectionChangedAction.Add && e.Action != NotifyCollectionChangedAction.Replace) || e.NewItems == null)
+            {
                 return;
+            }
 
             foreach (var item in e.NewItems.OfType<JValue>())
             {
@@ -86,16 +91,25 @@ namespace DeepStreamNet
 
         public void Dispose()
         {
-            Collection.CollectionChanged -= Collection_CollectionChanged;
-            foreach (var item in subListener)
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
             {
-                item.PropertyChanging -= OnPropertyChanging;
-                item.PropertyChanged -= OnPropertyChanged;
-                item.Dispose();
+                Collection.CollectionChanged -= Collection_CollectionChanged;
+                foreach (var item in subListener)
+                {
+                    item.PropertyChanging -= OnPropertyChanging;
+                    item.PropertyChanged -= OnPropertyChanged;
+                    item.Dispose();
+                }
             }
         }
 
         public static JsonNetChangeListener Create(INotifyCollectionChanged collection)
-            => new JsonNetChangeListener(collection);
+            => new(collection);
     }
 }

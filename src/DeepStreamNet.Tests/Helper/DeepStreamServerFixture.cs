@@ -7,11 +7,11 @@ namespace DeepStreamNet.Tests.Helper
 {
     public class DeepStreamServerFixture : IDisposable
     {
-        static int ProcessId = -1;
+        private static int ProcessId = -1;
 
-        readonly Process process;
+        private readonly Process process;
 
-        readonly string DeepstreamServerStartFile;
+        private readonly string DeepstreamServerStartFile;
 
         public DeepStreamServerFixture()
         {
@@ -31,10 +31,14 @@ namespace DeepStreamNet.Tests.Helper
         public void StartServer()
         {
             if (!bool.Parse(TestHelper.Config["useLocalInstance"]))
+            {
                 return;
+            }
 
             if (ProcessId != -1 && IsProcessRunning(ProcessId))
+            {
                 return;
+            }
 
             process.StartInfo = new ProcessStartInfo
             {
@@ -49,7 +53,7 @@ namespace DeepStreamNet.Tests.Helper
             Thread.Sleep(5000);
         }
 
-        static bool IsProcessRunning(int processId)
+        private static bool IsProcessRunning(int processId)
         {
             try
             {
@@ -65,12 +69,21 @@ namespace DeepStreamNet.Tests.Helper
 
         public void Dispose()
         {
-            process?.Kill();
-            process?.Dispose();
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
 
-            if (File.Exists(DeepstreamServerStartFile))
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
             {
-                File.Delete(DeepstreamServerStartFile);
+                process?.Kill();
+                process?.Dispose();
+
+                if (File.Exists(DeepstreamServerStartFile))
+                {
+                    File.Delete(DeepstreamServerStartFile);
+                }
             }
         }
     }

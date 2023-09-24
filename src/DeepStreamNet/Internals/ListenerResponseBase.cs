@@ -2,11 +2,11 @@
 
 namespace DeepStreamNet
 {
-    abstract class ListenerResponseBase : IListenerResponse
+    internal abstract class ListenerResponseBase : IListenerResponse
     {
-        readonly string Pattern;
-        readonly string Name;
-        readonly Connection Connection;
+        private readonly string Pattern;
+        private readonly string Name;
+        private readonly Connection Connection;
 
         protected abstract Topic ListenerTopic { get; }
 

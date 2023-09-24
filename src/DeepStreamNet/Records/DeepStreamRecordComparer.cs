@@ -1,10 +1,9 @@
-﻿using DeepStreamNet.Contracts;
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace DeepStreamNet
 {
-    class DeepStreamRecordComparer : IEqualityComparer<IDeepStreamRecordWrapper>
+    internal class DeepStreamRecordComparer : IEqualityComparer<IDeepStreamRecordWrapper>
     {
         public bool Equals(IDeepStreamRecordWrapper x, IDeepStreamRecordWrapper y)
         {

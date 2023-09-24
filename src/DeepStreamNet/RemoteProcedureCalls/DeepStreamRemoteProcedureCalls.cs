@@ -8,11 +8,11 @@ using System.Threading.Tasks;
 
 namespace DeepStreamNet
 {
-    class DeepStreamRemoteProcedureCalls : DeepStreamBase, IDeepStreamRemoteProcedureCalls, IDisposable
+    internal class DeepStreamRemoteProcedureCalls : DeepStreamBase, IDeepStreamRemoteProcedureCalls, IDisposable
     {
-        readonly HashSet<RemoteProcedure> remoteProcedures = new HashSet<RemoteProcedure>(new RemoteProcedureEqualityComparer());
+        private readonly HashSet<RemoteProcedure> remoteProcedures = new(new RemoteProcedureEqualityComparer());
 
-        readonly Dictionary<Type, Func<string, string, Connection, IRpcResponse>> rpcResponses = new Dictionary<Type, Func<string, string, Connection, IRpcResponse>>();
+        private readonly Dictionary<Type, Func<string, string, Connection, IRpcResponse>> rpcResponses = new();
 
         public DeepStreamRemoteProcedureCalls(Connection connection, DeepStreamOptions options)
             : base(connection, options)
@@ -20,10 +20,12 @@ namespace DeepStreamNet
             Connection.PerformRemoteProcedureRequested += Connection_PerformRemoteProcedureRequested;
         }
 
-        Func<string, string, Connection, IRpcResponse> GetRpcResponseByType(Type type)
+        private Func<string, string, Connection, IRpcResponse> GetRpcResponseByType(Type type)
         {
             if (rpcResponses.ContainsKey(type))
+            {
                 return rpcResponses[type];
+            }
 
             var func = CreateRpcResponseFunc(type);
 
@@ -32,7 +34,7 @@ namespace DeepStreamNet
             return func;
         }
 
-        static Func<string, string, Connection, IRpcResponse> CreateRpcResponseFunc(Type type)
+        private static Func<string, string, Connection, IRpcResponse> CreateRpcResponseFunc(Type type)
         {
             var rpcResponseType = typeof(RpcResponse<>).MakeGenericType(type);
             var expParameter = new[] {
@@ -40,10 +42,10 @@ namespace DeepStreamNet
                         Expression.Parameter(typeof(string)),
                         Expression.Parameter(typeof(Connection))
                     };
-            return Expression.Lambda<Func<string, string, Connection, IRpcResponse>>(Expression.New(rpcResponseType.GetTypeInfo().GetConstructor(new Type[] { typeof(string), typeof(string), typeof(Connection) }), expParameter), expParameter).Compile();
+            return Expression.Lambda<Func<string, string, Connection, IRpcResponse>>(Expression.New(rpcResponseType.GetTypeInfo().GetConstructor(new[] { typeof(string), typeof(string), typeof(Connection) }), expParameter), expParameter).Compile();
         }
 
-        async void Connection_PerformRemoteProcedureRequested(object sender, RemoteProcedureMessageArgs e)
+        private async void Connection_PerformRemoteProcedureRequested(object sender, RemoteProcedureMessageArgs e)
         {
             var command = Utils.BuildCommand(Topic.RPC, Action.ACK, Action.REQUEST, e.Identifier, e.Uid);
             Connection.Send(command);
@@ -85,20 +87,28 @@ namespace DeepStreamNet
             }
         }
 
-        public Task<IAsyncDisposable> RegisterProviderAsync<TInput, TResult>(string procedureName, Func<TInput, IRpcResponse<TResult>, Task> procedure) => InnerRegisterProviderAsync(procedureName, procedure);
+        public Task<IAsyncDisposable> RegisterProviderAsync<TInput, TResult>(string procedureName, Func<TInput, IRpcResponse<TResult>, Task> procedure)
+            => InnerRegisterProviderAsync(procedureName, procedure);
 
-        public Task<IAsyncDisposable> RegisterProviderAsync<TInput, TResult>(string procedureName, Action<TInput, IRpcResponse<TResult>> procedure) => InnerRegisterProviderAsync(procedureName, procedure);
+        public Task<IAsyncDisposable> RegisterProviderAsync<TInput, TResult>(string procedureName, Action<TInput, IRpcResponse<TResult>> procedure)
+            => InnerRegisterProviderAsync(procedureName, procedure);
 
-        async Task<IAsyncDisposable> InnerRegisterProviderAsync(string procedureName, Delegate procedure)
+        private async Task<IAsyncDisposable> InnerRegisterProviderAsync(string procedureName, Delegate procedure)
         {
             if (string.IsNullOrWhiteSpace(procedureName))
+            {
                 throw new ArgumentNullException(nameof(procedureName));
+            }
 
             if (procedure == null)
+            {
                 throw new ArgumentNullException(nameof(procedure));
+            }
 
             if (remoteProcedures.Any(a => a.Name == procedureName))
-                throw new DeepStreamException("Procedure with this name still registered");
+            {
+                throw new DeepStreamException("Procedure with this name already registered");
+            }
 
             await Connection.SendWithAckAsync(Topic.RPC, Action.SUBSCRIBE, Action.ACK, procedureName, Options.RpcAckTimeout).ConfigureAwait(false);
             remoteProcedures.Add(new RemoteProcedure(procedureName, procedure));
@@ -115,7 +125,9 @@ namespace DeepStreamNet
             var tcs = new TaskCompletionSource<TResult>();
 
             if (string.IsNullOrWhiteSpace(procedureName))
+            {
                 throw new ArgumentNullException(nameof(procedureName));
+            }
 
             var uid = Utils.CreateUid();
 
@@ -129,7 +141,9 @@ namespace DeepStreamNet
             void ackHandler(object sender, RemoteProcedureMessageArgs e)
             {
                 if (e.Uid != uid || e.Identifier != procedureName)
+                {
                     return;
+                }
 
                 Connection.Error -= errorHandler;
                 Connection.RemoteProcedureResultReceived -= ackHandler;
@@ -155,7 +169,9 @@ namespace DeepStreamNet
             void errorHandler(object sender, ErrorArgs e)
             {
                 if (e.Message != procedureName)
+                {
                     return;
+                }
 
                 Connection.Error -= errorHandler;
                 Connection.RemoteProcedureResultReceived -= ackHandler;
@@ -164,7 +180,7 @@ namespace DeepStreamNet
             }
         }
 
-        Task<bool> SendWithAckAsync<T>(Topic topic, Action action, Action expectedReceivedAction, string identifier, string uid, T parameter, int ackTimeout)
+        private Task<bool> SendWithAckAsync<T>(Topic topic, Action action, Action expectedReceivedAction, string identifier, string uid, T parameter, int ackTimeout)
         {
             var tcs = new TaskCompletionSource<bool>();
             var timer = new AckTimer(ackTimeout);
@@ -184,7 +200,9 @@ namespace DeepStreamNet
             void ackHandler(object sender, AcknoledgedArgs e)
             {
                 if (e is AcknoledgedWithUidArgs args && args.Topic == topic && args.Action == expectedReceivedAction && args.Identifier == identifier && args.Uid == uid)
+                {
                     tcs.TrySetResult(true);
+                }
 
                 if (tcs.Task.IsCompleted)
                 {
@@ -224,7 +242,7 @@ namespace DeepStreamNet
             GC.SuppressFinalize(this);
         }
 
-        void Dispose(bool disposing)
+        protected virtual void Dispose(bool disposing)
         {
             if (disposing && Connection != null)
             {

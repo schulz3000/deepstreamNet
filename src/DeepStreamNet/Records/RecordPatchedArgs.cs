@@ -2,7 +2,7 @@
 
 namespace DeepStreamNet
 {
-    class RecordPatchedArgs : RecordBaseEventArgs
+    internal class RecordPatchedArgs : RecordBaseEventArgs
     {
         public string Property { get; }
 

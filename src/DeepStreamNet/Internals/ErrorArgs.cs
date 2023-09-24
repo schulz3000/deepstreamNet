@@ -1,6 +1,6 @@
 ﻿namespace DeepStreamNet
 {
-    class ErrorArgs : DeepStreamBaseEventArgs
+    internal class ErrorArgs : DeepStreamBaseEventArgs
     {
         public string Error { get; }
         public string Message { get; }

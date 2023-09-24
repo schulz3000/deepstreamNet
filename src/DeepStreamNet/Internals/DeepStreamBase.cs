@@ -1,6 +1,6 @@
 ﻿namespace DeepStreamNet
 {
-    abstract class DeepStreamBase
+    internal abstract class DeepStreamBase
     {
         protected Connection Connection { get; }
 
@@ -15,7 +15,9 @@
         protected void ThrowIfConnectionNotOpened()
         {
             if (Connection.State != ConnectionState.OPEN)
+            {
                 throw new DeepStreamException("Login required first");
+            }
         }
     }
 }

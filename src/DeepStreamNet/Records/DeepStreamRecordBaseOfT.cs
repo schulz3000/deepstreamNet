@@ -4,16 +4,16 @@ using Newtonsoft.Json.Linq;
 
 namespace DeepStreamNet
 {
-    class DeepStreamRecordBase<T> : DeepStreamRecordBase, IDeepStreamRecordWrapper, IDisposable
+    internal class DeepStreamRecordBase<T> : DeepStreamRecordBase, IDeepStreamRecordWrapper, IDisposable
         where T : JContainer
     {
-        static readonly JsonMergeSettings jsonMergeSettings = new JsonMergeSettings
+        private static readonly JsonMergeSettings JsonMergeSettings = new()
         {
             MergeArrayHandling = MergeArrayHandling.Replace,
             MergeNullValueHandling = MergeNullValueHandling.Merge
         };
 
-        protected JsonNetChangeListener Listener;
+        private readonly JsonNetChangeListener _listener;
 
         public override dynamic this[object key]
         {
@@ -25,24 +25,28 @@ namespace DeepStreamNet
 
         public override event PropertyChangingEventHandler PropertyChanging
         {
-            add { Listener.PropertyChanging += value; }
-            remove { Listener.PropertyChanging -= value; }
+            add => _listener.PropertyChanging += value;
+            remove => _listener.PropertyChanging -= value;
         }
 
         public override event PropertyChangedEventHandler PropertyChanged
         {
-            add { Listener.PropertyChanged += value; }
-            remove { Listener.PropertyChanged -= value; }
+            add => _listener.PropertyChanged += value;
+            remove => _listener.PropertyChanged -= value;
         }
-
-        public override event EventHandler RecordChanged;
+        
+        public override event EventHandler RecordChanged
+        {
+            add => _listener.RecordChanged += value;
+            remove => _listener.RecordChanged -= value;
+        }
 
         protected DeepStreamRecordBase(string name, int version, T data)
             : base(name, version)
         {
             Data = data;
             Data.AddAnnotation(name);
-            Listener = JsonNetChangeListener.Create(Data);
+            _listener = JsonNetChangeListener.Create(Data);
         }
 
         public void Patch(string path, JToken item)
@@ -52,7 +56,7 @@ namespace DeepStreamNet
                 var arrayParentPath = path.Substring(0, path.Length - (path.LastIndexOf("[", StringComparison.Ordinal) + 1));
                 if (path.StartsWith("[", StringComparison.Ordinal) && path.EndsWith("]", StringComparison.Ordinal))
                 {
-                    arrayParentPath = String.Empty;
+                    arrayParentPath = string.Empty;
                 }
                 var token = Data.SelectToken(arrayParentPath);
                 ((JArray)token).Add(item);
@@ -72,7 +76,7 @@ namespace DeepStreamNet
 
         public void Update(JToken item)
         {
-            Data.Merge(item, jsonMergeSettings);
+            Data.Merge(item, JsonMergeSettings);
             RecordChanged.Invoke(this, EventArgs.Empty);
             Data.AddAnnotation(RecordName);
         }
@@ -87,11 +91,11 @@ namespace DeepStreamNet
             GC.SuppressFinalize(this);
         }
 
-        void Dispose(bool disposing)
+        protected virtual void Dispose(bool disposing)
         {
             if (disposing)
             {
-                Listener.Dispose();
+                _listener.Dispose();
             }
         }
     }

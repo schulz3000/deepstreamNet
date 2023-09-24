@@ -4,16 +4,15 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Linq;
 
 namespace DeepStreamNet
 {
-    class CollectionChangeListener : ChangeListener
+    internal class CollectionChangeListener : ChangeListener
     {
         public INotifyCollectionChanged Value { get; }
-        readonly Dictionary<INotifyPropertyChanged, ChangeListener> childListeners = new Dictionary<INotifyPropertyChanged, ChangeListener>();
-        readonly Dictionary<INotifyCollectionChanged, ChangeListener> collectionListeners = new Dictionary<INotifyCollectionChanged, ChangeListener>();
+        private readonly Dictionary<INotifyPropertyChanged, ChangeListener> childListeners = new();
+        private readonly Dictionary<INotifyCollectionChanged, ChangeListener> collectionListeners = new();
 
         public CollectionChangeListener(INotifyCollectionChanged collection, string propertyName)
         {
@@ -23,7 +22,7 @@ namespace DeepStreamNet
             Subscribe();
         }
 
-        void Subscribe()
+        private void Subscribe()
         {
             Value.CollectionChanged += Value_CollectionChanged;
 
@@ -38,16 +37,17 @@ namespace DeepStreamNet
             }
         }
 
-        void ResetChildListener(INotifyPropertyChanged item)
+        private void ResetChildListener(INotifyPropertyChanged item)
         {
             if (item == null)
+            {
                 throw new ArgumentNullException(nameof(item));
+            }
 
             RemoveChildItem(item);
 
             // Add new
-            var trackableCollection = item as INotifyCollectionChanged;
-            var listener = trackableCollection != null
+            var listener = item is INotifyCollectionChanged trackableCollection
                 ? (ChangeListener)new CollectionChangeListener(trackableCollection, PropertyName)
                 : new ChildChangeListener(item);
 
@@ -55,22 +55,23 @@ namespace DeepStreamNet
             childListeners.Add(item, listener);
         }
 
-        void ResetCollectionListener(INotifyCollectionChanged item)
+        private void ResetCollectionListener(INotifyCollectionChanged item)
         {
             if (item == null)
+            {
                 throw new ArgumentNullException(nameof(item));
+            }
 
             RemoveCollectionItem(item);
 
             // Add new
-            var trackableCollection = item as INotifyCollectionChanged;
-            var listener = new CollectionChangeListener(trackableCollection, PropertyName);
+            var listener = new CollectionChangeListener(item, PropertyName);
 
             listener.PropertyChanged += Listener_PropertyChanged;
             collectionListeners.Add(item, listener);
         }
 
-        void RemoveChildItem(INotifyPropertyChanged item)
+        private void RemoveChildItem(INotifyPropertyChanged item)
         {
             // Remove old
             if (childListeners.ContainsKey(item))
@@ -82,18 +83,17 @@ namespace DeepStreamNet
             }
         }
 
-        void RemoveCollectionItem(INotifyCollectionChanged item)
+        private void RemoveCollectionItem(INotifyCollectionChanged item)
         {
             if (collectionListeners.ContainsKey(item))
             {
                 collectionListeners[item].PropertyChanged -= Listener_PropertyChanged;
-
                 collectionListeners[item].Dispose();
                 collectionListeners.Remove(item);
             }
         }
 
-        void ClearCollection()
+        private void ClearCollection()
         {
             foreach (var key in childListeners.Keys)
             {
@@ -103,7 +103,7 @@ namespace DeepStreamNet
             childListeners.Clear();
         }
 
-        void Value_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        private void Value_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
             if (e.Action == NotifyCollectionChangedAction.Reset)
             {
@@ -115,28 +115,38 @@ namespace DeepStreamNet
                 if (e.OldItems != null)
                 {
                     foreach (INotifyPropertyChanged item in e.OldItems.OfType<INotifyPropertyChanged>())
+                    {
                         RemoveChildItem(item);
+                    }
 
                     foreach (INotifyCollectionChanged item in e.OldItems.OfType<INotifyCollectionChanged>())
+                    {
                         RemoveCollectionItem(item);
+                    }
                 }
 
                 // ...add new items as well
                 if (e.NewItems != null)
                 {
                     foreach (INotifyPropertyChanged item in e.NewItems.OfType<INotifyPropertyChanged>())
+                    {
                         ResetChildListener(item);
+                    }
 
                     foreach (INotifyCollectionChanged item in e.NewItems.OfType<INotifyCollectionChanged>())
+                    {
                         ResetCollectionListener(item);
+                    }
 
                     foreach (var item in e.NewItems.OfType<JValue>())
+                    {
                         RaisePropertyChanged(item.Path);
+                    }
                 }
             }
         }
 
-        void Listener_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        private void Listener_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             // ...then, notify about it
             // ReSharper disable once ExplicitCallerInfoArgument
@@ -149,10 +159,7 @@ namespace DeepStreamNet
         protected override void Unsubscribe()
         {
             ClearCollection();
-
             Value.CollectionChanged -= Value_CollectionChanged;
-
-            Debug.WriteLine("CollectionChangeListener unsubscribed");
         }
     }
 }

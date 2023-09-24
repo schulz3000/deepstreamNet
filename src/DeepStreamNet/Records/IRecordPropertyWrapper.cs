@@ -1,6 +1,6 @@
 ﻿namespace DeepStreamNet
 {
-    interface IRecordPropertyWrapper
+    internal interface IRecordPropertyWrapper
     {
         string Name { get; }
         object Value { get; set; }

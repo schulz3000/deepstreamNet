@@ -8,18 +8,14 @@ namespace DeepStreamNet.Tests
     public class PresenceTests : IClassFixture<DeepStreamServerFixture>
     {
         public PresenceTests(DeepStreamServerFixture fixture)
-        {
-            fixture.StartServer();
-        }
+            => fixture.StartServer();
 
-        [Fact]
+        [FactWithSkipOnCloudBuilds]
         public async Task GetAllEmptyTest()
         {
-            using (var client = await TestHelper.GetClientAsync())
-            {
-                var users = await client.Presence.GetAllAsync();
-                Assert.Empty(users);
-            }
+            using var client = await TestHelper.GetClientAsync();
+            var users = await client.Presence.GetAllAsync();
+            Assert.Empty(users);
         }
     }
 }

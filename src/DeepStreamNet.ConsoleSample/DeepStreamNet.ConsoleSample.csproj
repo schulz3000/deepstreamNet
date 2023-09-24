@@ -6,7 +6,7 @@
     <AssemblyTitle>DeepStreamNet Console Sample</AssemblyTitle>
     <VersionPrefix>0.0.0.4-alpha</VersionPrefix>
     <Authors>schulz3000</Authors>
-    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <TargetFramework>net5.0</TargetFramework>
     <AssemblyName>DeepStreamNet.ConsoleSample</AssemblyName>
     <OutputType>Exe</OutputType>
     <PackageId>DeepStreamNet.ConsoleSample</PackageId>

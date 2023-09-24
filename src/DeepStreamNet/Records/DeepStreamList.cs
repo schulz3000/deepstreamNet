@@ -1,14 +1,12 @@
 ﻿using System.Collections.Generic;
-using DeepStreamNet.Contracts;
 using System.Collections.Specialized;
-using System;
 using System.Collections;
 using Newtonsoft.Json.Linq;
 using System.Linq;
 
 namespace DeepStreamNet
 {
-    class DeepStreamList : IDeepStreamListWrapper
+    internal class DeepStreamList : IDeepStreamListWrapper
     {
         public string ListName { get; }
 
@@ -27,7 +25,7 @@ namespace DeepStreamNet
             }
         }
 
-        readonly List<string> innerList = new List<string>();
+        private readonly List<string> innerList = new();
 
         public event NotifyCollectionChangedEventHandler CollectionChanged;
 
@@ -60,7 +58,6 @@ namespace DeepStreamNet
 
         public void Clear()
         {
-            var tmp = innerList;
             innerList.Clear();
             CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
         }
@@ -98,14 +95,14 @@ namespace DeepStreamNet
             var newItems = newList.Except(innerList).ToList();
             var removedItems = innerList.Except(newList).ToList();
 
-            for (int i = 0; i < newItems.Count; i++)
+            foreach (var item in newItems)
             {
-                Add(newItems[i]);
+                Add(item);
             }
 
-            for (int i = 0; i < removedItems.Count; i++)
+            foreach (var item in removedItems)
             {
-                Remove(removedItems[i]);
+                Remove(item);
             }
         }
     }

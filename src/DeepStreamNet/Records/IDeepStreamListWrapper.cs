@@ -3,7 +3,7 @@ using Newtonsoft.Json.Linq;
 
 namespace DeepStreamNet
 {
-    interface IDeepStreamListWrapper : IDeepStreamList
+    internal interface IDeepStreamListWrapper : IDeepStreamList
     {
         void Update(JToken list);
     }

@@ -2,15 +2,15 @@
 
 namespace DeepStreamNet
 {
-    class PresenceGetAllReceivedArgs : EventArgs
+    internal class PresenceGetAllReceivedArgs : EventArgs
     {
-        readonly static string[] emptyUserNames = new string[0];
+        private static readonly string[] EmptyUserNames = new string[0];
 
         public string[] Usernames { get; }
 
         public PresenceGetAllReceivedArgs()
         {
-            Usernames = emptyUserNames;
+            Usernames = EmptyUserNames;
         }
 
         public PresenceGetAllReceivedArgs(string[] usernames)

@@ -2,7 +2,7 @@
 namespace System.Reflection
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public static class RuntimeReflectionExtensions
     {
@@ -14,7 +14,9 @@ namespace System.Reflection
         public static MethodInfo GetMethodInfo(this Delegate del)
         {
             if (del == null)
+            {
                 throw new ArgumentNullException(nameof(del));
+            }
 
             return del.Method;
         }

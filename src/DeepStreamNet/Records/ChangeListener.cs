@@ -4,7 +4,7 @@ using System.ComponentModel;
 
 namespace DeepStreamNet
 {
-    abstract class ChangeListener : INotifyPropertyChanged, IDisposable
+    internal abstract class ChangeListener : INotifyPropertyChanged, IDisposable
     {
         protected string PropertyName;
 
@@ -13,9 +13,7 @@ namespace DeepStreamNet
         public event PropertyChangedEventHandler PropertyChanged;
 
         protected virtual void RaisePropertyChanged(string propertyName)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
+            => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 
         public void Dispose()
         {
@@ -37,9 +35,7 @@ namespace DeepStreamNet
         }
 
         public static ChangeListener Create(INotifyPropertyChanged value)
-        {
-            return Create(value, null);
-        }
+            => Create(value, null);
 
         public static ChangeListener Create(INotifyPropertyChanged value, string propertyName)
         {
@@ -51,13 +47,9 @@ namespace DeepStreamNet
         }
 
         public static ChangeListener Create(INotifyCollectionChanged value)
-        {
-            return Create(value, null);
-        }
+            => Create(value, null);
 
         public static ChangeListener Create(INotifyCollectionChanged value, string propertyName)
-        {
-            return new CollectionChangeListener(value, propertyName);
-        }
+            => new CollectionChangeListener(value, propertyName);
     }
 }

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace DeepStreamNet
 {
-    class RemoteProcedureEqualityComparer : IEqualityComparer<RemoteProcedure>
+    internal class RemoteProcedureEqualityComparer : IEqualityComparer<RemoteProcedure>
     {
         public bool Equals(RemoteProcedure x, RemoteProcedure y)
         {

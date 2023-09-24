@@ -2,7 +2,7 @@
 
 namespace DeepStreamNet
 {
-    abstract class ListenerChangedBaseEventArgs:EventArgs
+    internal abstract class ListenerChangedBaseEventArgs : EventArgs
     {
         public string Pattern { get; }
 
@@ -18,7 +18,7 @@ namespace DeepStreamNet
         }
     }
 
-    enum ListenerState
+    internal enum ListenerState
     {
         Add = 1,
         Remove = -1

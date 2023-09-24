@@ -7,41 +7,44 @@ using DeepStreamNet.Contracts;
 
 namespace DeepStreamNet
 {
-    class DeepStreamAnonymousRecord : IDeepStreamAnonymousRecord
+    internal class DeepStreamAnonymousRecord : IDeepStreamAnonymousRecord
     {
-        readonly DeepStreamRecords Context;
-        IDeepStreamRecord innerRecord;
+        private readonly DeepStreamRecords _context;
+        private IDeepStreamRecord _innerRecord;
+
         public DeepStreamAnonymousRecord(DeepStreamRecords context)
         {
-            Context = context;
+            _context = context;
         }
 
         public async Task SetNameAsync(string name)
         {
             if (string.IsNullOrWhiteSpace(name))
+            {
                 throw new ArgumentNullException(nameof(name));
+            }
 
-            innerRecord = await Context.GetRecordAsync(name).ConfigureAwait(false);
+            _innerRecord = await _context.GetRecordAsync(name).ConfigureAwait(false);
         }
 
         public dynamic this[object key]
         {
-            get => innerRecord[key];
-            set => innerRecord[key] = value;
+            get => _innerRecord[key];
+            set => _innerRecord[key] = value;
         }
 
-        public string RecordName => innerRecord.RecordName;
+        public string RecordName => _innerRecord.RecordName;
 
         public event PropertyChangingEventHandler PropertyChanging
         {
-            add { innerRecord.PropertyChanging += value; }
-            remove { innerRecord.PropertyChanging -= value; }
+            add => _innerRecord.PropertyChanging += value;
+            remove => _innerRecord.PropertyChanging -= value;
         }
 
         public event PropertyChangedEventHandler PropertyChanged
         {
-            add { innerRecord.PropertyChanged += value; }
-            remove { innerRecord.PropertyChanged -= value; }
+            add => _innerRecord.PropertyChanged += value;
+            remove => _innerRecord.PropertyChanged -= value;
         }
 
         public event EventHandler RecordChanged
@@ -51,6 +54,6 @@ namespace DeepStreamNet
         }
 
         public DynamicMetaObject GetMetaObject(Expression parameter)
-            => innerRecord.GetMetaObject(parameter);
+            => _innerRecord.GetMetaObject(parameter);
     }
 }

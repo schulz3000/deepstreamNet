@@ -2,7 +2,7 @@
 
 namespace DeepStreamNet
 {
-    abstract class RecordBaseEventArgs : DeepStreamBaseEventArgs
+    internal abstract class RecordBaseEventArgs : DeepStreamBaseEventArgs
     {
         public string Identifier { get; }
         public int Version { get; }

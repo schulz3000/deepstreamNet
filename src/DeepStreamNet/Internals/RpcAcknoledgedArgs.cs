@@ -1,6 +1,6 @@
 ﻿namespace DeepStreamNet
 {
-    class RpcAcknoledgedArgs : AcknoledgedArgs
+    internal class RpcAcknoledgedArgs : AcknoledgedArgs
     {
         public Action RpcAction { get; }
 

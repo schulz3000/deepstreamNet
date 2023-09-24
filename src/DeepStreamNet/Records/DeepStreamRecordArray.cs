@@ -6,7 +6,7 @@ using System.Dynamic;
 
 namespace DeepStreamNet
 {
-    class DeepStreamRecordArray : DeepStreamRecordBase<JArray>, IEnumerable<object>
+    internal class DeepStreamRecordArray : DeepStreamRecordBase<JArray>, IEnumerable<object>
     {
         public DeepStreamRecordArray(string name, int version, JArray data)
             : base(name, version, data)

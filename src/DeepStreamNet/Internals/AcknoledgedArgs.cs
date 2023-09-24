@@ -1,6 +1,6 @@
 ﻿namespace DeepStreamNet
 {
-    class AcknoledgedArgs : DeepStreamBaseEventArgs
+    internal class AcknoledgedArgs : DeepStreamBaseEventArgs
     {
         public string Identifier { get; }
 

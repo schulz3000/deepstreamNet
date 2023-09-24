@@ -3,15 +3,15 @@ using System.Collections.Generic;
 
 namespace DeepStreamNet
 {
-    class PresenceGetAllWithStatusReceivedArgs : EventArgs
+    internal class PresenceGetAllWithStatusReceivedArgs : EventArgs
     {
-        readonly static Dictionary<string, bool> emptyUserNamesWithStatus = new Dictionary<string, bool>();
+        private static readonly Dictionary<string, bool> EmptyUserNamesWithStatus = new();
 
         public Dictionary<string, bool> UsernamesWithStatus { get; }
 
         public PresenceGetAllWithStatusReceivedArgs()
         {
-            UsernamesWithStatus = emptyUserNamesWithStatus;
+            UsernamesWithStatus = EmptyUserNamesWithStatus;
         }
 
         public PresenceGetAllWithStatusReceivedArgs(Dictionary<string, bool> usernamesWithStatus)

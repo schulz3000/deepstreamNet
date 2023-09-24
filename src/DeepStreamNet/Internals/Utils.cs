@@ -7,7 +7,7 @@ using System.Runtime.CompilerServices;
 
 namespace DeepStreamNet
 {
-    static class Utils
+    internal static class Utils
     {
         public static string BuildCommand(Topic topic, Action action, params object[] args)
         {
@@ -18,9 +18,9 @@ namespace DeepStreamNet
             sb.Append(action.ToString());
             sb.Append(Constants.RecordSeperator);
 
-            for (int i = 0; i < args.Length; i++)
+            foreach (var item in args)
             {
-                sb.Append(args[i]);
+                sb.Append(item);
                 sb.Append(Constants.RecordSeperator);
             }
 
@@ -31,9 +31,9 @@ namespace DeepStreamNet
 
         public static string ConvertAndPrefixData<T>(T data)
         {
-            if (data is JToken)
+            if (data is JToken token)
             {
-                return ConvertAndPrefixDataFromJToken(data as JToken);
+                return ConvertAndPrefixDataFromJToken(token);
             }
 
             if (data is string)
@@ -41,12 +41,9 @@ namespace DeepStreamNet
                 return Constants.Types.STRING.ToString() + data;
             }
 
-            if (data is bool)
+            if (data is bool value)
             {
-                if (bool.Parse(data.ToString()))
-                    return Constants.Types.TRUE.ToString();
-
-                return Constants.Types.FALSE.ToString();
+                return value ? Constants.Types.TRUE.ToString() : Constants.Types.FALSE.ToString();
             }
 
             if (data is int || data is double || data is float || data is decimal)
@@ -54,14 +51,14 @@ namespace DeepStreamNet
                 return Constants.Types.NUMBER.ToString() + data.ToString().Replace(',', '.');
             }
 
-            if (!(data is object))
+            if (data == null)
             {
                 return Constants.Types.NULL.ToString();
             }
 
             try
             {
-                return Constants.Types.OBJECT.ToString() + JsonConvert.SerializeObject(data);
+                return Constants.Types.OBJECT + JsonConvert.SerializeObject(data);
             }
             catch
             {
@@ -69,23 +66,23 @@ namespace DeepStreamNet
             }
         }
 
-        static string ConvertAndPrefixDataFromJToken(JToken data)
+        private static string ConvertAndPrefixDataFromJToken(JToken data)
         {
             switch (data.Type)
             {
                 case JTokenType.String:
-                    return Constants.Types.STRING.ToString() + data.ToObject<string>();
+                    return Constants.Types.STRING + data.ToObject<string>();
                 case JTokenType.Boolean:
                     return data.ToObject<bool>() ? Constants.Types.TRUE.ToString() : Constants.Types.FALSE.ToString();
                 case JTokenType.Float:
                 case JTokenType.Integer:
-                    return Constants.Types.NUMBER.ToString() + data.ToObject<string>();
+                    return Constants.Types.NUMBER + data.ToObject<string>();
                 case JTokenType.Null:
                     return Constants.Types.NULL.ToString();
                 default:
                     try
                     {
-                        return Constants.Types.OBJECT.ToString() + JsonConvert.SerializeObject(data);
+                        return Constants.Types.OBJECT + JsonConvert.SerializeObject(data);
                     }
                     catch
                     {
@@ -98,32 +95,19 @@ namespace DeepStreamNet
         {
             var evtData = dataWithTypePrefix.Substring(1);
 
-            switch (dataWithTypePrefix[0])
+            return dataWithTypePrefix[0] switch
             {
-                case Constants.Types.STRING:
-                    return new KeyValuePair<Type, JToken>(typeof(string), JToken.FromObject(evtData));
-
-                case Constants.Types.NUMBER:
-                    return new KeyValuePair<Type, JToken>(typeof(double), JToken.Parse(evtData));
-
-                case Constants.Types.TRUE:
-                    return new KeyValuePair<Type, JToken>(typeof(bool), JToken.FromObject(true));
-
-                case Constants.Types.FALSE:
-                    return new KeyValuePair<Type, JToken>(typeof(bool), JToken.FromObject(false));
-
-                case Constants.Types.NULL:
-                    return new KeyValuePair<Type, JToken>(typeof(object), JValue.CreateNull());
-
-                case Constants.Types.OBJECT:
-                    return new KeyValuePair<Type, JToken>(typeof(object), JToken.Parse(evtData));
-
-                default:
-                    return new KeyValuePair<Type, JToken>(typeof(string), JToken.Parse(evtData));
-            }
+                Constants.Types.STRING => new KeyValuePair<Type, JToken>(typeof(string), JToken.FromObject(evtData)),
+                Constants.Types.NUMBER => new KeyValuePair<Type, JToken>(typeof(double), JToken.Parse(evtData)),
+                Constants.Types.TRUE => new KeyValuePair<Type, JToken>(typeof(bool), JToken.FromObject(true)),
+                Constants.Types.FALSE => new KeyValuePair<Type, JToken>(typeof(bool), JToken.FromObject(false)),
+                Constants.Types.NULL => new KeyValuePair<Type, JToken>(typeof(object), JValue.CreateNull()),
+                Constants.Types.OBJECT => new KeyValuePair<Type, JToken>(typeof(object), JToken.Parse(evtData)),
+                _ => new KeyValuePair<Type, JToken>(typeof(string), JToken.Parse(evtData)),
+            };
         }
 
-        static readonly Dictionary<Type, JTokenType> typeMappings = new Dictionary<Type, JTokenType>
+        private static readonly Dictionary<Type, JTokenType> TypeMappings = new()
         {
             [typeof(bool)] = JTokenType.Boolean,
             [typeof(string)] = JTokenType.String,
@@ -140,9 +124,9 @@ namespace DeepStreamNet
 
         public static bool IsJTokenTypeEqualNetType(JTokenType tokenType, Type type)
         {
-            if (typeMappings.ContainsKey(type))
+            if (TypeMappings.ContainsKey(type))
             {
-                return typeMappings[type] == tokenType;
+                return TypeMappings[type] == tokenType;
             }
 
             return tokenType == JTokenType.Object || tokenType == JTokenType.Null;
@@ -152,7 +136,9 @@ namespace DeepStreamNet
         public static bool IsNumeric(Type type)
         {
             if (type == null)
+            {
                 return false;
+            }
 
             switch (Type.GetTypeCode(type))
             {
@@ -178,7 +164,7 @@ namespace DeepStreamNet
             return false;
         }
 
-        static readonly Type NullableType = typeof(Nullable<>);
+        private static readonly Type NullableType = typeof(Nullable<>);
 
         public static string CreateUid() => Guid.NewGuid().ToString("N");
     }

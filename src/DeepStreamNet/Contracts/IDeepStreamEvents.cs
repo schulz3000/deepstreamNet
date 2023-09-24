@@ -4,12 +4,12 @@ using System.Threading.Tasks;
 namespace DeepStreamNet.Contracts
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public interface IDeepStreamEvents
     {
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="eventName"></param>
@@ -18,7 +18,7 @@ namespace DeepStreamNet.Contracts
         void Publish<T>(string eventName, T data);
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="eventName"></param>
         /// <param name="data"></param>
@@ -26,7 +26,7 @@ namespace DeepStreamNet.Contracts
         Task<IAsyncDisposable> SubscribeAsync(string eventName, Action<object> data);
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="pattern"></param>
         /// <param name="listener"></param>
@@ -34,7 +34,7 @@ namespace DeepStreamNet.Contracts
         Task<IAsyncDisposable> ListenAsync(string pattern, Action<string, bool, IListenerResponse> listener);
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="pattern"></param>
         /// <param name="listener"></param>
